@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-for i in {1..300}
+for i in $(seq 1 300)
 do
     if curl -fk https://127.0.0.1/users/login ; then
         echo "$i/300: MISP is up"

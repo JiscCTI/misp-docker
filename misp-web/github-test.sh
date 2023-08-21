@@ -5,14 +5,22 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-for i in $(seq 1 300)
+echo "Waiting 15 minutes for initial startup to finish..."
+sleep 900
+
+for i in $(seq 1 120)
 do
-    if curl -fk https://127.0.0.1/users/login ; then
-        echo "$i/300: MISP is up"
+    echo "$i/120: Testing if MISP is up..."
+    if curl -fkq https://127.0.0.1/users/login ; then
+        echo "$i/120: MISP is up, test completed successfully."
         exit 
     else
-        echo "$i/300: MISP isn't up yet, waitng 3 seconds..."
-        sleep 3
+        if [ "$i" -eq 120 ]; then
+            echo "$i/120: MISP isn't up after 25 minutes, test failed."
+            exit 1
+        else
+            echo "$i/120: MISP isn't up yet, waiting 5 seconds..."
+            sleep 5
+        fi
     fi
 done
-exit 1

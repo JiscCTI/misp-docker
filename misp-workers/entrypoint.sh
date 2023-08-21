@@ -1,4 +1,4 @@
-#/usr/bin/env bash
+#!/bin/bash
 
 # SPDX-FileCopyrightText: 2023 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt

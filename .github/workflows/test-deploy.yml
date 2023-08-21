@@ -38,4 +38,4 @@ jobs:
           file: docker-compose.yml
           registry: registry.hub.docker.com
           service: misp_web
-          command: /bin/bash /github-test.sh
+          command: /github-test.sh

@@ -10,6 +10,7 @@ on:
     workflows: ["Build and Publish"]
     types:
       - completed
+  workflow_dispatch:
 
 jobs:
   test:

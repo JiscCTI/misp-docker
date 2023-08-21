@@ -30,12 +30,15 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           username: ${{ vars.DOCKERHUB_USERNAME }}
 
-      - name: Deploy and Test
-        uses: cloudposse/github-action-docker-compose-test-run@main
+      - name: Deploy MISP
         env:
           COMPOSE_PROJECT_NAME: misp-test
-        with:
-          file: docker-compose.yml
-          registry: registry.hub.docker.com
-          service: misp_web
-          command: /github-test.sh
+        run: docker compose up --detach
+
+      - name: Wait for Initial Setup
+        run: timeout 30m /bin/bash -c "while [[ $(docker container ls | grep misp_web | grep '(healthy)' | wc -l) -eq 0 ]] ; do sleep 30; done"
+
+      - name: Stop MISP
+        env:
+          COMPOSE_PROJECT_NAME: misp-test
+        run: docker compose down

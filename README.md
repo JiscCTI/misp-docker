@@ -6,6 +6,9 @@ SPDX-License-Identifier: GPL-3.0-only
 -->
 # MISP Docker Images
 
+[![Build and Publish](https://github.com/jisccti/misp-docker/actions/workflows/build.yml/badge.svg)](https://github.com/jisccti/misp-docker/actions/workflows/build.yml)
+[![Test Deploy](https://github.com/jisccti/misp-docker/actions/workflows/test-deploy.yml/badge.svg)](https://github.com/jisccti/misp-docker/actions/workflows/test-deploy.yml)
+
 A set of three docker images containing the components of MISP.
 
 ## Dependencies

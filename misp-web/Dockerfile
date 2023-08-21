@@ -120,6 +120,7 @@ RUN apt -qy update &&\
 WORKDIR /var/www/MISP/
 COPY entrypoint.sh /entrypoint.sh
 COPY wait-for-it.sh /wait-for-it.sh
+COPY github-test.sh /github-test.sh
 RUN chmod 755 /*.sh
 ENTRYPOINT /wait-for-it.sh -h ${MYSQL_HOSTNAME:-misp_db} -p 3306 -t 0 -- /entrypoint.sh
 HEALTHCHECK CMD curl -fk https://127.0.0.1/users/login || exit 1

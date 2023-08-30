@@ -207,7 +207,8 @@ initial_config() {
     $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
     /opt/scripts/misp-post-update-config.sh
 
-    # TODO Enable OpenID here
+    # Enable OpenID connect
+    echo "CakePlugin::load('OidcAuth');" >> /var/www/MISP/app/Config/bootstrap.php
 
     if [ -f /var/www/MISPData/custom-config.sh ]; then
         echo "Custom config options script found, executing..."

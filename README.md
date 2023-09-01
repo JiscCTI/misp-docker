@@ -125,7 +125,8 @@ sudo docker build --quiet --tag jisccti/misp-workers:latest --tag jisccti/misp-w
 
 ### 3 - Import GnuPG Keys
 
-If you have an existing GnuPG directory to import to MISP, copy this to `./persistent/{instanceName}/gpg/`.
+If you have an existing GnuPG private key to import to MISP, copy this, in ASCII-armored format, to 
+`./persistent/{instanceName}/gpg/import.asc`, ensuring `GPG_PASSPHRASE` is correctly set in `.env`.
 
 ### 4 - Import TLS Certificate
 

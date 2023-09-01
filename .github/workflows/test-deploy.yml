@@ -58,6 +58,3 @@ jobs:
 
       - name: Stop MISP
         run: docker compose down
-
-      - name: Clean Up Files
-        run: rm -rf persistent/ .env

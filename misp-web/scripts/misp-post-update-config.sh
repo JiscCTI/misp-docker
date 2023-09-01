@@ -8,9 +8,14 @@
 $CAKE Admin setSetting "Plugin.Enrichment_clamav_enabled" true
 $CAKE Admin setSetting "MISP.attachment_scan_module" "clamav"
 $CAKE Admin setSetting "MISP.correlation_engine" "Default"
+$CAKE Admin setSetting "MISP.log_auth" true
 $CAKE Admin setSetting "MISP.log_new_audit_compress" true
-$CAKE Admin setSetting "Security.otp_required" true
+$CAKE Admin setSetting "MISP.log_skip_access_logs_in_application_logs" true
 $CAKE Admin setSetting "MISP.self_update" false
+$CAKE Admin setSetting "MISP.store_api_access_time" true
+$CAKE Admin setSetting "MISP.thumbnail_in_redis" true
+$CAKE Admin setSetting "MISP.unpublishedprivate" false
+$CAKE Admin setSetting "Security.otp_required" true
 
 # Workaround diagnostics page issue introduced in v2.4.175 (https://github.com/MISP/MISP/pull/9230)
 $CAKE Admin setSetting "MISP.online_version_check" false

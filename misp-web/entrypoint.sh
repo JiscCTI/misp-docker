@@ -14,7 +14,11 @@ on_start() {
     HTTPS_PORT="${HTTPS_PORT:-443}"
     MISP_EMAIL_ADDRESS="${MISP_EMAIL_ADDRESS:-misp@misp.local}"
     MISP_EMAIL_NAME="${MISP_EMAIL_NAME:-MISP}"
-    MISP_URL="https://$FQDN:$HTTPS_PORT"
+    if [[ "$HTTPS_PORT" -eq 443 ]]; then
+        MISP_URL="https://$FQDN"
+    else
+        MISP_URL="https://$FQDN:$HTTPS_PORT"
+    fi
     MODULES_HOSTNAME="${MODULES_HOSTNAME:-misp_modules}"
     MYSQL_DBNAME="${MYSQL_DBNAME:-misp}"
     MYSQL_HOSTNAME="${MYSQL_HOSTNAME:-misp_db}"
@@ -220,6 +224,10 @@ check_gnupg() {
     MISP_EMAIL_ADDRESS="${MISP_EMAIL_ADDRESS:-misp@misp.local}"
     chown -R www-data: /var/www/MISPGnuPG
     chmod 700 /var/www/MISPGnuPG
+    if [ -r /var/www/MISPGnuPG/import.asc ]; then
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --pinentry-mode=loopback --passphrase '$GPG_PASSPHRASE' --import /var/www/MISPGnuPG/import.asc"
+        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --show-keys /var/www/MISPGnuPG/import.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --import-ownertrust"
+    fi
     GPG_KEY=$(su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --export --armor $MISP_EMAIL_ADDRESS")
     if [[ "$GPG_KEY" != "-----BEGIN PGP PUBLIC KEY BLOCK-----"* ]]; then
         echo "Generating new GnuPG Key"
@@ -243,6 +251,8 @@ check_gnupg() {
         echo "GnuPG key found, exporting to webroot..."
         su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --export --armor $MISP_EMAIL_ADDRESS" | su -s /bin/bash www-data -c "tee /var/www/MISP/app/webroot/gpg.asc"
     fi
+    chown -R www-data: /var/www/MISPGnuPG
+    chmod 700 /var/www/MISPGnuPG
 }
 
 generate_self_signed_certificate() {

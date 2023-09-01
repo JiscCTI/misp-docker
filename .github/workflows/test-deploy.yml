@@ -12,17 +12,23 @@ on:
       - completed
   workflow_dispatch:
 
+env:
+  COMPOSE_PROJECT_NAME: misp-test
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Project
+        uses: actions/checkout@v3
 
-      - name: Create .env file
-        uses: canastro/copy-file-action@master
-        with:
-            source: "example.env"
-            target: ".env"
+      - name: Configure Environment
+        run: |
+          cp example.env .env
+          mkdir -p persistent/$COMPOSE_PROJECT_NAME/gpg persistent/$COMPOSE_PROJECT_NAME/tls
+          echo ${{ secrets.TEST_PGP_KEY }} > persistent/$COMPOSE_PROJECT_NAME/gpg/import.asc
+          echo ${{ secrets.TEST_TLS_CERT }} > persistent/$COMPOSE_PROJECT_NAME/tls/misp.crt
+          echo ${{ secrets.TEST_TLS_KEY }} > persistent/$COMPOSE_PROJECT_NAME/tls/misp.key
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -31,14 +37,21 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
 
       - name: Deploy MISP
-        env:
-          COMPOSE_PROJECT_NAME: misp-test
-        run: docker compose up --detach
+        run: docker compose up -d
 
-      - name: Wait for Initial Setup
-        run: timeout 90m /bin/bash -c "while [[ $(docker container ls | grep misp_web | grep '(healthy)' | wc -l) -eq 0 ]] ; do sleep 30; done"
+      - id: initial_setup
+        name: Wait for Initial Setup
+        run: timeout 10m /bin/bash -c 'while [[ $(docker container ls --format {{.Status}} | grep -P "(unhealthy)|(starting)" | wc -l) -gt 0 ]] ; do sleep 30; done'
+        continue-on-error: true
+
+      - name: Dump Container Log
+        run: |
+          docker compose logs
+          exit 1
+        if: steps.initial_setup.outcome == 'failure'
 
       - name: Stop MISP
-        env:
-          COMPOSE_PROJECT_NAME: misp-test
         run: docker compose down
+
+      - name: Clean Up Files
+        run: rm -rf persistent/ .env

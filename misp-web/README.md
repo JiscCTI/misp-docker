@@ -17,7 +17,7 @@ Unlike other images, MISP Modules, MISP Workers, MySQL and Redis are **not** bun
 Use the Python script to determine the latest version and pass this to the build process:
 
 ```bash
-VERSION=$(python3 latest.py); sudo docker build --pull --tag jisc/misp-web:latest --tag jisc/misp-web:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
+VERSION=$(python3 latest.py); sudo docker build --pull --tag jisccti/misp-web:latest --tag jisccti/misp-web:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
 ```
 
 ### Specific release
@@ -25,7 +25,7 @@ VERSION=$(python3 latest.py); sudo docker build --pull --tag jisc/misp-web:lates
 Pass the desired version as a variable to the build process:
 
 ```bash
-VERSION=v2.4.150; sudo docker build --pull --tag jisc/misp-web:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
+VERSION=v2.4.150; sudo docker build --pull --tag jisccti/misp-web:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
 ```
 
 ## Volumes

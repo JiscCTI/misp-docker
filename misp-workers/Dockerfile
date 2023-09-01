@@ -10,7 +10,7 @@ LABEL Name="misp-workers" Version=${MISP_VERSION}\
     org.opencontainers.image.ref.name="misp-workers"\
     org.opencontainers.image.description="Open Source Threat Intelligence and Sharing Platform."\
     org.opencontainers.image.authors="Jisc <CTI.Analysts@jisc.ac.uk"\
-    org.opencontainers.image.base.name="hub.docker.com/jisc/misp-web:${MISP_VERSION}"
+    org.opencontainers.image.base.name="hub.docker.com/jisccti/misp-web:${MISP_VERSION}"
 
 # Setup MISP Workers
 RUN apt -qy update &&\

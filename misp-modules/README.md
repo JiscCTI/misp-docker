@@ -15,7 +15,7 @@ Containerised version of v2.x of the MISP modules.
 Use the Python script to determine the latest version and pass this to the build process:
 
 ```bash
-VERSION=$(python3 latest.py); sudo docker build --pull --tag jisc/misp-modules:latest --tag jisc/misp-modules:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
+VERSION=$(python3 latest.py); sudo docker build --pull --tag jisccti/misp-modules:latest --tag jisccti/misp-modules:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
 ```
 
 ### Specific release
@@ -23,7 +23,7 @@ VERSION=$(python3 latest.py); sudo docker build --pull --tag jisc/misp-modules:l
 Pass the desired version as a variable to the build process:
 
 ```bash
-VERSION=v2.4.150; sudo docker build --pull --tag jisc/misp-modules:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
+VERSION=v2.4.150; sudo docker build --pull --tag jisccti/misp-modules:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
 ```
 
 ## Acknowledgements

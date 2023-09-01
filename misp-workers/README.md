@@ -17,7 +17,7 @@ This image depends on having `misp-web` build to the same version.
 Use the Python script to determine and build the latest version:
 
 ```bash
-VERSION=$(python3 latest.py); sudo docker build --tag jisc/misp-workers:latest --tag jisc/misp-workers:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
+VERSION=$(python3 latest.py); sudo docker build --tag jisccti/misp-workers:latest --tag jisccti/misp-workers:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
 ```
 
 ### Specific release
@@ -25,7 +25,7 @@ VERSION=$(python3 latest.py); sudo docker build --tag jisc/misp-workers:latest -
 Use the Python script to determine the latest version and pass this to the build process:
 
 ```bash
-VERSION=$(python3 latest.py); sudo docker build --tag jisc/misp-workers:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
+VERSION=$(python3 latest.py); sudo docker build --tag jisccti/misp-workers:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
 ```
 
 ## Acknowledgements

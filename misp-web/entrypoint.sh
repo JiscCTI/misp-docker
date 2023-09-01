@@ -225,10 +225,15 @@ check_gnupg() {
     chown -R www-data: /var/www/MISPGnuPG
     chmod 700 /var/www/MISPGnuPG
     if [ -r /var/www/MISPGnuPG/import.asc ]; then
-        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --pinentry-mode=loopback --passphrase '$GPG_PASSPHRASE' --import /var/www/MISPGnuPG/import.asc"
-        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --show-keys /var/www/MISPGnuPG/import.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --import-ownertrust"
+        set +e
+        echo "/var/www/MISPGnuPG/import.asc found, importing..."
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /var/www/MISPGnuPG/import.asc"
+        echo "Setting trust level for imported GnuPG key..."
+        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /var/www/MISPGnuPG/import.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
+        set -e
     fi
-    GPG_KEY=$(su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --export --armor $MISP_EMAIL_ADDRESS")
+    echo "Checking for usable GnuPG Key..."
+    GPG_KEY=$(su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS")
     if [[ "$GPG_KEY" != "-----BEGIN PGP PUBLIC KEY BLOCK-----"* ]]; then
         echo "Generating new GnuPG Key"
         echo "%echo Generating a default key
@@ -246,10 +251,10 @@ check_gnupg() {
         su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --gen-key /tmp/gen-key-script"
         rm /tmp/gen-key-script
         echo "GnuPG key generated, exporting to webroot..."
-        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --export --armor $MISP_EMAIL_ADDRESS" | su -s /bin/bash www-data -c "tee /var/www/MISP/app/webroot/gpg.asc"
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS" | su -s /bin/bash www-data -c "tee /var/www/MISP/app/webroot/gpg.asc"
     else
         echo "GnuPG key found, exporting to webroot..."
-        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --export --armor $MISP_EMAIL_ADDRESS" | su -s /bin/bash www-data -c "tee /var/www/MISP/app/webroot/gpg.asc"
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS" | su -s /bin/bash www-data -c "tee /var/www/MISP/app/webroot/gpg.asc"
     fi
     chown -R www-data: /var/www/MISPGnuPG
     chmod 700 /var/www/MISPGnuPG

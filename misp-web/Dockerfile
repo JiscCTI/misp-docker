@@ -110,6 +110,7 @@ COPY --chown=root:root scripts/ /opt/scripts
 
 # Install runtime dependencies
 RUN apt -qy update &&\
+    apt -qy upgrade apache2 &&\
     apt -qy install --no-install-recommends git gnupg iputils-ping libfuzzy2 libgpgme11 libpng16-16 librdkafka1 libzip4\
     mariadb-client python3 ssdeep sudo uuid &&\
     rm -rf /var/lib/apt/lists/* &&\

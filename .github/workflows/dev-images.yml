@@ -86,7 +86,7 @@ jobs:
 
       - id: initial_setup
         name: Wait for Initial Setup
-        run: timeout 10m /bin/bash -c 'while [[ $(docker container ls --format {{.Status}} | grep -P "(unhealthy)|(starting)" | wc -l) -gt 0 ]] ; do sleep 30; done'
+        run: timeout 30m /bin/bash -c 'while [[ $(docker container ls --format {{.Status}} | grep -P "(unhealthy)|(starting)" | wc -l) -gt 0 ]] ; do sleep 30; done'
         continue-on-error: true
 
       - id: dump_logs

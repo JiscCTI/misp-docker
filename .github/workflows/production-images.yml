@@ -118,7 +118,7 @@ jobs:
           cd ..
       - id: pull_workers
         if: ${{ steps.workers_image_exists.outcome != 'failure' && github.event_name != 'push' && github.event_name != 'workflow_dispatch' }}
-        name: Build misp-workers
+        name: Pull misp-workers
         run: docker pull ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest
 
       # Test
@@ -128,7 +128,7 @@ jobs:
 
       - id: initial_setup
         name: Wait for Initial Setup
-        run: timeout 10m /bin/bash -c 'while [[ $(docker container ls --format {{.Status}} | grep -P "(unhealthy)|(starting)" | wc -l) -gt 0 ]] ; do sleep 30; done'
+        run: timeout 30m /bin/bash -c 'while [[ $(docker container ls --format {{.Status}} | grep -P "(unhealthy)|(starting)" | wc -l) -gt 0 ]] ; do sleep 30; done'
         continue-on-error: true
 
       - id: dump_logs

@@ -34,7 +34,7 @@ jobs:
       - id: test-env-setup
         name: Configure Environment
         run: |
-          sed -i \'s/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g\' docker-compose.yml
+          sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' docker-compose.yml
           cp example.env .env
           mkdir -p persistent/$COMPOSE_PROJECT_NAME/gpg persistent/$COMPOSE_PROJECT_NAME/tls
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/gpg/import.asc

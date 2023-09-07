@@ -7,17 +7,32 @@ SPDX-License-Identifier: GPL-3.0-only
 # MISP Docker Images
 
 [![Production Images](https://github.com/jisccti/misp-docker/actions/workflows/production-images.yml/badge.svg)](https://github.com/jisccti/misp-docker/actions/workflows/production-images.yml)
+[![MISP release](https://img.shields.io/github/v/release/MISP/MISP?logo=github&label=MISP%20(source))](https://github.com/MISP/MISP)
+[![misp-modules](https://img.shields.io/docker/v/jisccti/misp-modules?logo=docker&label=misp-modules)![misp-modules size](https://img.shields.io/docker/image-size/jisccti/misp-modules?label=%20)](https://hub.docker.com/r/jisccti/misp-modules)
+[![misp-web](https://img.shields.io/docker/v/jisccti/misp-web?logo=docker&label=misp-web)![misp-web size](https://img.shields.io/docker/image-size/jisccti/misp-web?label=%20)](https://hub.docker.com/r/jisccti/misp-web)
+[![misp-workers](https://img.shields.io/docker/v/jisccti/misp-workers?logo=docker&label=misp-workers)![misp-workers size](https://img.shields.io/docker/image-size/jisccti/misp-workers?label=%20)](https://hub.docker.com/r/jisccti/misp-workers)
 
-A set of three docker images containing the components of MISP.
+Project to build a set of three docker images containing the components of [MISP](https://github.com/MISP/MISP) with
+self-configuration into a usable state from first start.
 
-## Dependencies
+**This GitHub repository is for maintaining the images, to use the images see
+[`jisccti/misp-web` on DockerHub](https://hub.docker.com/r/jisccti/misp-web) instead.**
 
-This project requires the following external components.
+## Build Dependencies
 
-* ClamAV version 1.0, exposing a TCP interface. Docker image: `clamav/clamav:1.0_base`.
-* A MySQL/MariaDB server running either 5.7 or 8.0. Docker image: `mysql/mysql-server:8.0`.
-* A Redis server running v6 or v7. Docker Image: `redis:7`.
-* An SMTP service.
+The images have been build and tested against [Docker Engine v24]((https://docs.docker.com/engine/install/#server)).
+
+The images should build on any Linux-based Docker Engine which supports multi-stage images and the final images should
+run on any Linux-based Docker Engine.
+
+## Runtime Dependencies
+
+The created Docker images contain only the MISP components and depend on the following external services:
+
+* ClamAV TCP endpoint. Tested against Docker image: `clamav/clamav:1.0_base`.
+* MySQL/MariaDB server (5.7 or 8.0). Tested against Docker image: `mysql/mysql-server:8.0`.
+* Redis server (v6 or v7). Tested against Docker Image: `redis:7`.
+* An SMTP service. Tested against a Postfix v3.6.4 server.
 
 ## System Requirements
 
@@ -29,47 +44,47 @@ The smallest VM this deployment was tested on had:
 
 Depending on the features used, MISP can run on very little resources and could potentially run with less RAM.
 
-## Prerequisites
+## Quick Start Deployment
 
-Base requirements:
-
-* Docker 24.0 - [Installation instructions](https://docs.docker.com/engine/install/#server). For Rocky 8/9, following
-the CentOS instructions works.
-
-In order to run the `quickstart.py` script:
-
-* Python 3.6, 
-* Pip 21.2
-* Dotenv Python package: `python3 -m pip install --user python-dotenv`
-
-## Testing / Quick Start Deployment
-
-`quickstart.py` is designed to create a testing instance of MISP easily, it will:
+`quickstart.py` is designed to create a test instance of MISP for validation of changes to the builds, it will:
 
 * Create a "best guess" `.env` file,
-* Delete any existing persistent storage,
+* **Delete *ALL* existing persistent storage**,
 * Pull the three required external images,
 * Build the three images in this project,
 * Start MISP on https://{docker-hostname}/
 
-As this deployment method uses best guesses for some important values, it should not be used in production environments.
+As this deployment method uses best guesses for important values, it **should not be used in production environments**.
+
+Quick Start requires:
+
+* Python >= 3.6,
+* Pip >= 21.2, and
+* Dotenv Python package: `python3 -m pip install --user python-dotenv`
 
 ### High Availability Simulation
 
-To simulate a High Availability setup with quickstart add the `--ha` option, this will spawn three misp-web backend 
-containers and a HAProxy frontend container. The HA Proxy container will continually restart until a misp-web container
-completes its initial setup, generating the required TLS file.
+To simulate a High Availability setup with Quick Start add the `--ha` option, this will spawn two misp-web frontend
+containers behind a HAProxy load balancing container. 
 
-## Production / Custom Deployment
+**Note:** It is expected for the HA Proxy container to continually restart until a misp-web container completes its
+initial setup, generating the TLS keypair needed for a successful startup.
 
-MISP can be deployed in a more predictable / customised way following these steps.
+## Custom Deployment
 
-In the following paths, replace `{instanceName}` with `misp-docker` by default, or the Docker Compose project name used
-on the command line if different.
+MISP can be deployed in a more predictable / customised way following these steps. **This is designed for testing
+changes to the images only, for test and production environments see 
+[`jisccti/misp-web` on DockerHub](https://hub.docker.com/r/jisccti/misp-web) instead.**
+
+In the following paths, replace `{instanceName}` with the folder name, `misp-docker` by default, or the Docker Compose
+project name if you specify one on the command line or in the `COMPOSE_PROJECT_NAME` environment variable.
+
+This deployment method requires Python >= 3.6 to get the current version of MISP from GitHub.
 
 ### 1 - Set Deployment Variables
 
-Passwords set in `.env` ***MUST NOT*** contain the backslash `\` character.
+Passwords set in `.env` ***MUST NOT*** contain the backslash `\` character - they will cause the initial setup process
+to fail.
 
 1. Copy `example.env` to `.env`
 2. Customise `.env` as follows:
@@ -107,7 +122,7 @@ Passwords set in `.env` ***MUST NOT*** contain the backslash `\` character.
 
 Pull the external images as required, and build the latest version of the three MISP images.
 
-```bash
+```sh
 sudo docker pull clamav/clamav:1.0_base
 sudo docker pull redis:7
 sudo docker pull mysql/mysql-server:8.0
@@ -131,11 +146,14 @@ If you have an existing GnuPG private key to import to MISP, copy this, in ASCII
 
 If you have a TLS certificate ready for MISP:
 
-1. Create `./persistent/{instanceName}/tls/`,
-2. Place the certificate, chain, and the content of https://ssl-config.mozilla.org/ffdhe2048.txt into
-  `./persistent/{instanceName}/tls/misp.crt`.
-2. Place the unencrypted private key into `./persistent/{instanceName}/tls/misp.key`.
-4. If using the HA simulation, place certificate, private key and chain into `./persistent/{instanceName}/tls/haproxy.pem`.
+1. Place the certificate, then any required certificate chain, and finally the content of 
+  https://ssl-config.mozilla.org/ffdhe2048.txt* into ``./persistent/{instanceName}/tls/misp.crt`.
+2. Place the **unencrypted** private key into `./persistent/{instanceName}/tls/misp.key`.
+3. If using the HA simulation, place certificate, private key and chain and `ffdhe2048`* into 
+  `./persistent/{instanceName}/tls/haproxy.pem`.
+
+*This ensures OpenSSL does not use insecure Ephemeral Diffie-Hellman (DHE) keys while establishing TLS sessions with
+clients using DHE for key exchange, per the [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/).
 
 ### 5 - Add Custom Image Files
 
@@ -144,16 +162,23 @@ If any custom image files are needed for MISP settings (below), create these fol
 * Images (e.g. for the logon screen): `./persistent/{instanceName}/data/images/`.
 * Organisation Icons: `./persistent/{instanceName}/data/icons/`.
 
+Any other custom files, such as tagging taxonomies, should be placed within `./persistent/{instanceName}/data/` but not
+in their final destination, these should be copied into their final location in step 6 below to prevent conflicts.
+
 ### 6 - MISP Settings
 
-To customise MISP settings automatically post deployment create `./persistent/{instanceName}/data/custom-config.sh` and populate it
-as follows:
+To customise MISP settings during initial setup create `./persistent/{instanceName}/data/custom-config.sh` and populate
+it as follows:
 
-```bash
+```sh
 #!/bin/bash
 
+# Configuring MISP
 $CAKE Admin setSetting "MISP.setting1" "new value"
 $CAKE Admin setSetting "MISP.setting2" true
+
+# Installing taxonomies
+cp -r /var/www/MISPData/my-files/my-taxonomy /var/www/MISPData/files/taxonomies/
 ```
 
 `$CAKE` will be populated with the command to run `CakePHP` as the web server user by the image build process.
@@ -162,8 +187,8 @@ $CAKE Admin setSetting "MISP.setting2" true
 
 To deploy MISP:
 
-1. Remove any unneeded service definitions from `docker-compose.yml`, namely `misp_clamav`, `misp_db`, and / or
-  `misp_redis`.
+1. Remove any unneeded service definitions from `docker-compose.yml` (or `docker-compose-ha.yml` for HA simulation),
+  e.g. `misp_clamav`, `misp_db`, and / or `misp_redis`.
 2. Start the Docker service: `sudo docker compose up -d` (or `sudo docker compose -f docker-compose-ha.yml up -d` for
   HA simulation).
 3. Monitor the startup process of MISP Web: `sudo docker container logs -f {instanceName}-misp_web-1` (or
@@ -171,18 +196,28 @@ To deploy MISP:
 
 ### 8 - Access MISP
 
-1. Access MISP via https://{FQDN}:{HTTPS_PORT}
+Once MISP web reports these lines:
+
+```log
+[mpm_prefork:notice] [pid 7] AH00163: Apache/2.4.54 (Debian) OpenSSL/1.1.1n configured -- resuming normal operations
+[core:notice] [pid 7] AH00094: Command line: '/usr/sbin/apache2 -D FOREGROUND'
+```
+
+1. Access MISP via https://{FQDN}:{HTTPS_PORT}.
 2. Log in using `admin@admin.test` / `admin`.
-3. Change the password when prompted.
+3. Change the password and setup your OTP token when prompted.
 4. Go to Administration / List Users.
 5. Click edit on user `admin@admin.test`.
 6. Update the email address accordingly.
+7. Go to Administration / List Organisations.
+8. Click edit on `ORGNAME`.
+9. Update the default organisation accordingly.
 7. Check these sections of Administration / Server Settings & Maintenance / Diagnostics:
   * **PHP Settings** - all should be green,
   * **PHP Extensions** - all should show green ticks under Web and CLI,
   * **Redis info** - should show the server version and some memory usage.
   * **Advanced attachment handler** - all should show "OK".
-  * **Attachment scan module** - should show a status of "OK".
+  * **Attachment scan module** - should show a status of "OK" - this may take a few minutes while ClamAV loads its DB.
   * **STIX and Cybox libraries** - all should show a green tick under status.
   * **Yara** - should show a status of "OK".
   * **GnuPG** - should show a status of "OK".
@@ -191,15 +226,30 @@ To deploy MISP:
 
 #### Database Schema Discrepancies
 
-Due to how MISP deploys its databases and discrepancies between versions of MySQL:
+Due to how MISP deploys its databases and discrepancies between versions 5.7 and 8.0 of MySQL:
 
 * It is normal for **Schema status** to show a high number of minor discrepancies (E.g. `int` vs `int(11)`) - these can
   be ignored, alternatively, MISP provides MySQL queries to run on the MySQL command line interface to try and fix these
   discrepancies, if desired, by clicking the Spanner (Fix database schema) icon.
-* It is normal for **Schema status** to show some fields are indexed that shouldn't be, these indexes can optionally
-  be removed via the MySQL command line interface using the commands provided by MISP as above.
+* It is normal for **Schema status** to show some fields are indexed that shouldn't be and vice versa, these indexes can
+  optionally be created / removed via the MySQL command line interface using the commands provided by clicking the
+  Spanner (Fix database schema) icon.
 
 ### 9 - Adding Custom Content
 
-Where you need to add taxonomies and similar custom content, these can be placed in the respective sub-directories of
-`./persistent/{instanceName}/data/files/` and loaded into the database as normal.
+Where you need to add taxonomies and similar custom content after initial setup, these can be placed in the respective
+sub-directories of `./persistent/{instanceName}/data/files/` and loaded into the database by running
+`/opt/scripts/update-objects.sh` within the container.
+
+### 10 - Maintaining MISP Objects
+
+To keep MISP Decay Models, Galaxies, Notice Lists, Objects, Taxonomies, Warning Lists, and Workflow Blueprints up to
+date create a scheduled task, e.g. a cron job, to periodically run `/opt/scripts/update-objects.sh` within the misp-web
+container:
+
+```sh
+# Standard
+docker container exec {instanceName}-misp_web-1 /opt/scripts/update-objects.sh
+# for HA
+docker container exec {instanceName}-misp_webs-1 /opt/scripts/update-objects.sh
+```

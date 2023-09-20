@@ -243,13 +243,19 @@ sub-directories of `./persistent/{instanceName}/data/files/` and loaded into the
 
 ### 10 - Maintaining MISP Objects
 
-To keep MISP Decay Models, Galaxies, Notice Lists, Objects, Taxonomies, Warning Lists, and Workflow Blueprints up to
-date create a scheduled task, e.g. a cron job, to periodically run `/opt/scripts/update-objects.sh` within the misp-web
-container:
+Routine tasks have been automated in the misp-workers container which will run the following:
 
-```sh
-# Standard
-docker container exec {instanceName}-misp_web-1 /opt/scripts/update-objects.sh
-# for HA
-docker container exec {instanceName}-misp_webs-1 /opt/scripts/update-objects.sh
-```
+| Task | Frequency |
+| ---- | --------- |
+| Run feed and server synchronisation tasks | Hourly |
+| Update Decay Models, Galaxies, Notice Lists, Objects, Taxonomies, Warning Lists, and Workflow Blueprints | Daily |
+
+In order for feed and server synchronisation to run:
+
+1. Access MISP via https://{FQDN}:{HTTPS_PORT}.
+2. Log in as the primary user (updated above).
+3. Go to Global Actions / My Profile.
+4. Click Auth Keys then Add Authentication Key.
+5. In the "Add auth key" dialog that appears, for "Comment", enter "Docker Automation" and click Submit.
+6. Edit `/var/www/MISPData/misp_maintenance_jobs.ini` on `misp-workers` setting `authkey` to the 40 character key shown
+   in the "Auth key created" dialog.

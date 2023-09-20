@@ -132,7 +132,7 @@ while True:
         continue
 
     if logger == None:
-        logger = CreateLogger(config.get("DEFAULT", "debug", fallback=True))
+        logger = CreateLogger(config.getboolean("DEFAULT", "debug", fallback=True))
         logger.info("Starting maintenance job scheduler")
 
     try:

@@ -35,6 +35,7 @@ jobs:
         run: |
           sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' docker-compose.yml
           sed -i 's/latest/latest-dev/g' docker-compose.yml
+          sed -i 's/{MISP_VERSION}/{MISP_VERSION}-dev/g' misp-workers/Dockerfile
           cp example.env .env
           mkdir -p persistent/$COMPOSE_PROJECT_NAME/gpg persistent/$COMPOSE_PROJECT_NAME/tls
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/gpg/import.asc

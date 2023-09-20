@@ -91,6 +91,8 @@ services:
     image: jisccti/misp-workers:latest
     restart: unless-stopped
     environment:
+      - FQDN=${FQDN:-misp.local}
+      - HTTPS_PORT=${HTTPS_PORT:-443}
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
     depends_on:

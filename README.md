@@ -8,9 +8,9 @@ SPDX-License-Identifier: GPL-3.0-only
 
 [![Production Images](https://github.com/jisccti/misp-docker/actions/workflows/production-images.yml/badge.svg)](https://github.com/jisccti/misp-docker/actions/workflows/production-images.yml)
 [![MISP release](https://img.shields.io/github/v/release/MISP/MISP?logo=github&label=MISP%20(source))](https://github.com/MISP/MISP)
-[![misp-modules](https://img.shields.io/docker/v/jisccti/misp-modules?logo=docker&label=misp-modules)![misp-modules size](https://img.shields.io/docker/image-size/jisccti/misp-modules?label=%20)](https://hub.docker.com/r/jisccti/misp-modules)
-[![misp-web](https://img.shields.io/docker/v/jisccti/misp-web?logo=docker&label=misp-web)![misp-web size](https://img.shields.io/docker/image-size/jisccti/misp-web?label=%20)](https://hub.docker.com/r/jisccti/misp-web)
-[![misp-workers](https://img.shields.io/docker/v/jisccti/misp-workers?logo=docker&label=misp-workers)![misp-workers size](https://img.shields.io/docker/image-size/jisccti/misp-workers?label=%20)](https://hub.docker.com/r/jisccti/misp-workers)
+[![misp-modules](https://img.shields.io/docker/v/jisccti/misp-modules?sort=semver&logo=docker&label=misp-modules)![misp-modules size](https://img.shields.io/docker/image-size/jisccti/misp-modules/latest?label=%20)](https://hub.docker.com/r/jisccti/misp-modules)
+[![misp-web](https://img.shields.io/docker/v/jisccti/misp-web?sort=semver&logo=docker&label=misp-web)![misp-web size](https://img.shields.io/docker/image-size/jisccti/misp-web/latest?label=%20)](https://hub.docker.com/r/jisccti/misp-web)
+[![misp-workers](https://img.shields.io/docker/v/jisccti/misp-workers?sort=semver&logo=docker&label=misp-workers)![misp-workers size](https://img.shields.io/docker/image-size/jisccti/misp-workers/latest?label=%20)](https://hub.docker.com/r/jisccti/misp-workers)
 
 Project to build a set of three docker images containing the components of [MISP](https://github.com/MISP/MISP) with
 self-configuration into a usable state from first start.

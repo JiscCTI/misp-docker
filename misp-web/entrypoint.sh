@@ -76,8 +76,8 @@ setup_smtp() {
 restore_persistence() {
     echo "Restoring persistent file storage..."
     cd /var/www/
-    mkdir -p MISPData/attachments MISPData/config MISPData/files MISPData/icons MISPData/images MISPData/logs\
-        MISPData/tmp
+    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files MISPData/icons MISPData/images\
+        MISPData/logs MISPData/tmp
 
     if [ ! -L MISP/app/Config ]; then
         echo "Persisting config..."

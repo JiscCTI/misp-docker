@@ -92,7 +92,7 @@ RUN git config --global advice.detachedHead false &&\
     ./venv/bin/pip -q install plyara yara &&\
     cd PyMISP &&\
     git submodule foreach "git pull -q origin main || git pull -q origin master || exit 0" &&\
-    /var/www/MISP/venv/bin/pip -q install /var/www/MISP/PyMISP/.[fileobjects,neo,openioc,virustotal,pdfexport] &&\
+    /var/www/MISP/venv/bin/pip -q install /var/www/MISP/PyMISP/.[fileobjects,openioc,virustotal,pdfexport] &&\
     cd /var/www/ &&\
     chown -R www-data: MISP &&\
     chmod -R 750 MISP &&\

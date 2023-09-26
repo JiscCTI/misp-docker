@@ -168,11 +168,13 @@ initial_config() {
         );
     }" >MISP/app/Config/database.php
 
+    echo "Setting file ownership and permissions..."
     chown -R www-data: /var/www/MISP/
     chown -R www-data: /var/www/MISPData/
     chown -R www-data: /var/www/MISPGnuPG/
     chmod -R 750 /var/www/MISP/app/Config/
 
+    echo "Generating encryption salt value..."
     SALT=$(openssl rand -base64 32)
     $CAKE Admin setSetting "Security.salt" "$SALT"
     $CAKE userInit -q
@@ -323,5 +325,5 @@ $CAKE Admin runUpdates
 rm /var/www/MISPData/.init_lock
 echo "Released startup lock."
 # Start MISP
-echo "Starting MISP..."
+echo "Starting MISP at $MISP_URL..."
 source /etc/apache2/envvars && exec /usr/sbin/apache2 -D FOREGROUND

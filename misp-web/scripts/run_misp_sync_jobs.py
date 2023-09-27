@@ -69,7 +69,6 @@ debug = config.getboolean("DEFAULT", "debug")
 
 MISPLogger = CreateLogger(debug)
 MISPLogger.info("Starting sync script")
-MISPLogger.info("Connecting to MISP API")
 
 MISPLogger.debug("Checking for mutex")
 Mutex = "/var/www/MISPData/tmp/run_misp_sync_jobs.pid"
@@ -101,6 +100,7 @@ with open(Mutex, "w") as f:
     f.write(str(getpid()))
     MISPLogger.debug("Mutex obtained")
 
+MISPLogger.info("Connecting to MISP API")
 try:
     misp = PyMISP(baseUrl, authKey, verifyTls)
 except Exception as e:

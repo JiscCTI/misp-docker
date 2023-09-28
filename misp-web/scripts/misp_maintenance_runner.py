@@ -140,7 +140,7 @@ while True:
         test = urlparse(baseUrl)
         # As urlparse splits a URL without validation, do manual validation of the result.
         if test.scheme not in ["http", "https"] or not IsValidDomain(
-            test.netloc, AllowIP=True
+            test.hostname, AllowIP=True
         ):
             raise ValueError()
     except Exception as e:

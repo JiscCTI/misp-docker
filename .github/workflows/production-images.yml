@@ -35,6 +35,7 @@ jobs:
         name: Configure Environment
         run: |
           sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' docker-compose.yml
+          sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' misp-workers/Dockerfile
           cp example.env .env
           mkdir -p persistent/$COMPOSE_PROJECT_NAME/gpg persistent/$COMPOSE_PROJECT_NAME/tls
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/gpg/import.asc
@@ -58,6 +59,9 @@ jobs:
           latest: true
           prerelease: false
           repo: MISP/MISP
+      - id: modules_version
+        name: Get current MISP modules version number
+        run: echo "MODULES_VERSION=$(python3 ./misp-modules/latest.py)" >> $GITHUB_ENV
       - id: modules_image_exists
         continue-on-error: true
         name: Check If misp-modules Image Exists
@@ -66,7 +70,7 @@ jobs:
           organization: ${{ vars.DOCKERHUB_ORGANISATION }}
           registry: registry.hub.docker.com
           repository: misp-modules
-          tag: ${{ steps.version.outputs.tag_name }}
+          tag: ${{ env.MODULES_VERSION }}
       - id: web_image_exists
         continue-on-error: true
         name: Check If misp-web Image Exists
@@ -92,7 +96,7 @@ jobs:
         name: Build misp-modules
         run: |
           cd misp-modules
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ steps.version.outputs.tag_name }} --build-arg MISP_VERSION="${{ steps.version.outputs.tag_name }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.MODULES_VERSION }} --build-arg MISP_VERSION="${{ env.MODULES_VERSION }}" .
           cd ..
       - id: pull_modules
         if: ${{ steps.modules_image_exists.outcome != 'failure' && github.event_name != 'push' && github.event_name != 'workflow_dispatch' }}
@@ -148,7 +152,7 @@ jobs:
         name: Push misp-modules
         if: steps.build_modules.outcome == 'success'
         run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ steps.version.outputs.tag_name }}
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.MODULES_VERSION }}
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest
       - id: push-web
         name: Push misp-web

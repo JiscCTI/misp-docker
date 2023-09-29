@@ -175,17 +175,18 @@ initial_config() {
     chmod -R 750 /var/www/MISP/app/Config/
 
     echo "Generating encryption salt value..."
-    SALT=$(openssl rand -base64 32)
-    $CAKE Admin setSetting "Security.salt" "$SALT"
-    $CAKE userInit -q
+    $CAKE Admin setSetting "Security.salt" "$(openssl rand -base64 32)" 2>&1 >/dev/null
+    $CAKE userInit -q 2>&1 >/dev/null
+    $CAKE Admin setSetting "Security.advanced_authkeys" false
+    python3 /opt/scripts/set_auth_key.py -k "$($CAKE Admin getAuthKey admin@admin.test 2>&1)" 2>&1 >/dev/null
     $CAKE Admin setSetting "MISP.baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.uuid" "$(uuid -v 4)"
     $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST"
     $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB"
-    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD"
+    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" 2>&1 >/dev/null
     $CAKE Admin setSetting "GnuPG.email" "$MISP_EMAIL_ADDRESS"
-    $CAKE Admin setSetting "GnuPG.password" "$GPG_PASSPHRASE"
+    $CAKE Admin setSetting "GnuPG.password" "$GPG_PASSPHRASE" 2>&1 >/dev/null
     $CAKE Admin setSetting "GnuPG.binary" "$(which gpg)"
     $CAKE Admin setSetting "MISP.email" "$MISP_EMAIL_ADDRESS"
     $CAKE Admin setSetting "MISP.contact" "$MISP_EMAIL_ADDRESS"
@@ -195,9 +196,9 @@ initial_config() {
     $CAKE Admin setSetting "Plugin.Action_services_url" "http://$MODULES_HOSTNAME"
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST"
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_database" "$REDIS_WORKER_DB"
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD"
+    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" 2>&1 >/dev/null
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_host" "$WORKERS_HOSTNAME"
-    $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD"
+    $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" 2>&1 >/dev/null
     $CAKE Admin setSetting "SimpleBackgroundJobs.enabled" true
     $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
     /opt/scripts/misp-base-config.sh
@@ -207,8 +208,7 @@ initial_config() {
     /wait-for-it.sh -h "${WORKERS_HOSTNAME:-misp_workers}" -p 9001 -t 0 -- echo "Workers up"
 
     $CAKE Admin runUpdates
-    DB_KEY=$(openssl rand -base64 32)
-    $CAKE Admin setSetting "Security.encryption_key" "$DB_KEY"
+    $CAKE Admin setSetting "Security.encryption_key" "$(openssl rand -base64 32)" 2>&1 >/dev/null
     $CAKE Admin setSetting "MISP.email_from_name" "$MISP_EMAIL_NAME"
     $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
     /opt/scripts/misp-post-update-config.sh

@@ -250,16 +250,6 @@ Routine tasks have been automated in the misp-workers container which will run t
 | Run feed and server synchronisation tasks | Hourly |
 | Update Decay Models, Galaxies, Notice Lists, Objects, Taxonomies, Warning Lists, and Workflow Blueprints | Daily |
 
-In order for feed and server synchronisation to run:
-
-1. Access MISP via https://{FQDN}:{HTTPS_PORT}.
-2. Log in as the primary user (updated above).
-3. Go to Global Actions / My Profile.
-4. Click Auth Keys then Add Authentication Key.
-5. In the "Add auth key" dialog that appears, for "Comment", enter "Docker Automation" and click Submit.
-6. Edit `/var/www/MISPData/misp_maintenance_jobs.ini` on `misp-workers` setting `authkey` to the 40 character key shown
-   in the "Auth key created" dialog.
-
 #### Custom Automations
 
 The maintenance scheduling system is extensible, meaning you can add your own automations to run periodically.

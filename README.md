@@ -8,9 +8,9 @@ SPDX-License-Identifier: GPL-3.0-only
 
 [![Production Images](https://github.com/jisccti/misp-docker/actions/workflows/production-images.yml/badge.svg)](https://github.com/jisccti/misp-docker/actions/workflows/production-images.yml)
 [![MISP release](https://img.shields.io/github/v/release/MISP/MISP?logo=github&label=MISP%20(source))](https://github.com/MISP/MISP)
-[![misp-modules](https://img.shields.io/docker/v/jisccti/misp-modules?logo=docker&label=misp-modules)![misp-modules size](https://img.shields.io/docker/image-size/jisccti/misp-modules?label=%20)](https://hub.docker.com/r/jisccti/misp-modules)
-[![misp-web](https://img.shields.io/docker/v/jisccti/misp-web?logo=docker&label=misp-web)![misp-web size](https://img.shields.io/docker/image-size/jisccti/misp-web?label=%20)](https://hub.docker.com/r/jisccti/misp-web)
-[![misp-workers](https://img.shields.io/docker/v/jisccti/misp-workers?logo=docker&label=misp-workers)![misp-workers size](https://img.shields.io/docker/image-size/jisccti/misp-workers?label=%20)](https://hub.docker.com/r/jisccti/misp-workers)
+[![misp-modules](https://img.shields.io/docker/v/jisccti/misp-modules?sort=semver&logo=docker&label=misp-modules)![misp-modules size](https://img.shields.io/docker/image-size/jisccti/misp-modules/latest?label=%20)](https://hub.docker.com/r/jisccti/misp-modules)
+[![misp-web](https://img.shields.io/docker/v/jisccti/misp-web?sort=semver&logo=docker&label=misp-web)![misp-web size](https://img.shields.io/docker/image-size/jisccti/misp-web/latest?label=%20)](https://hub.docker.com/r/jisccti/misp-web)
+[![misp-workers](https://img.shields.io/docker/v/jisccti/misp-workers?sort=semver&logo=docker&label=misp-workers)![misp-workers size](https://img.shields.io/docker/image-size/jisccti/misp-workers/latest?label=%20)](https://hub.docker.com/r/jisccti/misp-workers)
 
 Project to build a set of three docker images containing the components of [MISP](https://github.com/MISP/MISP) with
 self-configuration into a usable state from first start.
@@ -241,15 +241,39 @@ Where you need to add taxonomies and similar custom content after initial setup,
 sub-directories of `./persistent/{instanceName}/data/files/` and loaded into the database by running
 `/opt/scripts/update-objects.sh` within the container.
 
-### 10 - Maintaining MISP Objects
+### 10 - Automated Maintenance
 
-To keep MISP Decay Models, Galaxies, Notice Lists, Objects, Taxonomies, Warning Lists, and Workflow Blueprints up to
-date create a scheduled task, e.g. a cron job, to periodically run `/opt/scripts/update-objects.sh` within the misp-web
-container:
+Routine tasks have been automated in the misp-workers container which will run the following:
 
-```sh
-# Standard
-docker container exec {instanceName}-misp_web-1 /opt/scripts/update-objects.sh
-# for HA
-docker container exec {instanceName}-misp_webs-1 /opt/scripts/update-objects.sh
+| Task | Frequency |
+| ---- | --------- |
+| Run feed and server synchronisation tasks | Hourly |
+| Update Decay Models, Galaxies, Notice Lists, Objects, Taxonomies, Warning Lists, and Workflow Blueprints | Daily |
+
+#### Custom Automations
+
+The maintenance scheduling system is extensible, meaning you can add your own automations to run periodically.
+
+To add a custom automation:
+
+1. Create your automation, if you need to talk to the MISP API, it is recommended you read `authKey`, `baseUrl`, and
+  `verifyTls` from the `DEFAULT` section of `/var/www/MISPData/misp_maintenance_jobs.ini` for consistency.
+2. Place the automation into its own folder within `/var/www/MISPData/custom_scripts` on the `misp-workers` container.
+    * For Python automations, use `/usr/local/bin/python3 -m venv venv` to create a virtual environment.
+3. Add a section to `/var/www/MISPData/misp_maintenance_jobs.ini` to schedule your task (see the example below).
+    * The section name (`unique_job_name` below) must be unique.
+    * `command` should use absolute paths to executables and scripts.
+    * `enabled` allows a job to be temporarily disabled without removing it.
+    * `interval` sets how often the automation should be triggered, in minutes.
+    * `lastRun` is set by the scheduling system and should be set to 0 on creation.
+    * Setting `needsAuthKey` to `True` will prevent the automation from running until a valid Auth Key has been set as
+      above.
+
+```ini
+[unique_job_name]
+command = /var/www/MISPData/custom_scripts/unique_job_name/venv/python3 /var/www/MISPData/custom_scripts/unique_job_name/unique_job_name.py
+enabled = True
+interval = 60
+lastRun = 0
+needsAuthKey = False
 ```

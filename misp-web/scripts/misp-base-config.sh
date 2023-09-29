@@ -174,10 +174,6 @@ $CAKE Admin setSetting "MISP.event_alert_republish_ban_threshold" 5
 $CAKE Admin setSetting "MISP.event_alert_republish_ban_refresh_on_retry" false
 $CAKE Admin setSetting "MISP.incoming_tags_disabled_by_default" false
 $CAKE Admin setSetting "MISP.maintenance_message" "Great things are happening! MISP is undergoing maintenance, but will return shortly. You can contact the administration at \$email."
-$CAKE Admin setSetting "MISP.footermidleft" "This is an initial install"
-$CAKE Admin setSetting "MISP.footermidright" "Please configure and harden accordingly"
-$CAKE Admin setSetting "MISP.welcome_text_top" "Initial Install, please configure"
-$CAKE Admin setSetting "MISP.welcome_text_bottom" "Welcome to MISP, change this message in MISP Settings"
 $CAKE Admin setSetting "MISP.attachments_dir" "/var/www/MISPData/attachments"
 $CAKE Admin setSetting "MISP.download_attachments_on_load" true
 $CAKE Admin setSetting "MISP.event_alert_metadata_only" false
@@ -191,7 +187,6 @@ $CAKE Admin setSetting "debug" 0
 $CAKE Admin setSetting "Security.auth_enforced" false
 $CAKE Admin setSetting "Security.log_each_individual_auth_fail" false
 $CAKE Admin setSetting "Security.rest_client_baseurl" ""
-$CAKE Admin setSetting "Security.advanced_authkeys" false
 $CAKE Admin setSetting "Security.password_policy_length" 12
 $CAKE Admin setSetting "Security.password_policy_complexity" '/^((?=.*\d)|(?=.*\W+))(?![\n])(?=.*[A-Z])(?=.*[a-z]).*$|.{16,}/'
 # Appease the security audit, #hardening

@@ -13,7 +13,7 @@ on:
 env:
   COMPOSE_PROJECT_NAME: misp_dev
 jobs:
-  run:
+  run-dev:
     name: Build, Test, and Release
     runs-on: ubuntu-latest
     steps:
@@ -35,6 +35,8 @@ jobs:
         run: |
           sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' docker-compose.yml
           sed -i 's/latest/latest-dev/g' docker-compose.yml
+          sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' misp-workers/Dockerfile
+          sed -i 's/{MISP_VERSION}/{MISP_VERSION}-dev/g' misp-workers/Dockerfile
           cp example.env .env
           mkdir -p persistent/$COMPOSE_PROJECT_NAME/gpg persistent/$COMPOSE_PROJECT_NAME/tls
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/gpg/import.asc
@@ -58,13 +60,16 @@ jobs:
           latest: true
           prerelease: false
           repo: MISP/MISP
+      - id: modules_version
+        name: Get current MISP modules version number
+        run: echo "MODULES_VERSION=$(python3 ./misp-modules/latest.py)" >> $GITHUB_ENV
 
       # Build / Pull Images
       - id: build_modules
         name: Build misp-modules
         run: |
           cd misp-modules
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest-dev -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ steps.version.outputs.tag_name }}-dev --build-arg MISP_VERSION="${{ steps.version.outputs.tag_name }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest-dev -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.MODULES_VERSION }}-dev --build-arg MISP_VERSION="${{ env.MODULES_VERSION }}" .
           cd ..
       - id: build_web
         name: Build misp-web
@@ -78,7 +83,7 @@ jobs:
           cd misp-workers
           docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest-dev -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ steps.version.outputs.tag_name }}-dev --build-arg MISP_VERSION="${{ steps.version.outputs.tag_name }}" .
           cd ..
-      
+
       # Test
       - id: start_test_env
         name: Deploy Test Instance
@@ -106,7 +111,7 @@ jobs:
         name: Push misp-modules
         if: steps.build_modules.outcome == 'success'
         run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ steps.version.outputs.tag_name }}-dev
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.MODULES_VERSION }}-dev
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest-dev
       - id: push-web
         name: Push misp-web

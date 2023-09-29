@@ -9,14 +9,17 @@ ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 # Install build dependencies
 RUN mkdir -p /usr/local/src/misp_modules /misp_modules &&\
     apt-get update &&\
-    apt-get install -y git libpq5 libjpeg-dev tesseract-ocr libpoppler-cpp-dev imagemagick virtualenv libopencv-dev\
+    apt-get install -y g++ git libpq5 libjpeg-dev tesseract-ocr libpoppler-cpp-dev imagemagick libopencv-dev\
     zbar-tools libzbar0 libzbar-dev libfuzzy-dev
 
 # Install MISP Modules
 RUN git clone --branch ${MISP_VERSION} --single-branch https://github.com/MISP/misp-modules.git\
-    /usr/local/src/misp_modules &&\
-    virtualenv -p python3 /misp_modules &&\
-    cd /usr/local/src/misp_modules &&\
+    /usr/local/src/misp_modules
+WORKDIR /usr/local/src/misp_modules
+RUN python3 -m venv /misp_modules &&\
+    /misp_modules/bin/pip3 install --upgrade pip --no-cache-dir &&\
+    /misp_modules/bin/pip3 install greynoise pyeti redis --no-cache-dir &&\
+    /misp_modules/bin/pip3 install git+https://github.com/abenassi/Google-Search-API &&\
     /misp_modules/bin/pip3 install -I -r REQUIREMENTS --no-cache-dir &&\
     /misp_modules/bin/pip3 install . --no-cache-dir
 
@@ -30,7 +33,7 @@ LABEL Name="misp-modules" Version=${MISP_VERSION}\
 EXPOSE 6666
 
 RUN apt-get update &&\
-    apt-get install -y curl libgl1 libglib2.0-0 libpoppler-cpp0v5 libzbar0 virtualenv &&\
+    apt-get install -y curl libgl1 libglib2.0-0 libpoppler-cpp0v5 libzbar0 &&\
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /misp_modules/ /misp_modules/

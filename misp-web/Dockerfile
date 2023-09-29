@@ -28,6 +28,19 @@ RUN apt -qy update &&\
     make install &&\
     docker-php-ext-enable apcu brotli gnupg rdkafka redis simdjson ssdeep
 
+# Build Python 3.10
+FROM debian:bullseye AS python_build
+RUN apt -yq update
+RUN apt -yq install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
+WORKDIR /opt/
+RUN wget https://www.python.org/ftp/python/3.10.12/Python-3.10.12.tgz
+RUN tar xfz Python-3.10.12.tgz
+WORKDIR /opt/Python-3.10.12
+RUN ./configure --prefix=/usr/local --enable-optimizations
+RUN make
+RUN make install
+RUN python3 -m pip install --upgrade pip setuptools
+
 # Build MISP
 FROM php:7.4-apache AS misp_build
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
@@ -35,13 +48,13 @@ ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 COPY --from=php_build --chown=root:root /usr/local/lib/php/extensions/no-debug-non-zts-20190902/ \
     /usr/local/lib/php/extensions/no-debug-non-zts-20190902/
 COPY --from=php_build --chown=root:root /usr/local/etc/php/ /usr/local/etc/php/
+COPY --from=python_build /usr/local /usr/local
 
 # Install build dependencies
 RUN apt -qy update &&\
     apt -qy install --no-install-recommends cmake gcc git libcaca-dev libfuzzy-dev libgpgme11 libjpeg-dev liblua5.3-dev\
     libopencv-dev libpoppler-cpp-dev librdkafka-dev libxml2-dev libxslt1-dev libyara-dev libzbar-dev libzip4 make\
     openssl\
-    python3-dev python3-pip python3-redis python3-setuptools python3-virtualenv python3-yara python3-zmq\
     ruby sqlite3 ssdeep tesseract-ocr unzip zip zlib1g-dev
 
 # Download MISP
@@ -67,7 +80,8 @@ RUN git config --global advice.detachedHead false &&\
     php-http/message-factory &&\
     cd .. &&\
     cp -fa INSTALL/setup/config.php app/Plugin/CakeResque/Config/config.php &&\
-    virtualenv -p python3 ./venv &&\
+    python3 -m venv venv &&\
+    ./venv/bin/pip -q install --upgrade pip setuptools &&\
     ./venv/bin/pip -q install ordered-set python-dateutil six weakrefmethod &&\
     ./venv/bin/pip -q install ./app/files/scripts/misp-stix &&\
     ./venv/bin/pip -q install ./PyMISP &&\
@@ -75,10 +89,10 @@ RUN git config --global advice.detachedHead false &&\
     ./venv/bin/pip -q install lief &&\
     ./venv/bin/pip -q install zmq redis &&\
     ./venv/bin/pip -q install python-magic &&\
-    ./venv/bin/pip -q install plyara &&\
+    ./venv/bin/pip -q install plyara yara &&\
     cd PyMISP &&\
     git submodule foreach "git pull -q origin main || git pull -q origin master || exit 0" &&\
-    /var/www/MISP/venv/bin/pip -q install /var/www/MISP/PyMISP/.[fileobjects,neo,openioc,virustotal,pdfexport] &&\
+    /var/www/MISP/venv/bin/pip -q install /var/www/MISP/PyMISP/.[fileobjects,openioc,virustotal,pdfexport] &&\
     cd /var/www/ &&\
     chown -R www-data: MISP &&\
     chmod -R 750 MISP &&\
@@ -104,6 +118,7 @@ ENV CAKE="sudo -H -u www-data /var/www/MISP/app/Console/cake"
 
 COPY --from=php_build --chown=root:root /usr/local/lib/php/extensions/no-debug-non-zts-20190902/ /usr/local/lib/php/extensions/no-debug-non-zts-20190902/
 COPY --from=php_build --chown=root:root /usr/local/etc/php/ /usr/local/etc/php/
+COPY --from=python_build /usr/local /usr/local
 COPY --from=misp_build --chown=www-data:www-data /var/www/ /var/www
 COPY --chown=root:root apache.conf /etc/apache2/sites-enabled/000-default.conf
 COPY --chown=root:root scripts/ /opt/scripts
@@ -112,7 +127,7 @@ COPY --chown=root:root scripts/ /opt/scripts
 RUN apt -qy update &&\
     apt -qy upgrade apache2 &&\
     apt -qy install --no-install-recommends git gnupg iputils-ping libfuzzy2 libgpgme11 libpng16-16 librdkafka1 libzip4\
-    mariadb-client python3 ssdeep sudo uuid &&\
+    mariadb-client ssdeep sudo uuid &&\
     rm -rf /var/lib/apt/lists/* &&\
     a2dismod status &&\
     a2enmod ssl rewrite headers setenvif &&\

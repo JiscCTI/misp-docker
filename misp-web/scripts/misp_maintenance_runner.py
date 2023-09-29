@@ -18,6 +18,10 @@ from shutil import copy
 from subprocess import DEVNULL, Popen
 from time import sleep, time
 from urllib.parse import urlparse
+from urllib.request import urlopen
+from urllib3 import disable_warnings
+from urllib3.exceptions import InsecureRequestWarning
+from ssl import CERT_NONE, create_default_context
 
 
 __author__ = "Joe Pitt"
@@ -113,6 +117,11 @@ if not isfile(configFile):
 
 config = ConfigParser()
 logger = None
+disable_warnings(InsecureRequestWarning)
+sslContext = create_default_context()
+sslContext.check_hostname = False
+sslContext.verify_mode = CERT_NONE
+
 while True:
     now = time()
     if logger != None:
@@ -179,6 +188,14 @@ while True:
         config.set("DEFAULT", "verifyTls", "False")
         with open(configFile, "w") as f:
             config.write(f)
+
+    try:
+        urlopen(config.get("DEFAULT", "baseUrl"), context=sslContext)
+    except:
+        logger.warning("MISP isn't up at {}".format(config.get("DEFAULT", "baseUrl")))
+        # wait 1 minute before re-running
+        sleep(60)
+        continue
 
     for job in config.sections():
         logger.debug("Processing job: {}".format(job))

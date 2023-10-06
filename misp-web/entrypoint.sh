@@ -82,7 +82,12 @@ restore_persistence() {
     if [ ! -L MISP/app/Config ]; then
         echo "Persisting config..."
         if [ ! -f /var/www/MISPData/.configured ]; then
-            mv MISP/app/Config/* MISPData/config/
+            if [ "$(ls -A MISPData/config/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/Config/* MISPData/config/
+            fi
         fi
         rm -rf MISP/app/Config
         ln -s /var/www/MISPData/config/ /var/www/MISP/app/Config
@@ -93,7 +98,12 @@ restore_persistence() {
     if [ ! -L MISP/app/files ]; then
         echo "Persisting app files..."
         if [ ! -f /var/www/MISPData/.configured ]; then
-            mv MISP/app/files/* MISPData/files/
+            if [ "$(ls -A MISPData/files/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/files/* MISPData/files/
+            fi
             setup_objects
         fi
         rm -rf MISP/app/files
@@ -105,7 +115,12 @@ restore_persistence() {
     if [ ! -L MISP/app/tmp ]; then
         echo "Persisting temp files..."
         if [ ! -f /var/www/MISPData/.configured ]; then
-            mv MISP/app/tmp/* MISPData/tmp/
+            if [ "$(ls -A MISPData/tmp/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/tmp/* MISPData/tmp/
+            fi
         fi
         rm -rf MISP/app/tmp
         ln -s /var/www/MISPData/tmp/ /var/www/MISP/app/tmp
@@ -125,7 +140,12 @@ restore_persistence() {
     if [ ! -L MISP/app/webroot/img/orgs ]; then
         echo "Persisting org icons..."
         if [ ! -f /var/www/MISPData/.configured ]; then
-            mv MISP/app/webroot/img/orgs/* MISPData/icons/
+            if [ "$(ls -A MISPData/icons/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/webroot/img/orgs/* MISPData/icons/
+            fi
         fi
         rm -rf MISP/app/webroot/img/orgs
         ln -s /var/www/MISPData/icons/ /var/www/MISP/app/webroot/img/orgs
@@ -136,7 +156,12 @@ restore_persistence() {
     if [ ! -L MISP/app/webroot/img/custom ]; then
         echo "Persisting images..."
         if [ ! -f /var/www/MISPData/.configured ]; then
-            mv MISP/app/webroot/img/custom/* MISPData/images/
+            if [ "$(ls -A MISPData/images/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/webroot/img/custom/* MISPData/images/
+            fi
         fi
         rm -rf MISP/app/webroot/img/custom
         ln -s /var/www/MISPData/images/ /var/www/MISP/app/webroot/img/custom

@@ -44,7 +44,7 @@ def CreateLogger(Debug: bool) -> Logger:
         MISPLogger.setLevel(DEBUG)
     else:
         MISPLogger.setLevel(INFO)
-    LogPath = "/var/www/MISPData/logs/run_misp_sync_jobs.log"
+    LogPath = "/var/www/MISPData/tmp/logs/run_misp_sync_jobs.log"
     # Prevent the log from growing beyond 20MB
     LogHandler = RotatingFileHandler(LogPath, maxBytes=20000000)
     LogFormatter = Formatter(

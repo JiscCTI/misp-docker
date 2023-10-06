@@ -247,6 +247,7 @@ Routine tasks have been automated in the misp-workers container which will run t
 
 | Task | Frequency |
 | ---- | --------- |
+| Rotate log files | Hourly |
 | Run feed and server synchronisation tasks | Hourly |
 | Update Decay Models, Galaxies, Notice Lists, Objects, Taxonomies, Warning Lists, and Workflow Blueprints | Daily |
 

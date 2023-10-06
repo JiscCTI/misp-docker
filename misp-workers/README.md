@@ -20,7 +20,7 @@ This image depends on `misp-web` being build first.
 Use the Python script to determine and build the latest version:
 
 ```sh
-VERSION=$(python3 latest.py); sudo docker build \
+VERSION=$(python3 ../misp-web/latest.py); sudo docker build \
   --tag jisccti/misp-workers:latest --tag jisccti/misp-workers:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
 ```
 
@@ -29,7 +29,7 @@ VERSION=$(python3 latest.py); sudo docker build \
 Use the Python script to determine the latest version and pass this to the build process:
 
 ```sh
-VERSION=$(python3 latest.py); sudo docker build \
+VERSION=v2.4.150; sudo docker build \
   --tag jisccti/misp-workers:"$VERSION" --build-arg MISP_VERSION="$VERSION" .
 ```
 

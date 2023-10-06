@@ -9,6 +9,9 @@ services:
     hostname: ${CLAMAV_HOSTNAME:-misp_clamav}
     image: clamav/clamav:1.0_base
     restart: unless-stopped
+    environment:
+      - FQDN=${FQDN:-misp.local}
+      - HTTPS_PORT=${HTTPS_PORT:-443}
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/clamav_db/:/var/lib/clamav
 
@@ -20,6 +23,8 @@ services:
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/db:/var/lib/mysql
     environment:
+      - FQDN=${FQDN:-misp.local}
+      - HTTPS_PORT=${HTTPS_PORT:-443}
       - MYSQL_DATABASE=${MYSQL_DBNAME:-misp}
       - MYSQL_USER=${MYSQL_USERNAME:-misp}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
@@ -32,6 +37,8 @@ services:
     depends_on:
       - misp_clamav
     environment:
+      - FQDN=${FQDN:-misp.local}
+      - HTTPS_PORT=${HTTPS_PORT:-443}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
 
   misp_redis:
@@ -39,6 +46,8 @@ services:
     image: redis:7
     restart: unless-stopped
     environment:
+      - FQDN=${FQDN:-misp.local}
+      - HTTPS_PORT=${HTTPS_PORT:-443}
       - REDISCLI_AUTH=${REDIS_PASSWORD:-misp}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-misp}
     entrypoint: redis-server --loglevel warning --requirepass \$REDIS_PASSWORD

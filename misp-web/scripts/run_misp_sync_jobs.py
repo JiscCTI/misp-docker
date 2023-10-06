@@ -10,7 +10,7 @@
 from configparser import ConfigParser
 from logging import DEBUG, Formatter, getLogger, INFO, Logger
 from logging.handlers import RotatingFileHandler
-from os import getpid, kill, remove
+from os import environ, getpid, kill, remove
 from os.path import isfile
 from socket import gethostname
 from subprocess import PIPE, run
@@ -46,10 +46,16 @@ def CreateLogger(Debug: bool) -> Logger:
         MISPLogger.setLevel(INFO)
     LogPath = "/var/www/MISPData/tmp/logs/run_misp_sync_jobs.log"
     # Prevent the log from growing beyond 20MB
-    LogHandler = RotatingFileHandler(LogPath, maxBytes=20000000)
+    LogHandler = RotatingFileHandler(LogPath, maxBytes=20000000, backupCount=1)
+    hostname = gethostname()
+    try:
+        if len(environ["FQDN"]) > 0:
+            hostname = environ["FQDN"]
+    except:
+        pass
     LogFormatter = Formatter(
         "%(asctime)s {} %(name)s[%(process)d]: [%(levelname)s] %(message)s".format(
-            gethostname()
+            hostname
         ),
         "%b %d %H:%M:%S",
     )

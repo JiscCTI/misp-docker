@@ -10,8 +10,8 @@ ARG DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 COPY --chown=root:root php.ini /usr/local/etc/php/php.ini
 
 RUN apt -qy update &&\
-    apt -qy install --no-install-recommends git libc6 libcurl4-openssl-dev libfuzzy-dev libgd3 libicu-dev libgpgme-dev\
-    libpng-dev librdkafka-dev libzip-dev &&\
+    apt -qy install --no-install-recommends git libc6 libcurl4-openssl-dev libfuzzy-dev libfreetype-dev libgd3 \
+    libicu-dev libjpeg-dev libgpgme-dev libpng-dev librdkafka-dev libwebp-dev libzip-dev &&\
     docker-php-ext-install bcmath curl gd intl json mysqli opcache pcntl pdo_mysql zip &&\
     pecl install apcu &&\
     pecl install gnupg &&\
@@ -26,7 +26,9 @@ RUN apt -qy update &&\
     phpize &&\
     ./configure &&\
     make install &&\
-    docker-php-ext-enable apcu brotli gnupg rdkafka redis simdjson ssdeep
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp &&\
+    docker-php-ext-install gd &&\
+    docker-php-ext-enable apcu brotli gd gnupg rdkafka redis simdjson ssdeep
 
 # Build Python 3.10
 FROM debian:bullseye AS python_build
@@ -104,7 +106,7 @@ RUN git config --global advice.detachedHead false &&\
 
 # Build final image
 FROM php:7.4-apache AS final
-ARG DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
+ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 LABEL Name="misp-web" Version=${MISP_VERSION}\
     org.opencontainers.image.title="misp-web" org.opencontainers.image.version=${MISP_VERSION}\
     org.opencontainers.image.ref.name="misp-web"\
@@ -126,8 +128,8 @@ COPY --chown=root:root scripts/ /opt/scripts
 # Install runtime dependencies
 RUN apt -qy update &&\
     apt -qy upgrade apache2 &&\
-    apt -qy install --no-install-recommends git gnupg iputils-ping libfuzzy2 libgpgme11 libpng16-16 librdkafka1 libzip4\
-    mariadb-client ssdeep sudo uuid &&\
+    apt -qy install --no-install-recommends git gnupg iputils-ping libfuzzy2 libgd3 libgpgme11 libpng16-16 librdkafka1\
+    libzip4 mariadb-client ssdeep sudo uuid &&\
     rm -rf /var/lib/apt/lists/* &&\
     a2dismod status &&\
     a2enmod ssl rewrite headers setenvif &&\

@@ -77,12 +77,17 @@ restore_persistence() {
     echo "Restoring persistent file storage..."
     cd /var/www/
     mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files MISPData/icons MISPData/images\
-        MISPData/logs MISPData/tmp
+        MISPData/tmp
 
     if [ ! -L MISP/app/Config ]; then
         echo "Persisting config..."
         if [ ! -f /var/www/MISPData/.configured ]; then
-            mv MISP/app/Config/* MISPData/config/
+            if [ "$(ls -A MISPData/config/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/Config/* MISPData/config/
+            fi
         fi
         rm -rf MISP/app/Config
         ln -s /var/www/MISPData/config/ /var/www/MISP/app/Config
@@ -93,7 +98,12 @@ restore_persistence() {
     if [ ! -L MISP/app/files ]; then
         echo "Persisting app files..."
         if [ ! -f /var/www/MISPData/.configured ]; then
-            mv MISP/app/files/* MISPData/files/
+            if [ "$(ls -A MISPData/files/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/files/* MISPData/files/
+            fi
             setup_objects
         fi
         rm -rf MISP/app/files
@@ -105,18 +115,37 @@ restore_persistence() {
     if [ ! -L MISP/app/tmp ]; then
         echo "Persisting temp files..."
         if [ ! -f /var/www/MISPData/.configured ]; then
-            mv MISP/app/tmp/* MISPData/tmp/
+            if [ "$(ls -A MISPData/tmp/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/tmp/* MISPData/tmp/
+            fi
         fi
         rm -rf MISP/app/tmp
         ln -s /var/www/MISPData/tmp/ /var/www/MISP/app/tmp
     else
         echo "Temp files already persistent."
     fi
+    mkdir -p MISPData/tmp/logs
+    touch -a MISPData/tmp/logs/apache_access.log MISPData/tmp/logs/apache_error.log MISPData/tmp/logs/debug.log\
+        MISPData/tmp/logs/error.log MISPData/tmp/logs/exec-errors.log MISPData/tmp/logs/misp_maintenance_runner.log\
+        MISPData/tmp/logs/misp_maintenance_supervisor-errors.log MISPData/tmp/logs/misp_maintenance_supervisor.log\
+        MISPData/tmp/logs/misp-workers-errors.log MISPData/tmp/logs/misp-workers.log\
+        MISPData/tmp/logs/run_misp_sync_jobs.log 
+    chmod 755 MISPData/tmp/logs
+    chmod 644 MISPData/tmp/logs/*
+    chown -R www-data: MISPData/tmp/logs
 
     if [ ! -L MISP/app/webroot/img/orgs ]; then
         echo "Persisting org icons..."
         if [ ! -f /var/www/MISPData/.configured ]; then
-            mv MISP/app/webroot/img/orgs/* MISPData/icons/
+            if [ "$(ls -A MISPData/icons/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/webroot/img/orgs/* MISPData/icons/
+            fi
         fi
         rm -rf MISP/app/webroot/img/orgs
         ln -s /var/www/MISPData/icons/ /var/www/MISP/app/webroot/img/orgs
@@ -127,7 +156,12 @@ restore_persistence() {
     if [ ! -L MISP/app/webroot/img/custom ]; then
         echo "Persisting images..."
         if [ ! -f /var/www/MISPData/.configured ]; then
-            mv MISP/app/webroot/img/custom/* MISPData/images/
+            if [ "$(ls -A MISPData/images/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/webroot/img/custom/* MISPData/images/
+            fi
         fi
         rm -rf MISP/app/webroot/img/custom
         ln -s /var/www/MISPData/images/ /var/www/MISP/app/webroot/img/custom
@@ -271,8 +305,8 @@ generate_self_signed_certificate() {
 check_tls_certificate() {
     if [ -r /etc/ssl/private/misp.crt ]; then
         if [ -r /etc/ssl/private/misp.key ]; then
-            PUBLIC=$(openssl x509 -noout -modulus -in /etc/ssl/private/misp.crt | openssl md5 | awk '{print $2}')
-            PRIVATE=$(openssl rsa -noout -modulus -in /etc/ssl/private/misp.key | openssl md5 | awk '{print $2}')
+            PUBLIC=$(openssl x509 -noout -pubkey -in /etc/ssl/private/misp.crt | openssl sha256 | awk '{print $2}')
+            PRIVATE=$(openssl pkey -pubout -in /etc/ssl/private/misp.key | openssl sha256 | awk '{print $2}')
             if [[ "$PUBLIC" != "$PRIVATE" ]]; then
                 echo "Key /etc/ssl/private/misp.key does not match certificate /etc/ssl/private/misp.crt"
                 echo "Generating temporary certificate..."

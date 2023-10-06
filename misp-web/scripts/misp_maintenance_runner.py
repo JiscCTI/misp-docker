@@ -21,6 +21,7 @@ from urllib.parse import urlparse
 from urllib.request import urlopen
 from urllib3 import disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
+from socket import gethostname
 from ssl import CERT_NONE, create_default_context
 
 
@@ -54,14 +55,19 @@ def CreateLogger(Debug: bool = False) -> Logger:
         TALogger.setLevel(DEBUG)
     else:
         TALogger.setLevel(INFO)
-    # Build the Splunk AppInspect compliant log file path.
-    LogPath = "/var/www/MISPData/logs/misp_maintenance_runner.log"
+    LogPath = "/var/www/MISPData/tmp/logs/misp_maintenance_runner.log"
 
     # Prevent the log from growing beyond 20MB
-    LogHandler = RotatingFileHandler(LogPath, maxBytes=20000000)
+    LogHandler = RotatingFileHandler(LogPath, maxBytes=20000000, backupCount=1)
+    hostname = gethostname()
+    try:
+        if len(environ["FQDN"]) > 0:
+            hostname = environ["FQDN"]
+    except:
+        pass
     LogFormatter = Formatter(
         "%(asctime)s {} %(name)s[%(process)d]: [%(levelname)s] %(message)s".format(
-            environ["FQDN"]
+            hostname
         ),
         "%b %d %H:%M:%S",
     )
@@ -190,7 +196,7 @@ while True:
             config.write(f)
 
     try:
-        urlopen(config.get("DEFAULT", "baseUrl"), context=sslContext)
+        urlopen(config.get("DEFAULT", "baseUrl"), timeout=3, context=sslContext)
     except:
         logger.warning("MISP isn't up at {}".format(config.get("DEFAULT", "baseUrl")))
         # wait 1 minute before re-running

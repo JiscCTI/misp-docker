@@ -305,8 +305,8 @@ generate_self_signed_certificate() {
 check_tls_certificate() {
     if [ -r /etc/ssl/private/misp.crt ]; then
         if [ -r /etc/ssl/private/misp.key ]; then
-            PUBLIC=$(openssl x509 -noout -modulus -in /etc/ssl/private/misp.crt | openssl md5 | awk '{print $2}')
-            PRIVATE=$(openssl rsa -noout -modulus -in /etc/ssl/private/misp.key | openssl md5 | awk '{print $2}')
+            PUBLIC=$(openssl x509 -noout -pubkey -in /etc/ssl/private/misp.crt | openssl sha256 | awk '{print $2}')
+            PRIVATE=$(openssl pkey -pubout -in /etc/ssl/private/misp.key | openssl sha256 | awk '{print $2}')
             if [[ "$PUBLIC" != "$PRIVATE" ]]; then
                 echo "Key /etc/ssl/private/misp.key does not match certificate /etc/ssl/private/misp.crt"
                 echo "Generating temporary certificate..."

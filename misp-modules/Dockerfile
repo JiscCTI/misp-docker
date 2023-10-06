@@ -24,6 +24,7 @@ RUN python3 -m venv /misp_modules &&\
     /misp_modules/bin/pip3 install . --no-cache-dir
 
 FROM python:3.10-slim-bullseye AS final
+ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 LABEL Name="misp-modules" Version=${MISP_VERSION}\
     org.opencontainers.image.title="misp-modules" org.opencontainers.image.version=${MISP_VERSION}\
     org.opencontainers.image.ref.name="misp-modules"\

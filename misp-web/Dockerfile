@@ -106,7 +106,7 @@ RUN git config --global advice.detachedHead false &&\
 
 # Build final image
 FROM php:7.4-apache AS final
-ARG DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
+ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 LABEL Name="misp-web" Version=${MISP_VERSION}\
     org.opencontainers.image.title="misp-web" org.opencontainers.image.version=${MISP_VERSION}\
     org.opencontainers.image.ref.name="misp-web"\

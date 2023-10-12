@@ -27,7 +27,7 @@ on_start() {
     ORG_NAME="${ORG_NAME:-ORGNAME}"
     REDIS_HOST="${REDIS_HOST:-misp_redis}"
     REDIS_MISP_DB="${REDIS_MISP_DB:-2}"
-    REDIS_PASSWORD="${REDIS_PASSWORD:-misp}"
+    REDIS_PASSWORD="${REDIS_PASSWORD}"
     REDIS_WORKER_DB="${REDIS_MISP_DB:-3}"
     SMTP_HOSTNAME="${SMTP_HOSTNAME:-localhost}"
     SMTP_PASSWORD="${SMTP_PASSWORD:-misp}"
@@ -39,8 +39,13 @@ on_start() {
 
     sed -i "s/^\(ServerName\).*/\1 \${FQDN}/" /etc/apache2/sites-enabled/000-default.conf
     sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini
-    SED_REDIS_PASSWORD=${REDIS_PASSWORD//\//\\\/} 
-    sed -i "s/^;\(session.save_path\).*/\1 = \"tcp:\/\/$(eval echo \${REDIS_HOST}):6379?auth=$(eval echo \${SED_REDIS_PASSWORD})\"/" /usr/local/etc/php/php.ini
+    if [ -z "${REDIS_PASSWORD}" ]; then
+        echo "Warning: No Redis password is set, ensure network access control is implemented"
+        sed -i "s/^;\(session.save_path\).*/\1 = \"tcp:\/\/$(eval echo \${REDIS_HOST}):6379\"/" /usr/local/etc/php/php.ini
+    else
+        SED_REDIS_PASSWORD=${REDIS_PASSWORD//\//\\\/} 
+        sed -i "s/^;\(session.save_path\).*/\1 = \"tcp:\/\/$(eval echo \${REDIS_HOST}):6379?auth=$(eval echo \${SED_REDIS_PASSWORD})\"/" /usr/local/etc/php/php.ini
+    fi
 }
 
 setup_objects() {
@@ -218,7 +223,7 @@ initial_config() {
     $CAKE Admin setSetting "MISP.uuid" "$(uuid -v 4)"
     $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST"
     $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB"
-    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" 2>&1 >/dev/null
+    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force 2>&1 >/dev/null
     $CAKE Admin setSetting "GnuPG.email" "$MISP_EMAIL_ADDRESS"
     $CAKE Admin setSetting "GnuPG.password" "$GPG_PASSPHRASE" 2>&1 >/dev/null
     $CAKE Admin setSetting "GnuPG.binary" "$(which gpg)"
@@ -230,7 +235,7 @@ initial_config() {
     $CAKE Admin setSetting "Plugin.Action_services_url" "http://$MODULES_HOSTNAME"
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST"
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_database" "$REDIS_WORKER_DB"
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" 2>&1 >/dev/null
+    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force 2>&1 >/dev/null
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_host" "$WORKERS_HOSTNAME"
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" 2>&1 >/dev/null
     $CAKE Admin setSetting "SimpleBackgroundJobs.enabled" true

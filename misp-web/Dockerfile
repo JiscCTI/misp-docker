@@ -41,7 +41,7 @@ WORKDIR /opt/Python-3.10.12
 RUN ./configure --prefix=/usr/local --enable-optimizations
 RUN make
 RUN make install
-RUN python3 -m pip install --upgrade pip setuptools
+RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools
 
 # Build MISP
 FROM php:7.4-apache AS misp_build
@@ -83,18 +83,18 @@ RUN git config --global advice.detachedHead false &&\
     cd .. &&\
     cp -fa INSTALL/setup/config.php app/Plugin/CakeResque/Config/config.php &&\
     python3 -m venv venv &&\
-    ./venv/bin/pip -q install --upgrade pip setuptools &&\
-    ./venv/bin/pip -q install ordered-set python-dateutil six weakrefmethod &&\
-    ./venv/bin/pip -q install ./app/files/scripts/misp-stix &&\
-    ./venv/bin/pip -q install ./PyMISP &&\
-    ./venv/bin/pip -q install git+https://github.com/kbandla/pydeep.git &&\
-    ./venv/bin/pip -q install lief &&\
-    ./venv/bin/pip -q install zmq redis &&\
-    ./venv/bin/pip -q install python-magic &&\
-    ./venv/bin/pip -q install plyara yara &&\
+    ./venv/bin/pip -q install --no-cache-dir --upgrade pip setuptools &&\
+    ./venv/bin/pip -q install --no-cache-dir ordered-set python-dateutil six weakrefmethod &&\
+    ./venv/bin/pip -q install --no-cache-dir ./app/files/scripts/misp-stix &&\
+    ./venv/bin/pip -q install --no-cache-dir ./PyMISP &&\
+    ./venv/bin/pip -q install --no-cache-dir git+https://github.com/kbandla/pydeep.git &&\
+    ./venv/bin/pip -q install --no-cache-dir lief &&\
+    ./venv/bin/pip -q install --no-cache-dir zmq redis &&\
+    ./venv/bin/pip -q install --no-cache-dir python-magic &&\
+    ./venv/bin/pip -q install --no-cache-dir plyara yara &&\
     cd PyMISP &&\
     git submodule foreach "git pull -q origin main || git pull -q origin master || exit 0" &&\
-    /var/www/MISP/venv/bin/pip -q install /var/www/MISP/PyMISP/.[fileobjects,openioc,virustotal,pdfexport] &&\
+    /var/www/MISP/venv/bin/pip -q install --no-cache-dir /var/www/MISP/PyMISP/.[fileobjects,openioc,virustotal,pdfexport] &&\
     cd /var/www/ &&\
     chown -R www-data: MISP &&\
     chmod -R 750 MISP &&\

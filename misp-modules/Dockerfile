@@ -19,7 +19,7 @@ WORKDIR /usr/local/src/misp_modules
 RUN python3 -m venv /misp_modules &&\
     /misp_modules/bin/pip3 install --upgrade pip --no-cache-dir &&\
     /misp_modules/bin/pip3 install greynoise pyeti redis --no-cache-dir &&\
-    /misp_modules/bin/pip3 install git+https://github.com/abenassi/Google-Search-API &&\
+    /misp_modules/bin/pip3 install git+https://github.com/abenassi/Google-Search-API --no-cache-dir &&\
     /misp_modules/bin/pip3 install -I -r REQUIREMENTS --no-cache-dir &&\
     /misp_modules/bin/pip3 install . --no-cache-dir
 

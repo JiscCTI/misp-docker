@@ -51,7 +51,7 @@ chdir(Base)
 DotEnv = join(Base, ".env")
 PersistentStorage = join(Base, "persistent")
 
-run(["docker", "compose", "down", "--remove-orphans"])
+run(["/usr/bin/docker", "compose", "down", "--remove-orphans"])
 
 if not exists(DotEnv):
     print("Creating best guess .env file...")
@@ -76,9 +76,9 @@ if exists(PersistentStorage):
         )
 
 print("Pulling external images...")
-run(["docker", "pull", "clamav/clamav:1.0_base"]).check_returncode()
-run(["docker", "pull", "redis:7"]).check_returncode()
-run(["docker", "pull", "mysql/mysql-server:8.0"]).check_returncode()
+run(["/usr/bin/docker", "pull", "clamav/clamav:1.0_base"]).check_returncode()
+run(["/usr/bin/docker", "pull", "redis:7"]).check_returncode()
+run(["/usr/bin/docker", "pull", "mysql/mysql-server:8.0"]).check_returncode()
 
 print("Building MISP Modules image...")
 chdir(join(Base, "misp-modules"))
@@ -87,7 +87,7 @@ ModulesVersion = GetLatestVersionFromGitHubTags(
 )
 run(
     [
-        "docker",
+        "/usr/bin/docker",
         "build",
         "--pull",
         "--tag",
@@ -105,7 +105,7 @@ chdir(join(Base, "misp-web"))
 WebVersion = GetLatestVersionFromGitHubReleases(Repository="MISP/MISP", MaxMajor=2)
 run(
     [
-        "docker",
+        "/usr/bin/docker",
         "build",
         "--pull",
         "--tag",
@@ -122,7 +122,7 @@ print("Building MISP Workers image...")
 chdir(join(Base, "misp-workers"))
 run(
     [
-        "docker",
+        "/usr/bin/docker",
         "build",
         "--tag",
         "jisccti/misp-workers:latest",
@@ -138,7 +138,7 @@ print("Starting MISP...")
 chdir(Base)
 if Args.ha:
     run(
-        ["docker", "compose", "-f", "docker-compose-ha.yml", "up", "-d"]
+        ["/usr/bin/docker", "compose", "-f", "docker-compose-ha.yml", "up", "-d"]
     ).check_returncode()
 else:
-    run(["docker", "compose", "up", "-d"]).check_returncode()
+    run(["/usr/bin/docker", "compose", "up", "-d"]).check_returncode()

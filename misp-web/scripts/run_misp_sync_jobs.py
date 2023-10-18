@@ -128,7 +128,7 @@ for feed in feeds:
         )
         fetch = run(
             [
-                "sh",
+                "/bin/bash",
                 "-c",
                 "$CAKE Server fetchFeed 1 {}".format(feed["id"]),
             ],
@@ -156,7 +156,7 @@ for feed in feeds:
         )
         cache = run(
             [
-                "sh",
+                "/bin/bash",
                 "-c",
                 "$CAKE Server cacheFeed 1 {}".format(feed["id"]),
             ],
@@ -189,7 +189,7 @@ for server in servers:
         )
         pull = run(
             [
-                "sh",
+                "/bin/bash",
                 "-c",
                 "$CAKE Server pull 1 {} full".format(feed["id"]),
             ],
@@ -217,7 +217,7 @@ for server in servers:
         )
         cache = run(
             [
-                "sh",
+                "/bin/bash",
                 "-c",
                 "$CAKE Server cacheServer 1 {}".format(server["id"]),
             ],
@@ -247,7 +247,7 @@ for server in servers:
         )
         pull = run(
             [
-                "sh",
+                "/bin/bash",
                 "-c",
                 "$CAKE Server push 1 {} full".format(feed["id"]),
             ],

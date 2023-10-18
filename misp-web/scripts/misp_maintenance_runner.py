@@ -227,7 +227,7 @@ while True:
                         logger.info("Triggering job: {}".format(job))
                         # fire and forget the job - it should have its own logging
                         Popen(
-                            ["sh", "-c", config.get(job, "command")],
+                            ["/bin/bash", "-c", config.get(job, "command")],
                             stderr=DEVNULL,
                             stdout=DEVNULL,
                         )

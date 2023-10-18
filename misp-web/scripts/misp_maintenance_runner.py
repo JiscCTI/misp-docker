@@ -197,6 +197,20 @@ while True:
             config.write(f)
 
     try:
+        debug = config.getboolean("DEFAULT", "debug")
+    except:
+        logger.error("Invalid boolean value for Debug, reverting to False")
+        config.set("DEFAULT", "debug", "False")
+        debug = False
+        with open(configFile, "w") as f:
+            config.write(f)
+
+    if debug:
+        logger.setLevel(DEBUG)
+    else:
+        logger.setLevel(INFO)
+
+    try:
         get(config.get("DEFAULT", "baseUrl"), timeout=3, verify=False)
     except Exception as e:
         logger.warning("MISP isn't up at {}".format(config.get("DEFAULT", "baseUrl")))

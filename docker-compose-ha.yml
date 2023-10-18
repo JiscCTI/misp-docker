@@ -100,6 +100,7 @@ services:
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
+      - ORG_NAME=${ORG_NAME:-ORGNAME}
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
     depends_on:

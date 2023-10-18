@@ -267,5 +267,3 @@ $CAKE Admin setSetting "MISP.welcome_text_top" "" --force
 $CAKE Admin setSetting "MISP.welcome_text_bottom" "" --force
 $CAKE Admin setSetting "MISP.footermidleft" "" --force
 $CAKE Admin setSetting "MISP.footermidright" "" --force
-# Set MISP Live
-$CAKE Live 1

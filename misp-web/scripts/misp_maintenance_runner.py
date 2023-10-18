@@ -63,7 +63,7 @@ def CreateLogger(Debug: bool = False) -> Logger:
     try:
         if len(environ["FQDN"]) > 0:
             hostname = environ["FQDN"]
-    except:
+    except KeyError:
         pass
     LogFormatter = Formatter(
         "%(asctime)s {} %(name)s[%(process)d]: [%(levelname)s] %(message)s".format(
@@ -98,7 +98,7 @@ def IsValidDomain(Domain: str, AllowIP: bool = False) -> bool:
                 ip_address(Domain)
                 # The string is a valid IPv4 address
                 return False
-            except:
+            except ValueError:
                 # The string is a valid domain
                 return True
     else:
@@ -110,7 +110,7 @@ def IsValidDomain(Domain: str, AllowIP: bool = False) -> bool:
             try:
                 return type(ip_address(Domain)) == IPv6Address
                 # Only valid if the string is a valid IPv6 address, not an IPv4 address
-            except:
+            except ValueError:
                 # The string isn't a valid IPv6 address
                 return False
         else:
@@ -197,7 +197,7 @@ while True:
 
     try:
         urlopen(config.get("DEFAULT", "baseUrl"), timeout=3, context=sslContext)
-    except:
+    except Exception:
         logger.warning("MISP isn't up at {}".format(config.get("DEFAULT", "baseUrl")))
         # wait 1 minute before re-running
         sleep(60)

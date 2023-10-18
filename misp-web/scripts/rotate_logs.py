@@ -38,5 +38,5 @@ for logFile in logs:
             with open(logFile, "w") as f:
                 pass
             chown("{}.1".format(logFile), "www-data", "www-data")
-    except:
+    except (FileNotFoundError, OSError):
         pass

@@ -68,7 +68,7 @@ if exists(PersistentStorage):
     print("Deleting old persistent storage...")
     try:
         rmtree(PersistentStorage)
-    except:
+    except OSError:
         print(
             'Failed to delete persistent storage. Delete "{}" manually, then run this script again.'.format(
                 PersistentStorage

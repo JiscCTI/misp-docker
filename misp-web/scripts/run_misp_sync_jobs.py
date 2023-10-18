@@ -51,7 +51,7 @@ def CreateLogger(Debug: bool) -> Logger:
     try:
         if len(environ["FQDN"]) > 0:
             hostname = environ["FQDN"]
-    except:
+    except KeyError:
         pass
     LogFormatter = Formatter(
         "%(asctime)s {} %(name)s[%(process)d]: [%(levelname)s] %(message)s".format(
@@ -83,7 +83,7 @@ if isfile(Mutex):
         try:
             PID = int(f.read())
             MISPLogger.debug("Mutex found, validating it")
-        except:
+        except Exception:
             # Didn't look like a PID
             PID = None
     if PID == None:

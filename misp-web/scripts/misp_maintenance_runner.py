@@ -9,8 +9,7 @@
 
 from configparser import ConfigParser
 from ipaddress import ip_address, IPv6Address
-from logging import DEBUG, Formatter, getLogger, INFO, Logger
-from logging.handlers import RotatingFileHandler
+from logging import DEBUG, INFO
 from os import environ
 from os.path import isfile
 from re import compile as regex
@@ -28,6 +27,7 @@ except ImportError:
     print("Failed to import requests.")
     exit(1)
 
+from log import CreateLogger
 
 __author__ = "Joe Pitt"
 __copyright__ = "Copyright 2023, Jisc Services Limited"
@@ -44,40 +44,6 @@ DomainNameRegEx = regex(
     r"(xn--)?([a-z0-9][a-z0-9\-]{0,60}|[a-z0-9-]{1,30}"
     r"\.[a-z]{2,})$"
 )
-
-
-def CreateLogger(Debug: bool = False) -> Logger:
-    """Initialise a Logger for the job runner, using a self rotating log file.
-
-    Returns:
-        Logger: A configured logging endpoint for the job runner.
-    """
-
-    TALogger = getLogger("misp_maintenance_runner")
-    TALogger.propagate = False
-    if Debug:
-        TALogger.setLevel(DEBUG)
-    else:
-        TALogger.setLevel(INFO)
-    LogPath = "/var/www/MISPData/tmp/logs/misp_maintenance_runner.log"
-
-    # Prevent the log from growing beyond 20MB
-    LogHandler = RotatingFileHandler(LogPath, maxBytes=20000000, backupCount=1)
-    hostname = gethostname()
-    try:
-        if len(environ["FQDN"]) > 0:
-            hostname = environ["FQDN"]
-    except KeyError:
-        pass
-    LogFormatter = Formatter(
-        "%(asctime)s {} %(name)s[%(process)d]: [%(levelname)s] %(message)s".format(
-            hostname
-        ),
-        "%b %d %H:%M:%S",
-    )
-    LogHandler.setFormatter(LogFormatter)
-    TALogger.addHandler(LogHandler)
-    return TALogger
 
 
 def IsValidDomain(Domain: str, AllowIP: bool = False) -> bool:
@@ -129,6 +95,13 @@ config = ConfigParser()
 logger = None
 disable_warnings(InsecureRequestWarning)
 
+hostname = gethostname()
+try:
+    if len(environ["FQDN"]) > 0:
+        hostname = environ["FQDN"]
+except KeyError:
+    pass
+
 while True:
     now = time()
     if logger != None:
@@ -148,7 +121,12 @@ while True:
         continue
 
     if logger == None:
-        logger = CreateLogger(config.getboolean("DEFAULT", "debug", fallback=True))
+        logger = CreateLogger(
+            "misp_maintenance_runner",
+            hostname,
+            "/var/www/MISPData/tmp/logs",
+            config.getboolean("DEFAULT", "debug", fallback=True),
+        )
         logger.info("Starting maintenance job scheduler")
 
     try:

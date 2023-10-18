@@ -11,33 +11,40 @@ chown -R www-data: /var/www/
 echo "Pulling MISP objects..."
 cd /var/www/MISPData/files/
 
-cd misp-decaying-models
-su www-data -s /bin/bash -c "git pull --ff-only origin main"
-cd ..
+(
+    cd misp-decaying-models || exit
+    su www-data -s /bin/bash -c "git pull --ff-only origin main"
+)
 
-cd misp-galaxy
-su www-data -s /bin/bash -c "git pull --ff-only origin main"
-cd ..
+(
+    cd misp-galaxy || exit
+    su www-data -s /bin/bash -c "git pull --ff-only origin main"
+)
 
-cd misp-objects
-su www-data -s /bin/bash -c "git pull --ff-only origin main"
-cd ..
+(
+    cd misp-objects || exit
+    su www-data -s /bin/bash -c "git pull --ff-only origin main"
+)
 
-cd misp-workflow-blueprints
-su www-data -s /bin/bash -c "git pull --ff-only origin main"
-cd ..
+(
+    cd misp-workflow-blueprints || exit
+    su www-data -s /bin/bash -c "git pull --ff-only origin main"
+)
 
-cd noticelists
-su www-data -s /bin/bash -c "git pull --ff-only origin main"
-cd ..
+(
+    cd noticelists || exit
+    su www-data -s /bin/bash -c "git pull --ff-only origin main"
+)
 
-cd taxonomies
-su www-data -s /bin/bash -c "git pull --ff-only origin main"
-cd ..
+(
+    cd taxonomies || exit
+    su www-data -s /bin/bash -c "git pull --ff-only origin main"
+)
 
-cd warninglists
-su www-data -s /bin/bash -c "git pull --ff-only origin main"
-cd ..
+(
+    cd warninglists || exit
+    su www-data -s /bin/bash -c "git pull --ff-only origin main"
+)
 
 echo "Loading updated MISP objects into database..."
 $CAKE admin updateGalaxies

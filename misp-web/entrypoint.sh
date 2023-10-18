@@ -131,7 +131,11 @@ restore_persistence() {
         echo "Temp files already persistent."
     fi
     mkdir -p MISPData/tmp/logs
-    touch -a MISPData/tmp/logs/apache_access.log MISPData/tmp/logs/apache_error.log MISPData/tmp/logs/debug.log MISPData/tmp/logs/error.log MISPData/tmp/logs/exec-errors.log MISPData/tmp/logs/misp_maintenance_runner.log MISPData/tmp/logs/misp_maintenance_supervisor-errors.log MISPData/tmp/logs/misp_maintenance_supervisor.log MISPData/tmp/logs/misp-workers-errors.log MISPData/tmp/logs/misp-workers.log MISPData/tmp/logs/run_misp_sync_jobs.log
+    touch -a MISPData/tmp/logs/apache_access.log MISPData/tmp/logs/apache_error.log MISPData/tmp/logs/debug.log\
+        MISPData/tmp/logs/error.log MISPData/tmp/logs/exec-errors.log MISPData/tmp/logs/misp_maintenance_runner.log\
+        MISPData/tmp/logs/misp_maintenance_supervisor-errors.log MISPData/tmp/logs/misp_maintenance_supervisor.log\
+        MISPData/tmp/logs/misp-workers-errors.log MISPData/tmp/logs/misp-workers.log\
+        MISPData/tmp/logs/run_misp_sync_jobs.log 
     chmod 755 MISPData/tmp/logs
     chmod 644 MISPData/tmp/logs/*
     chown -R www-data: MISPData/tmp/logs

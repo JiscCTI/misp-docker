@@ -18,11 +18,15 @@ from shutil import copy
 from subprocess import DEVNULL, Popen
 from time import sleep, time
 from urllib.parse import urlparse
-from urllib.request import urlopen
 from urllib3 import disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
 from socket import gethostname
-from ssl import CERT_NONE, create_default_context
+
+try:
+    from requests import get
+except ImportError:
+    print("Failed to import requests.")
+    exit(1)
 
 
 __author__ = "Joe Pitt"
@@ -124,9 +128,6 @@ if not isfile(configFile):
 config = ConfigParser()
 logger = None
 disable_warnings(InsecureRequestWarning)
-sslContext = create_default_context()
-sslContext.check_hostname = False
-sslContext.verify_mode = CERT_NONE
 
 while True:
     now = time()
@@ -196,9 +197,10 @@ while True:
             config.write(f)
 
     try:
-        urlopen(config.get("DEFAULT", "baseUrl"), timeout=3, context=sslContext)
-    except Exception:
+        get(config.get("DEFAULT", "baseUrl"), timeout=3, verify=False)
+    except Exception as e:
         logger.warning("MISP isn't up at {}".format(config.get("DEFAULT", "baseUrl")))
+        logger.debug("Reason: ({}): {}".format(type(e), e))
         # wait 1 minute before re-running
         sleep(60)
         continue

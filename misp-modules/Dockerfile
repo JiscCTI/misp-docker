@@ -25,8 +25,7 @@ RUN python3 -m venv /misp_modules &&\
 
 FROM python:3.10-slim-bullseye AS final
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
-LABEL Name="misp-modules" Version=${MISP_VERSION}\
-    org.opencontainers.image.title="misp-modules" org.opencontainers.image.version=${MISP_VERSION}\
+LABEL org.opencontainers.image.title="misp-modules" org.opencontainers.image.version=${MISP_VERSION}\
     org.opencontainers.image.ref.name="misp-modules"\
     org.opencontainers.image.description="Modules for expansion services, import and export in MISP."\
     org.opencontainers.image.authors="Jisc <CTI.Analysts@jisc.ac.uk"\

@@ -13,8 +13,9 @@ LABEL Name="misp-workers" Version=${MISP_VERSION}\
     org.opencontainers.image.base.name="hub.docker.com/jisccti/misp-web:${MISP_VERSION}"
 
 # Setup MISP Workers
-RUN apt -qy update &&\
-    apt -qy install supervisor
+RUN apt-get -qy update &&\
+    apt-get -qy install supervisor && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY misp-workers.conf /etc/supervisor/conf.d/misp-workers.conf
 COPY entrypoint.sh /entrypoint.sh

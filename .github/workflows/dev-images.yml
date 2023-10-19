@@ -48,18 +48,12 @@ jobs:
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/tls/misp.key
           ${{ secrets.TEST_TLS_KEY }}
           EOF
+          python3 -m pip install --user --upgrade requests
 
       # Load statuses
-      - id: version
+      - id: misp_version
         name: Get current MISP version number
-        uses: cardinalby/git-get-release-action@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          draft: false
-          latest: true
-          prerelease: false
-          repo: MISP/MISP
+        run: echo "MISP_VERSION=$(python3 ./misp-web/latest.py)" >> $GITHUB_ENV
       - id: modules_version
         name: Get current MISP modules version number
         run: echo "MODULES_VERSION=$(python3 ./misp-modules/latest.py)" >> $GITHUB_ENV
@@ -75,13 +69,13 @@ jobs:
         name: Build misp-web
         run: |
           cd misp-web
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest-dev -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ steps.version.outputs.tag_name }}-dev --build-arg MISP_VERSION="${{ steps.version.outputs.tag_name }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest-dev -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.MISP_VERSION }}-dev --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
           cd ..
       - id: build_workers
         name: Build misp-workers
         run: |
           cd misp-workers
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest-dev -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ steps.version.outputs.tag_name }}-dev --build-arg MISP_VERSION="${{ steps.version.outputs.tag_name }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest-dev -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.MISP_VERSION }}-dev --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
           cd ..
 
       # Test
@@ -117,11 +111,11 @@ jobs:
         name: Push misp-web
         if: steps.build_web.outcome == 'success'
         run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ steps.version.outputs.tag_name }}-dev
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.MISP_VERSION }}-dev
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest-dev
       - id: push-workers
         name: Push misp-workers
         if: steps.build_workers.outcome == 'success'
         run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ steps.version.outputs.tag_name }}-dev
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.MISP_VERSION }}-dev
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest-dev

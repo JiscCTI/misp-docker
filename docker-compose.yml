@@ -4,8 +4,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 version: '3'
+name: misp
 services:
-  misp_clamav:
+  clamav:
     hostname: ${CLAMAV_HOSTNAME:-misp_clamav}
     image: clamav/clamav:1.0_base
     restart: unless-stopped
@@ -15,7 +16,7 @@ services:
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/clamav_db/:/var/lib/clamav
 
-  misp_db:
+  db:
     hostname: ${MYSQL_HOSTNAME:-misp_db}
     image: mysql/mysql-server:8.0
     command: [mysqld, --default-authentication-plugin=mysql_native_password, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb_monitor_enable=all]
@@ -30,18 +31,18 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-misp}
 
-  misp_modules:
+  modules:
     hostname: ${MODULES_HOSTNAME:-misp_modules}
     image: jisccti/misp-modules:latest
     restart: unless-stopped
     depends_on:
-      - misp_clamav
+      - clamav
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
 
-  misp_redis:
+  redis:
     hostname: ${REDIS_HOST:-misp_redis}
     image: redis:7
     restart: unless-stopped
@@ -54,12 +55,12 @@ services:
     healthcheck:
       test: "redis-cli -e ping || exit 1"
 
-  misp_web:
+  web:
     hostname: ${MISP_HOSTNAME:-misp_web}
     depends_on:
-      - misp_db
-      - misp_modules
-      - misp_redis
+      - db
+      - modules
+      - redis
     image: jisccti/misp-web:latest
     restart: unless-stopped
     ports:
@@ -94,16 +95,17 @@ services:
       - WORKERS_HOSTNAME=${WORKERS_HOSTNAME:-misp_workers}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
 
-  misp_workers:
+  workers:
     hostname: ${WORKERS_HOSTNAME:-misp_workers}
     image: jisccti/misp-workers:latest
     restart: unless-stopped
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
+      - ORG_NAME=${ORG_NAME:-ORGNAME}
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
     depends_on:
-      - misp_web
+      - web
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData

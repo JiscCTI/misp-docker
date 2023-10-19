@@ -5,35 +5,24 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-from json import loads
-from urllib.request import urlopen
-from re import finditer
+"""Get the latest version of the MISP-Modules"""
+
+from os.path import dirname, join
+from sys import path
+
+try:
+    path.insert(0, join(dirname(__file__), "..", "lib"))
+    from semver import GetLatestVersionFromGitHubTags
+except (OSError, ImportError):
+    raise ImportError("Failed to load semver")
 
 
-regex = r"v(?P<major>\d+)\.(?P<minor>\d+)\.(?P<hotfix>\d+)"
-url = "https://api.github.com/repos/MISP/misp-modules/tags"
-releases = loads(urlopen(url).read())
+__author__ = "Joe Pitt"
+__copyright__ = "Copyright 2023, Jisc Services Limited"
+__email__ = "Joe.Pitt@jisc.ac.uk"
+__license__ = "GPL-3.0-only"
+__maintainer__ = "Joe Pitt"
+__status__ = "Production"
+__version__ = "1.0.0"
 
-latest = {
-    "major": 0,
-    "minor": 0,
-    "hotfix": 0
-}
-
-for release in releases:
-    match = finditer(regex, release['name'])
-    for version in match:
-        if int(version['major']) > latest['major'] and int(version['major']) < 3:
-            latest["major"] = int(version["major"])
-            latest["minor"] = int(version["minor"])
-            latest["hotfix"] = int(version["hotfix"])
-        elif int(version["major"]) == latest["major"] and int(version["minor"]) > latest["minor"]:
-            latest["major"] = int(version["major"])
-            latest["minor"] = int(version["minor"])
-            latest["hotfix"] = int(version["hotfix"])
-        elif int(version["major"]) == latest["major"] and int(version["minor"]) == latest["minor"] and int(version["hotfix"]) > latest["hotfix"]:
-            latest["major"] = int(version["major"])
-            latest["minor"] = int(version["minor"])
-            latest["hotfix"] = int(version["hotfix"])
-
-print("v{}.{}.{}".format(latest["major"], latest["minor"], latest["hotfix"]))
+print(GetLatestVersionFromGitHubTags(Repository="MISP/misp-modules", MaxMajor=2))

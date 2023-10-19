@@ -4,12 +4,11 @@
 
 # SPDX-FileCopyrightText: 2023 Jisc Services Limited
 # SPDX-FileContributor: James Ellor
+# SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
 from configparser import ConfigParser
-from logging import DEBUG, Formatter, getLogger, INFO, Logger
-from logging.handlers import RotatingFileHandler
 from os import environ, getpid, kill, remove
 from os.path import isfile
 from socket import gethostname
@@ -21,6 +20,8 @@ except ImportError:
     print("PyMISP is not installed, cannot run")
     exit(1)
 
+from log import CreateLogger
+
 
 __author__ = "James Ellor"
 __copyright__ = "Copyright 2023, Jisc Services Limited"
@@ -31,41 +32,7 @@ __status__ = "Production"
 __version__ = "1.0.0"
 
 
-def CreateLogger(Debug: bool) -> Logger:
-    """Initialise a Logger for the script using a self rotating log file.
-
-    Returns:
-        Logger: A configured logging endpoint for the script.
-    """
-
-    MISPLogger = getLogger("run_misp_sync_jobs")
-    MISPLogger.propagate = False
-    if Debug:
-        MISPLogger.setLevel(DEBUG)
-    else:
-        MISPLogger.setLevel(INFO)
-    LogPath = "/var/www/MISPData/tmp/logs/run_misp_sync_jobs.log"
-    # Prevent the log from growing beyond 20MB
-    LogHandler = RotatingFileHandler(LogPath, maxBytes=20000000, backupCount=1)
-    hostname = gethostname()
-    try:
-        if len(environ["FQDN"]) > 0:
-            hostname = environ["FQDN"]
-    except:
-        pass
-    LogFormatter = Formatter(
-        "%(asctime)s {} %(name)s[%(process)d]: [%(levelname)s] %(message)s".format(
-            hostname
-        ),
-        "%b %d %H:%M:%S",
-    )
-    LogHandler.setFormatter(LogFormatter)
-    MISPLogger.addHandler(LogHandler)
-    return MISPLogger
-
-
 configFile = "/var/www/MISPData/misp_maintenance_jobs.ini"
-
 config = ConfigParser()
 config.read(configFile)
 baseUrl = config.get("DEFAULT", "baseUrl")
@@ -73,7 +40,18 @@ authKey = config.get("DEFAULT", "authKey")
 verifyTls = config.getboolean("DEFAULT", "verifyTls")
 debug = config.getboolean("DEFAULT", "debug")
 
-MISPLogger = CreateLogger(debug)
+hostname = gethostname()
+try:
+    if len(environ["FQDN"]) > 0:
+        hostname = environ["FQDN"]
+except KeyError:
+    pass
+MISPLogger = CreateLogger(
+    "run_misp_sync_jobs",
+    hostname,
+    "/var/www/MISPData/tmp/logs",
+    debug,
+)
 MISPLogger.info("Starting sync script")
 
 MISPLogger.debug("Checking for mutex")
@@ -83,7 +61,7 @@ if isfile(Mutex):
         try:
             PID = int(f.read())
             MISPLogger.debug("Mutex found, validating it")
-        except:
+        except Exception:
             # Didn't look like a PID
             PID = None
     if PID == None:
@@ -128,7 +106,7 @@ for feed in feeds:
         )
         fetch = run(
             [
-                "sh",
+                "/bin/bash",
                 "-c",
                 "$CAKE Server fetchFeed 1 {}".format(feed["id"]),
             ],
@@ -156,7 +134,7 @@ for feed in feeds:
         )
         cache = run(
             [
-                "sh",
+                "/bin/bash",
                 "-c",
                 "$CAKE Server cacheFeed 1 {}".format(feed["id"]),
             ],
@@ -189,7 +167,7 @@ for server in servers:
         )
         pull = run(
             [
-                "sh",
+                "/bin/bash",
                 "-c",
                 "$CAKE Server pull 1 {} full".format(feed["id"]),
             ],
@@ -217,7 +195,7 @@ for server in servers:
         )
         cache = run(
             [
-                "sh",
+                "/bin/bash",
                 "-c",
                 "$CAKE Server cacheServer 1 {}".format(server["id"]),
             ],
@@ -247,7 +225,7 @@ for server in servers:
         )
         pull = run(
             [
-                "sh",
+                "/bin/bash",
                 "-c",
                 "$CAKE Server push 1 {} full".format(feed["id"]),
             ],

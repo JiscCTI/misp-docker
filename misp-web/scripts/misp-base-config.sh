@@ -39,53 +39,50 @@ $CAKE Admin setSetting "Plugin.Sightings_anonymise_as" 1
 $CAKE Admin setSetting "Plugin.Sightings_range" 365
 $CAKE Admin setSetting "Plugin.Sightings_sighting_db_enable" false
 # Set API_Required modules to false
-PLUGS=(Plugin.Enrichment_cuckoo_submit_enabled
-    Plugin.Enrichment_vmray_submit_enabled
-    Plugin.Enrichment_circl_passivedns_enabled
-    Plugin.Enrichment_circl_passivessl_enabled
-    Plugin.Enrichment_domaintools_enabled
-    Plugin.Enrichment_eupi_enabled
-    Plugin.Enrichment_farsight_passivedns_enabled
-    Plugin.Enrichment_passivetotal_enabled
-    Plugin.Enrichment_passivetotal_enabled
-    Plugin.Enrichment_virustotal_enabled
-    Plugin.Enrichment_whois_enabled
-    Plugin.Enrichment_shodan_enabled
-    Plugin.Enrichment_geoip_asn_enabled
-    Plugin.Enrichment_geoip_city_enabled
-    Plugin.Enrichment_geoip_country_enabled
-    Plugin.Enrichment_iprep_enabled
-    Plugin.Enrichment_otx_enabled
-    Plugin.Enrichment_vulndb_enabled
-    Plugin.Enrichment_crowdstrike_falcon_enabled
-    Plugin.Enrichment_onyphe_enabled
-    Plugin.Enrichment_xforceexchange_enabled
-    Plugin.Enrichment_vulners_enabled
-    Plugin.Enrichment_macaddress_io_enabled
-    Plugin.Enrichment_intel471_enabled
-    Plugin.Enrichment_backscatter_io_enabled
-    Plugin.Enrichment_hibp_enabled
-    Plugin.Enrichment_greynoise_enabled
-    Plugin.Enrichment_joesandbox_submit_enabled
-    Plugin.Enrichment_virustotal_public_enabled
-    Plugin.Enrichment_apiosintds_enabled
-    Plugin.Enrichment_urlscan_enabled
-    Plugin.Enrichment_securitytrails_enabled
-    Plugin.Enrichment_apivoid_enabled
-    Plugin.Enrichment_assemblyline_submit_enabled
-    Plugin.Enrichment_assemblyline_query_enabled
-    Plugin.Enrichment_ransomcoindb_enabled
-    Plugin.Enrichment_lastline_query_enabled
-    Plugin.Enrichment_sophoslabs_intelix_enabled
-    Plugin.Enrichment_cytomic_orion_enabled
-    Plugin.Enrichment_censys_enrich_enabled
-    Plugin.Enrichment_trustar_enrich_enabled
-    Plugin.Enrichment_recordedfuture_enabled
-    Plugin.ElasticSearch_logging_enable
-    Plugin.S3_enable)
-for PLUG in "${PLUGS[@]}"; do
-    $CAKE Admin setSetting "${PLUG}" false 2> /dev/null
-done
+$CAKE Admin setSetting "Plugin.Enrichment_cuckoo_submit_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_vmray_submit_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_circl_passivedns_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_circl_passivessl_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_domaintools_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_eupi_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_farsight_passivedns_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_passivetotal_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_passivetotal_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_virustotal_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_whois_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_shodan_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_geoip_asn_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_geoip_city_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_geoip_country_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_iprep_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_otx_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_vulndb_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_crowdstrike_falcon_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_onyphe_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_xforceexchange_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_vulners_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_macaddress_io_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_intel471_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_backscatter_io_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_hibp_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_greynoise_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_joesandbox_submit_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_virustotal_public_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_apiosintds_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_urlscan_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_securitytrails_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_apivoid_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_assemblyline_submit_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_assemblyline_query_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_ransomcoindb_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_lastline_query_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_sophoslabs_intelix_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_cytomic_orion_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_censys_enrich_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_trustar_enrich_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.Enrichment_recordedfuture_enabled" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.ElasticSearch_logging_enable" false 2> /dev/null
+$CAKE Admin setSetting "Plugin.S3_enable" false 2> /dev/null
 # Plugin CustomAuth tuneable
 $CAKE Admin setSetting "Plugin.CustomAuth_disable_logout" false
 # RPZ Plugin settings

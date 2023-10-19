@@ -256,7 +256,9 @@ initial_config() {
     echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'
     $CAKE Admin setSetting "SimpleBackgroundJobs.enabled" true
     $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
-    /opt/scripts/misp-base-config.sh
+    echo "Setting $(grep --count CAKE /opt/scripts/misp-base-config.sh) base configuration settings..."
+    /opt/scripts/misp-base-config.sh>/dev/null
+    echo "Base configuration complete."
     setup_smtp
 
     touch /var/www/MISPData/.configured
@@ -269,7 +271,9 @@ initial_config() {
     echo 'Setting "Security.encryption_key" changed to "[REDACTED]"'
     $CAKE Admin setSetting "MISP.email_from_name" "$MISP_EMAIL_NAME"
     $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
-    /opt/scripts/misp-post-update-config.sh
+    echo "Setting $(grep --count CAKE /opt/scripts/misp-post-update-config.sh) post upgrade configuration settings..."
+    /opt/scripts/misp-post-update-config.sh>/dev/null
+    echo "Post upgrade configuration complete."
 
     # Enable OpenID connect (OIDC) support
     echo "CakePlugin::load('OidcAuth');" >>/var/www/MISP/app/Config/bootstrap.php

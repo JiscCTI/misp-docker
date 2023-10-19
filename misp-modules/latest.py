@@ -13,7 +13,7 @@ from sys import path
 try:
     path.insert(0, join(dirname(__file__), "..", "lib"))
     from semver import GetLatestVersionFromGitHubTags
-except:
+except (OSError, ImportError):
     raise ImportError("Failed to load semver")
 
 

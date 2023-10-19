@@ -259,7 +259,7 @@ initial_config() {
     setup_smtp
 
     touch /var/www/MISPData/.configured
-    /wait-for-it.sh -h "${WORKERS_HOSTNAME:-misp_workers}" -p 9001 -t 0 -- echo "Workers up"
+    /wait-for-it.sh -h "${WORKERS_HOSTNAME:-misp_workers}" -p 9001 -t 0 -- true
 
     echo "Executing all updates to bring the database up to date with the current version."
     $CAKE Admin runUpdates>/dev/null 2>&1
@@ -396,7 +396,7 @@ on_start() {
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force>/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.redis_password" changed to "[REDACTED]"'
 
-    /wait-for-it.sh -h "${WORKERS_HOSTNAME:-misp_workers}" -p 9001 -t 0 -- echo "Workers up"
+    /wait-for-it.sh -h "${WORKERS_HOSTNAME:-misp_workers}" -p 9001 -t 0 -- true
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_host" "$WORKERS_HOSTNAME"
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD">/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'

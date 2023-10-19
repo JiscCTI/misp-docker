@@ -195,15 +195,14 @@ To deploy MISP:
   e.g. `misp_clamav`, `misp_db`, and / or `misp_redis`.
 2. Start the Docker service: `sudo docker compose up -d` (or `sudo docker compose -f docker-compose-ha.yml up -d` for
   HA simulation).
-3. Monitor the startup process of MISP Web: `sudo docker container logs -f {instanceName}-misp_web-1` (or
-  `sudo docker container logs -f {instanceName}-misp_webs_1` for HA simulation).
+3. Monitor the startup process of MISP: `sudo docker compose logs -f` (or
+  `sudo docker compose -f docker-compose-ha.yml logs -f` for HA simulation).
 
 ### 8 - Access MISP
 
-Once MISP web reports these lines:
+Once `misp-web` reports this line:
 
 ```log
-[mpm_prefork:notice] [pid 7] AH00163: Apache/2.4.54 (Debian) OpenSSL/1.1.1n configured -- resuming normal operations
 [core:notice] [pid 7] AH00094: Command line: '/usr/sbin/apache2 -D FOREGROUND'
 ```
 

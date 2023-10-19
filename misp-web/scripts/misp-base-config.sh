@@ -84,7 +84,7 @@ PLUGS=(Plugin.Enrichment_cuckoo_submit_enabled
     Plugin.ElasticSearch_logging_enable
     Plugin.S3_enable)
 for PLUG in "${PLUGS[@]}"; do
-    $CAKE Admin setSetting ${PLUG} false 2> /dev/null
+    $CAKE Admin setSetting "${PLUG}" false 2> /dev/null
 done
 # Plugin CustomAuth tuneable
 $CAKE Admin setSetting "Plugin.CustomAuth_disable_logout" false

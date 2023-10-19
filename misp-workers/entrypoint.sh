@@ -65,7 +65,7 @@ restore_persistence
 mkdir -p /var/www/MISPData/tmp/logs
 WORKERS_PASSWORD="${WORKERS_PASSWORD:-misp}"
 SED_WORKERS_PASSWORD=${WORKERS_PASSWORD//\//\\\/}
-sed -i "s/^\(password\)=.*/\1=$(eval echo \${SED_WORKERS_PASSWORD})/" /etc/supervisor/conf.d/misp-workers.conf
+sed -i "s/^\(password\)=.*/\1=${SED_WORKERS_PASSWORD}/" /etc/supervisor/conf.d/misp-workers.conf
 
 echo "Starting MISP Workers..."
 supervisord -c /etc/supervisor/conf.d/misp-workers.conf

@@ -205,10 +205,10 @@ initial_config() {
     sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini
     if [ -z "${REDIS_PASSWORD}" ]; then
         echo "Warning: No Redis password is set, ensure network access control is implemented"
-        sed -i "s/^\(session.save_path\).*/\1 = \"tcp:\/\/$(eval echo \${REDIS_HOST}):6379\"/" /usr/local/etc/php/php.ini
+        sed -i "s/^\(session.save_path\).*/\1 = \"tcp:\/\/${REDIS_HOST}:6379\"/" /usr/local/etc/php/php.ini
     else
         SED_REDIS_PASSWORD=${REDIS_PASSWORD//\//\\\/}
-        sed -i "s/^\(session.save_path\).*/\1 = \"tcp:\/\/$(eval echo \${REDIS_HOST}):6379?auth=$(eval echo \${SED_REDIS_PASSWORD})\"/" /usr/local/etc/php/php.ini
+        sed -i "s/^\(session.save_path\).*/\1 = \"tcp:\/\/${REDIS_HOST}:6379?auth=${SED_REDIS_PASSWORD}\"/" /usr/local/etc/php/php.ini
     fi
 
     cd /var/www/
@@ -380,10 +380,10 @@ on_start() {
     sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini
     if [ -z "${REDIS_PASSWORD}" ]; then
         echo "Warning: No Redis password is set, ensure network access control is implemented"
-        sed -i "s/^\(session.save_path\).*/\1 = \"tcp:\/\/$(eval echo \${REDIS_HOST}):6379\"/" /usr/local/etc/php/php.ini
+        sed -i "s/^\(session.save_path\).*/\1 = \"tcp:\/\/${REDIS_HOST}:6379\"/" /usr/local/etc/php/php.ini
     else
         SED_REDIS_PASSWORD=${REDIS_PASSWORD//\//\\\/}
-        sed -i "s/^\(session.save_path\).*/\1 = \"tcp:\/\/$(eval echo \${REDIS_HOST}):6379?auth=$(eval echo \${SED_REDIS_PASSWORD})\"/" /usr/local/etc/php/php.ini
+        sed -i "s/^\(session.save_path\).*/\1 = \"tcp:\/\/${REDIS_HOST}:6379?auth=${SED_REDIS_PASSWORD}\"/" /usr/local/etc/php/php.ini
     fi
     $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST"
     $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB"

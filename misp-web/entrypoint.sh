@@ -2,6 +2,7 @@
 
 # SPDX-FileCopyrightText: 2023 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
+# SPDX-FileContributor: James Acris - OIDC Support
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
@@ -270,7 +271,7 @@ initial_config() {
     $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
     /opt/scripts/misp-post-update-config.sh
 
-    # Enable OpenID connect
+    # Enable OpenID connect (OIDC) support
     echo "CakePlugin::load('OidcAuth');" >>/var/www/MISP/app/Config/bootstrap.php
 
     if [ -f /var/www/MISPData/custom-config.sh ]; then

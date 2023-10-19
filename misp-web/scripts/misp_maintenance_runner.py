@@ -189,7 +189,7 @@ while True:
         logger.setLevel(INFO)
 
     try:
-        get(config.get("DEFAULT", "baseUrl"), timeout=3, verify=False)
+        get(config.get("DEFAULT", "baseUrl"), timeout=3, verify=config.getboolean("DEFAULT", "verifyTls"))
     except Exception as e:
         logger.warning("MISP isn't up at {}".format(config.get("DEFAULT", "baseUrl")))
         logger.debug("Reason: ({}): {}".format(type(e), e))

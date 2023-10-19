@@ -222,6 +222,7 @@ initial_config() {
     chown -R www-data: /var/www/MISPGnuPG/
     chmod -R 750 /var/www/MISP/app/Config/
 
+    $CAKE Admin setSetting "MISP.server_settings_skip_backup_rotate" true
     echo "Generating encryption salt value..."
     $CAKE Admin setSetting "Security.salt" "$(openssl rand -base64 32)">/dev/null 2>&1
     echo 'Setting "Security.salt" changed to "[REDACTED]"'
@@ -281,6 +282,7 @@ initial_config() {
     $CAKE Live 1
     # Add new line after "MISP is now live. Users can now log in."
     echo
+    $CAKE Admin setSetting "MISP.server_settings_skip_backup_rotate" false
     echo "Initial configuration finished."
 }
 

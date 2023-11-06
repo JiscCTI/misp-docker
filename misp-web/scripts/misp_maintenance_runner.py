@@ -176,7 +176,7 @@ while True:
 
     try:
         debug = config.getboolean("DEFAULT", "debug")
-    except:
+    except Exception:
         logger.error("Invalid boolean value for Debug, reverting to False")
         config.set("DEFAULT", "debug", "False")
         debug = False

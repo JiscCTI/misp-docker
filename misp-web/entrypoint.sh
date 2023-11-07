@@ -363,7 +363,6 @@ check_tls_certificate() {
 
 on_start() {
     echo "Updating settings based on environment variables..."
-    $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
     sed -i "s/^\(ServerName\).*/\1 \${FQDN}/" /etc/apache2/sites-enabled/000-default.conf
     setup_smtp
     check_gnupg
@@ -378,10 +377,6 @@ on_start() {
     $CAKE Admin setSetting "MISP.contact" "$MISP_EMAIL_ADDRESS"
     $CAKE Admin setSetting "MISP.baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
-    $CAKE Admin setSetting "Plugin.Enrichment_services_url" "http://$MODULES_HOSTNAME"
-    $CAKE Admin setSetting "Plugin.Import_services_url" "http://$MODULES_HOSTNAME"
-    $CAKE Admin setSetting "Plugin.Export_services_url" "http://$MODULES_HOSTNAME"
-    $CAKE Admin setSetting "Plugin.Action_services_url" "http://$MODULES_HOSTNAME"
     $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
     /usr/local/bin/python3 /opt/scripts/trigger_set_org_name.py
     sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini
@@ -392,6 +387,8 @@ on_start() {
         SED_REDIS_PASSWORD=${REDIS_PASSWORD//\//\\\/}
         sed -i "s/^\(session.save_path\).*/\1 = \"tcp:\/\/${REDIS_HOST}:6379?auth=${SED_REDIS_PASSWORD}\"/" /usr/local/etc/php/php.ini
     fi
+
+    /wait-for-it.sh -h "${REDIS_HOST:-misp_redis}" -p 6379 -t 0 -- true
     $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST"
     $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB"
     $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force>/dev/null 2>&1
@@ -400,6 +397,15 @@ on_start() {
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_database" "$REDIS_WORKER_DB"
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force>/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.redis_password" changed to "[REDACTED]"'
+
+    /wait-for-it.sh -h "${MODULES_HOSTNAME:-misp_modules}" -p 6666 -t 0 -- true
+    $CAKE Admin setSetting "Plugin.Enrichment_services_url" "http://$MODULES_HOSTNAME"
+    $CAKE Admin setSetting "Plugin.Import_services_url" "http://$MODULES_HOSTNAME"
+    $CAKE Admin setSetting "Plugin.Export_services_url" "http://$MODULES_HOSTNAME"
+    $CAKE Admin setSetting "Plugin.Action_services_url" "http://$MODULES_HOSTNAME"
+
+    /wait-for-it.sh -h "${CLAMAV_HOSTNAME:-misp_clamav}" -p 3310 -t 0 -- true
+    $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
 
     /wait-for-it.sh -h "${WORKERS_HOSTNAME:-misp_workers}" -p 9001 -t 0 -- true
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_host" "$WORKERS_HOSTNAME"

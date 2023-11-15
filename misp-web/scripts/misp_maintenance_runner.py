@@ -37,7 +37,7 @@ __maintainer__ = "Joe Pitt"
 __status__ = "Production"
 __version__ = "1.0.0"
 
-AuthKeyRegEx = regex(r"^[0-9A-z]{40}$")
+AuthKeyRegEx = regex(r"^[0-9A-Za-z]{40}$")
 # Regular expression by Tim Groeneveld, Nov 18, 2014, https://stackoverflow.com/a/26987741
 DomainNameRegEx = regex(
     r"^(((?!-))(xn--|_)?[a-z0-9-]{0,61}[a-z0-9]{1,1}\.)*"

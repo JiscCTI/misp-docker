@@ -35,7 +35,7 @@ def AuthKeyType(AuthKey: str) -> str:
     Returns:
         str: The Auth Key if it is valid
     """
-    if not compile(r"^[0-9A-z]{40}$").match(AuthKey):
+    if not compile(r"^[0-9A-Za-z]{40}$").match(AuthKey):
         raise ArgumentTypeError("invalid value")
     return AuthKey
 

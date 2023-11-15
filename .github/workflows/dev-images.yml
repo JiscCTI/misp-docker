@@ -14,7 +14,7 @@ env:
   COMPOSE_PROJECT_NAME: misp_dev
 jobs:
   run-dev:
-    name: Build, Test, and Release
+    name: Build, Test, and Release (Dev)
     runs-on: ubuntu-latest
     steps:
       # Environment Setup

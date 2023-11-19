@@ -16,6 +16,3 @@ $CAKE Admin setSetting "MISP.store_api_access_time" true
 $CAKE Admin setSetting "MISP.thumbnail_in_redis" true
 $CAKE Admin setSetting "MISP.unpublishedprivate" false
 $CAKE Admin setSetting "Security.otp_required" true
-
-# Workaround diagnostics page issue introduced in v2.4.175 (https://github.com/MISP/MISP/pull/9230)
-$CAKE Admin setSetting "MISP.online_version_check" false

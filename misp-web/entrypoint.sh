@@ -284,9 +284,9 @@ initial_config() {
     fi
 
     # Set MISP Live
-    $CAKE Live 1
-    # Add new line after "MISP is now live. Users can now log in."
-    echo
+    $CAKE Live 1 >/dev/null 2>&1
+    echo "Maintenance mode disabled"
+    
     $CAKE Admin setSetting "MISP.server_settings_skip_backup_rotate" false
     echo "Initial configuration finished."
 }

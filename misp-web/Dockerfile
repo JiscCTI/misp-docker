@@ -60,7 +60,7 @@ WORKDIR /var/www/
 RUN git config --global advice.detachedHead false &&\
     git clone -q --branch ${MISP_VERSION} --single-branch https://github.com/MISP/MISP &&\
     cd MISP &&\
-    echo "$(git rev-parse ${MISP_VERSION})" > .git_commit_version &&\
+    git rev-parse ${MISP_VERSION} > .git_commit_version &&\
     git submodule update -q --init --recursive &&\
     git submodule foreach --recursive git config core.filemode false &&\
     git config core.filemode false

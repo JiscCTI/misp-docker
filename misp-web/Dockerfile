@@ -27,8 +27,8 @@ RUN apt-get -qy update &&\
     ./configure &&\
     make install &&\
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp &&\
-    docker-php-ext-install gd &&\
-    docker-php-ext-enable apcu brotli gd gnupg rdkafka redis simdjson ssdeep
+    docker-php-ext-install gd gettext sockets &&\
+    docker-php-ext-enable apcu brotli gd gettext gnupg rdkafka redis simdjson sockets ssdeep
 
 # Build Python 3.10
 FROM debian:bullseye AS python_build

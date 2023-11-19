@@ -55,11 +55,12 @@ restore_persistence() {
     echo "Persistent file storage created."
 }
 
-
-while [ ! -f /var/www/MISPData/.configured ]; do
-    echo "Waiting 5 seconds for misp_web to finish configuration..."
-    sleep 5
-done
+if [ ! -f /var/www/MISPData/.configured ]; then
+    echo "Waiting for misp_web to finish configuration..."
+    while [ ! -f /var/www/MISPData/.configured ]; do
+        sleep 5
+    done
+fi
 
 restore_persistence
 mkdir -p /var/www/MISPData/tmp/logs

@@ -64,6 +64,7 @@ WORKDIR /var/www/
 RUN git config --global advice.detachedHead false &&\
     git clone -q --branch ${MISP_VERSION} --single-branch https://github.com/MISP/MISP &&\
     cd MISP &&\
+    echo "$(git rev-parse ${MISP_VERSION})" > .git_commit_version &&\
     git submodule update -q --init --recursive &&\
     git submodule foreach --recursive git config core.filemode false &&\
     git config core.filemode false &&\
@@ -96,11 +97,14 @@ RUN git config --global advice.detachedHead false &&\
     git submodule foreach "git pull -q origin main || git pull -q origin master || exit 0" &&\
     /var/www/MISP/venv/bin/pip -q install --no-cache-dir /var/www/MISP/PyMISP/.[fileobjects,openioc,virustotal,pdfexport] &&\
     cd /var/www/ &&\
+    find /var/www -type d -name .git -exec rm -r {} + &&\
+    mkdir MISP/.git &&\
+    mv MISP/.git_commit_version MISP/.git/HEAD &&\
+    cp MISP/.git/HEAD MISP/.git/ORIG_HEAD &&\
     chown -R www-data: MISP &&\
     chmod -R 750 MISP &&\
     chmod -R g+ws MISP/app/tmp &&\
     chmod -R g+ws MISP/app/files &&\
-    find /var/www -type d -name .git -exec rm -r {} + &&\
     cd /var/www/MISP/app/files/ &&\
     rm -rf misp-decaying-models misp-galaxy misp-objects misp-workflow-blueprints noticelists taxonomies warninglists
 

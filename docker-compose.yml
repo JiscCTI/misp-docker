@@ -7,22 +7,21 @@ version: '3'
 name: misp
 services:
   clamav:
-    hostname: ${CLAMAV_HOSTNAME:-misp_clamav}
-    image: clamav/clamav:1.0_base
-    restart: unless-stopped
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
-    volumes:
-      - ./persistent/${COMPOSE_PROJECT_NAME}/clamav_db/:/var/lib/clamav
-
-  db:
-    hostname: ${MYSQL_HOSTNAME:-misp_db}
-    image: mysql/mysql-server:8.0
-    command: [mysqld, --default-authentication-plugin=mysql_native_password, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb_monitor_enable=all]
+    hostname: ${CLAMAV_HOSTNAME:-misp_clamav}
+    image: clamav/clamav:1.0_base
     restart: unless-stopped
     volumes:
-      - ./persistent/${COMPOSE_PROJECT_NAME}/db:/var/lib/mysql
+      - ./persistent/${COMPOSE_PROJECT_NAME}/clamav_db/:/var/lib/clamav
+  db:
+    command:
+      - mysqld
+      - '--default-authentication-plugin=mysql_native_password'
+      - '--character-set-server=utf8mb4'
+      - '--collation-server=utf8mb4_unicode_ci'
+      - '--innodb_monitor_enable=all'
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
@@ -30,46 +29,41 @@ services:
       - MYSQL_USER=${MYSQL_USERNAME:-misp}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-misp}
-
-  modules:
-    hostname: ${MODULES_HOSTNAME:-misp_modules}
-    image: jisccti/misp-modules:latest
+    hostname: ${MYSQL_HOSTNAME:-misp_db}
+    image: mysql/mysql-server:8.0
     restart: unless-stopped
+    volumes:
+      - ./persistent/${COMPOSE_PROJECT_NAME}/db:/var/lib/mysql
+  modules:
     depends_on:
-      - clamav
+      clamav:
+        condition: service_healthy
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
-
-  redis:
-    hostname: ${REDIS_HOST:-misp_redis}
-    image: redis:7
+    hostname: ${MODULES_HOSTNAME:-misp_modules}
+    image: jisccti/misp-modules:latest
     restart: unless-stopped
+  redis:
+    entrypoint: redis-server --loglevel warning  --requirepass \$REDISCLI_AUTH
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
       - REDISCLI_AUTH=${REDIS_PASSWORD:-misp}
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-misp}
-    entrypoint: redis-server --loglevel warning --requirepass \$REDIS_PASSWORD
     healthcheck:
-      test: "redis-cli -e ping || exit 1"
-
-  web:
-    hostname: ${MISP_HOSTNAME:-misp_web}
-    depends_on:
-      - db
-      - modules
-      - redis
-    image: jisccti/misp-web:latest
+      test: redis-cli -e ping || exit 1
+    hostname: ${REDIS_HOST:-misp_redis}
+    image: redis:7
     restart: unless-stopped
-    ports:
-      - "${HTTP_PORT:-80}:80"
-      - "${HTTPS_PORT:-443}:443"
-    volumes:
-      - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData
-      - ./persistent/${COMPOSE_PROJECT_NAME}/gpg/:/var/www/MISPGnuPG
-      - ./persistent/${COMPOSE_PROJECT_NAME}/tls/:/etc/ssl/private
+  web:
+    depends_on:
+      db:
+        condition: service_healthy
+      modules:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - CLAMAV_HOSTNAME=${CLAMAV_HOSTNAME:-misp_clamav}
       - FQDN=${FQDN:-misp.local}
@@ -94,18 +88,28 @@ services:
       - SMTP_USERNAME=${SMTP_USERNAME:-misp}
       - WORKERS_HOSTNAME=${WORKERS_HOSTNAME:-misp_workers}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
-
-  workers:
-    hostname: ${WORKERS_HOSTNAME:-misp_workers}
-    image: jisccti/misp-workers:latest
+    hostname: ${MISP_HOSTNAME:-misp_web}
+    image: jisccti/misp-web:latest
+    ports:
+      - ${HTTP_PORT:-80}:80
+      - ${HTTPS_PORT:-443}:443
     restart: unless-stopped
+    volumes:
+      - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData
+      - ./persistent/${COMPOSE_PROJECT_NAME}/gpg/:/var/www/MISPGnuPG
+      - ./persistent/${COMPOSE_PROJECT_NAME}/tls/:/etc/ssl/private
+  workers:
+    depends_on:
+      web:
+        condition: service_started
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
       - ORG_NAME=${ORG_NAME:-ORGNAME}
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
-    depends_on:
-      - web
+    hostname: ${WORKERS_HOSTNAME:-misp_workers}
+    image: jisccti/misp-workers:latest
+    restart: unless-stopped
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData

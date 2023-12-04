@@ -12,6 +12,7 @@ on:
   workflow_dispatch:
 env:
   COMPOSE_PROJECT_NAME: misp_dev
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
 jobs:
   run-dev:
     name: Build, Test, and Release (Dev)
@@ -34,9 +35,9 @@ jobs:
         name: Configure Environment
         run: |
           sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' docker-compose.yml
-          sed -i 's/latest/latest-dev/g' docker-compose.yml
+          sed -i 's/latest/${{ env.BRANCH_NAME }}/g' docker-compose.yml
           sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' misp-workers/Dockerfile
-          sed -i 's/{MISP_VERSION}/{MISP_VERSION}-dev/g' misp-workers/Dockerfile
+          sed -i 's/\\${MISP_VERSION}/${{ env.BRANCH_NAME }}/g' misp-workers/Dockerfile
           cp example.env .env
           mkdir -p persistent/$COMPOSE_PROJECT_NAME/gpg persistent/$COMPOSE_PROJECT_NAME/tls
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/gpg/import.asc
@@ -63,19 +64,19 @@ jobs:
         name: Build misp-modules
         run: |
           cd misp-modules
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest-dev -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.MODULES_VERSION }}-dev --build-arg MISP_VERSION="${{ env.MODULES_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.BRANCH_NAME }} --build-arg MISP_VERSION="${{ env.MODULES_VERSION }}" .
           cd ..
       - id: build_web
         name: Build misp-web
         run: |
           cd misp-web
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest-dev -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.MISP_VERSION }}-dev --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.BRANCH_NAME }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
           cd ..
       - id: build_workers
         name: Build misp-workers
         run: |
           cd misp-workers
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest-dev -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.MISP_VERSION }}-dev --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.BRANCH_NAME }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
           cd ..
 
       # Test
@@ -105,17 +106,14 @@ jobs:
         name: Push misp-modules
         if: steps.build_modules.outcome == 'success'
         run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.MODULES_VERSION }}-dev
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest-dev
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.BRANCH_NAME }}
       - id: push-web
         name: Push misp-web
         if: steps.build_web.outcome == 'success'
         run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.MISP_VERSION }}-dev
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest-dev
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.BRANCH_NAME }}
       - id: push-workers
         name: Push misp-workers
         if: steps.build_workers.outcome == 'success'
         run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.MISP_VERSION }}-dev
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest-dev
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.BRANCH_NAME }}

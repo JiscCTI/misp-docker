@@ -143,4 +143,4 @@ RUN a2dismod status &&\
     chmod +x /opt/scripts/* /*.sh
 WORKDIR /var/www/MISP/
 ENTRYPOINT /wait-for-it.sh -h ${MYSQL_HOSTNAME:-misp_db} -p 3306 -t 0 -- /entrypoint.sh
-HEALTHCHECK CMD curl -fk https://127.0.0.1/users/login || exit 1
+HEALTHCHECK --start-period=10m --timeout=3s CMD curl -fk https://127.0.0.1/users/login || exit 1

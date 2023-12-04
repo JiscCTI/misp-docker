@@ -16,12 +16,7 @@ services:
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/clamav_db/:/var/lib/clamav
   db:
-    command:
-      - mysqld
-      - '--default-authentication-plugin=mysql_native_password'
-      - '--character-set-server=utf8mb4'
-      - '--collation-server=utf8mb4_unicode_ci'
-      - '--innodb_monitor_enable=all'
+    command: [mysqld, --default-authentication-plugin=mysql_native_password, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb_monitor_enable=all]
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
@@ -46,7 +41,7 @@ services:
     image: jisccti/misp-modules:latest
     restart: unless-stopped
   redis:
-    entrypoint: redis-server --loglevel warning  --requirepass \$REDISCLI_AUTH
+    entrypoint: redis-server --loglevel warning --requirepass ${REDIS_PASSWORD:-misp}
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}

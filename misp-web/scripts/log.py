@@ -18,7 +18,7 @@ __email__ = "Joe.Pitt@jisc.ac.uk"
 __license__ = "GPL-3.0-only"
 __maintainer__ = "Joe Pitt"
 __status__ = "Production"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 
 def CreateLogger(
@@ -58,7 +58,7 @@ def CreateLogger(
     )
 
     # Prevent the log from growing beyond 20MB
-    LogHandler = RotatingFileHandler(LogPath, maxBytes=20000000)
+    LogHandler = RotatingFileHandler(LogPath, maxBytes=20000000, backupCount=1)
     LogHandler.setFormatter(LogFormatter)
     logger.addHandler(LogHandler)
 

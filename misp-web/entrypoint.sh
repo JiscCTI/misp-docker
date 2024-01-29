@@ -76,6 +76,35 @@ setup_smtp() {
     }" >config/email.php
 }
 
+setup_oidc() {
+    # Enable the OidcAuth plugin
+    cd /var/www/MISP/app/Config
+    echo "CakePlugin::load('OidcAuth');" >>bootstrap.php
+
+    # Configure OIDC
+    sed -i '$ d' config.php
+    echo = "  'OidcAuth' =>
+        array (
+            'provider_url' => '$OIDC_PROVIDER',
+            'client_id' => '$OIDC_CLIENT_ID',
+            'client_secret' => '$OIDC_CLIENT_SECRET',
+            'authentication_method' => 'client_secret_jwt',
+            'code_challenge_method' => 'S256',
+            'redirect_uri' => '$FQDN/users/login',
+            'role_mapper' =>
+            array (
+                'misp-admin-access' => 1,
+                'misp-org-admin-access' => 2,
+                'misp-sync-access' => 5,
+                'misp-publisher-access' => 4,
+                'misp-api-access' => 'User with API access',
+                'misp-access' => 3,
+            ),
+            'default_org' => '$ORG_NAME',
+        ),
+    );" >>config.php
+}
+
 restore_persistence() {
     echo "Restoring persistent file storage..."
     cd /var/www/
@@ -135,7 +164,7 @@ restore_persistence() {
         MISPData/tmp/logs/error.log MISPData/tmp/logs/exec-errors.log MISPData/tmp/logs/misp_maintenance_runner.log\
         MISPData/tmp/logs/misp_maintenance_supervisor-errors.log MISPData/tmp/logs/misp_maintenance_supervisor.log\
         MISPData/tmp/logs/misp-workers-errors.log MISPData/tmp/logs/misp-workers.log\
-        MISPData/tmp/logs/run_misp_sync_jobs.log 
+        MISPData/tmp/logs/run_misp_sync_jobs.log
     chmod 755 MISPData/tmp/logs
     chmod 644 MISPData/tmp/logs/*
     chown -R www-data: MISPData/tmp/logs
@@ -276,7 +305,9 @@ initial_config() {
     echo "Post upgrade configuration complete."
 
     # Enable OpenID connect (OIDC) support
-    echo "CakePlugin::load('OidcAuth');" >>/var/www/MISP/app/Config/bootstrap.php
+    if [$OIDC_ENABLED]; then
+        setup_oidc
+    fi
 
     if [ -f /var/www/MISPData/custom-config.sh ]; then
         echo "Custom config options script found, executing..."
@@ -286,7 +317,7 @@ initial_config() {
     # Set MISP Live
     $CAKE Live 1 >/dev/null 2>&1
     echo "Maintenance mode disabled"
-    
+
     $CAKE Admin setSetting "MISP.server_settings_skip_backup_rotate" false
     echo "Initial configuration finished."
 }

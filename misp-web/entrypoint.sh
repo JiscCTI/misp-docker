@@ -55,6 +55,35 @@ setup_smtp() {
     }" >config/email.php
 }
 
+setup_oidc() {
+    # Enable the OidcAuth plugin
+    cd /var/www/MISP/app/Config
+    echo "CakePlugin::load('OidcAuth');" >>bootstrap.php
+
+    # Configure OIDC
+    sed -i '$ d' config.php
+    echo "  'OidcAuth' =>
+        array (
+            'provider_url' => '$OIDC_PROVIDER',
+            'client_id' => '$OIDC_CLIENT_ID',
+            'client_secret' => '$OIDC_CLIENT_SECRET',
+            'authentication_method' => 'client_secret_jwt',
+            'code_challenge_method' => 'S256',
+            'redirect_uri' => '$FQDN/users/login',
+            'role_mapper' =>
+            array (
+                'misp-admin-access' => 1,
+                'misp-org-admin-access' => 2,
+                'misp-sync-access' => 5,
+                'misp-publisher-access' => 4,
+                'misp-api-access' => 'User with API access',
+                'misp-access' => 3,
+            ),
+            'default_org' => '$ORG_NAME',
+        ),
+    );" >>config.php
+}
+
 restore_persistence() {
     echo "Restoring persistent file storage..."
     cd /var/www/ || exit 1

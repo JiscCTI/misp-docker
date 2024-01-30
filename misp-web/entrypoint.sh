@@ -55,12 +55,16 @@ setup_smtp() {
     }" >config/email.php
 }
 
-setup_oidc() {
+setup_auth() {
     # Enable the OidcAuth plugin
     cd /var/www/MISP/app/Config
     echo "CakePlugin::load('OidcAuth');" >>bootstrap.php
 
+    # Configure Authentication method
+    auth_config="'auth' => array('$AUTH_METHOD'),"
+
     # Configure OIDC
+    sed -i "/auth_enforced/a \    $auth_config" config.php
     sed -i '$ d' config.php
     echo "  'OidcAuth' =>
         array (

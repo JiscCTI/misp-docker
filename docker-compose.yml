@@ -75,6 +75,9 @@ services:
       - MYSQL_HOSTNAME=${MYSQL_HOSTNAME:-misp_db}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
       - MYSQL_USERNAME=${MYSQL_USERNAME:-misp}
+      - OIDC_PROVIDER=${OIDC_PROVIDER:-example.com/auth/realms/realm/.well-known/openid-configuration}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-misp}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-misp}
       - ORG_NAME=${ORG_NAME:-ORGNAME}
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
       - REDIS_MISP_DB=${REDIS_MISP_DB:-2}

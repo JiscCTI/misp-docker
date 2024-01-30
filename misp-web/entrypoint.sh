@@ -76,14 +76,18 @@ setup_smtp() {
     }" >config/email.php
 }
 
-setup_oidc() {
+setup_auth() {
     # Enable the OidcAuth plugin
     cd /var/www/MISP/app/Config
     echo "CakePlugin::load('OidcAuth');" >>bootstrap.php
 
+    # Configure Authentication method
+    auth_config="'auth' => array('$AUTH_METHOD'),"
+
     # Configure OIDC
+    sed -i "/auth_enforced/a \    $auth_config" config.php
     sed -i '$ d' config.php
-    echo = "  'OidcAuth' =>
+    echo "  'OidcAuth' =>
         array (
             'provider_url' => '$OIDC_PROVIDER',
             'client_id' => '$OIDC_CLIENT_ID',
@@ -304,10 +308,7 @@ initial_config() {
     /opt/scripts/misp-post-update-config.sh>/dev/null
     echo "Post upgrade configuration complete."
 
-    # Enable OpenID connect (OIDC) support
-    if [$OIDC_ENABLED]; then
-        setup_oidc
-    fi
+    setup_auth
 
     if [ -f /var/www/MISPData/custom-config.sh ]; then
         echo "Custom config options script found, executing..."

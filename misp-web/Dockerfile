@@ -127,7 +127,7 @@ ENV CAKE="sudo -H -u www-data /var/www/MISP/app/Console/cake"
 RUN apt-get -qy update &&\
     apt-get -qy upgrade apache2 &&\
     apt-get -qy install --no-install-recommends git gnupg iputils-ping libfuzzy2 libgd3 libgpgme11 libpng16-16 librdkafka1\
-    libzip4 mariadb-client ssdeep sudo uuid &&\
+    libzip4 mariadb-client ssdeep sudo uuid zip &&\
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=php_build --chown=root:root /usr/local/lib/php/extensions/no-debug-non-zts-20190902/ /usr/local/lib/php/extensions/no-debug-non-zts-20190902/

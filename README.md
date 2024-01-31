@@ -242,7 +242,7 @@ Due to how MISP deploys its databases and discrepancies between versions 5.7 and
 
 Where you need to add taxonomies and similar custom content after initial setup, these can be placed in the respective
 sub-directories of `./persistent/{instanceName}/data/files/` and loaded into the database by running
-`/opt/scripts/update-objects.sh` within the container.
+`/opt/scripts/update_objects.sh` within the container.
 
 ### 10 - Automated Maintenance
 

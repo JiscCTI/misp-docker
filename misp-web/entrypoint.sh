@@ -445,7 +445,7 @@ check_tls_certificate
 on_start
 # Ensure database schema and objects are up to date
 $CAKE Admin runUpdates
-/opt/scripts/update-objects.sh
+/opt/scripts/update_objects.sh
 # Release startup lock
 rm /var/www/MISPData/.init_lock
 echo "Released startup lock."

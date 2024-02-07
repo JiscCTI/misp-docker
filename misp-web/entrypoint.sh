@@ -39,7 +39,7 @@ set_env_vars() {
 }
 
 setup_objects() {
-    cd /var/www/MISPData/files/
+    cd /var/www/MISPData/files/ || exit 1
     echo "Cloning misp-decaying-models..."
     git clone --quiet https://github.com/MISP/misp-decaying-models misp-decaying-models
     echo "Cloning misp-galaxy..."
@@ -54,11 +54,11 @@ setup_objects() {
     git clone --quiet https://github.com/MISP/misp-taxonomies taxonomies
     echo "Cloning warninglists..."
     git clone --quiet https://github.com/MISP/misp-warninglists warninglists
-    cd /var/www/
+    cd /var/www/ || exit 1
 }
 
 setup_smtp() {
-    cd /var/www/MISPData/
+    cd /var/www/MISPData/ || exit 1
     echo "<?php
     class EmailConfig {
         public \$default = array(
@@ -78,9 +78,8 @@ setup_smtp() {
 
 restore_persistence() {
     echo "Restoring persistent file storage..."
-    cd /var/www/
-    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files MISPData/icons MISPData/images\
-        MISPData/tmp
+    cd /var/www/ || exit 1
+    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files MISPData/icons MISPData/images MISPData/tmp
 
     if [ ! -L MISP/app/Config ]; then
         echo "Persisting config..."
@@ -131,11 +130,7 @@ restore_persistence() {
         echo "Temp files already persistent."
     fi
     mkdir -p MISPData/tmp/logs
-    touch -a MISPData/tmp/logs/apache_access.log MISPData/tmp/logs/apache_error.log MISPData/tmp/logs/debug.log\
-        MISPData/tmp/logs/error.log MISPData/tmp/logs/exec-errors.log MISPData/tmp/logs/misp_maintenance_runner.log\
-        MISPData/tmp/logs/misp_maintenance_supervisor-errors.log MISPData/tmp/logs/misp_maintenance_supervisor.log\
-        MISPData/tmp/logs/misp-workers-errors.log MISPData/tmp/logs/misp-workers.log\
-        MISPData/tmp/logs/run_misp_sync_jobs.log 
+    touch -a MISPData/tmp/logs/apache_access.log MISPData/tmp/logs/apache_error.log MISPData/tmp/logs/debug.log MISPData/tmp/logs/error.log MISPData/tmp/logs/exec-errors.log MISPData/tmp/logs/misp_maintenance_runner.log MISPData/tmp/logs/misp_maintenance_supervisor-errors.log MISPData/tmp/logs/misp_maintenance_supervisor.log MISPData/tmp/logs/misp-workers-errors.log MISPData/tmp/logs/misp-workers.log MISPData/tmp/logs/run_misp_sync_jobs.log
     chmod 755 MISPData/tmp/logs
     chmod 644 MISPData/tmp/logs/*
     chown -R www-data: MISPData/tmp/logs
@@ -176,7 +171,7 @@ restore_persistence() {
 }
 
 setup_db() {
-    cd /var/www/MISPData/
+    cd /var/www/MISPData/ || exit 1
     echo "<?php
     class DATABASE_CONFIG {
         public \$default = array(
@@ -192,7 +187,7 @@ setup_db() {
         );
     }" >config/database.php
 
-    if mysql -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" <<<"SELECT id FROM users LIMIT 1">/dev/null 2>&1 ; then
+    if mysql -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" <<<"SELECT id FROM users LIMIT 1" >/dev/null 2>&1; then
         echo "Database schema appears to already be created"
     else
         echo "Database schema not present"
@@ -212,7 +207,7 @@ initial_config() {
         sed -i "s/^\(session.save_path\).*/\1 = \"tcp:\/\/${REDIS_HOST}:6379?auth=${SED_REDIS_PASSWORD}\"/" /usr/local/etc/php/php.ini
     fi
 
-    cd /var/www/
+    cd /var/www/ || exit 1
     cp -a MISP/app/Config/bootstrap.default.php MISP/app/Config/bootstrap.php
     cp /opt/scripts/core.php MISP/app/Config/core.php
     cp -a MISP/app/Config/config.default.php MISP/app/Config/config.php
@@ -225,20 +220,20 @@ initial_config() {
 
     $CAKE Admin setSetting "MISP.server_settings_skip_backup_rotate" true
     echo "Generating encryption salt value..."
-    $CAKE Admin setSetting "Security.salt" "$(openssl rand -base64 32)">/dev/null 2>&1
+    $CAKE Admin setSetting "Security.salt" "$(openssl rand -base64 32)" >/dev/null 2>&1
     echo 'Setting "Security.salt" changed to "[REDACTED]"'
-    $CAKE userInit -q>/dev/null 2>&1
+    $CAKE userInit -q >/dev/null 2>&1
     $CAKE Admin setSetting "Security.advanced_authkeys" false
-    python3 /opt/scripts/set_auth_key.py -k "$($CAKE Admin getAuthKey admin@admin.test 2>&1)">/dev/null 2>&1
+    python3 /opt/scripts/set_auth_key.py -k "$($CAKE Admin getAuthKey admin@admin.test 2>&1)" >/dev/null 2>&1
     $CAKE Admin setSetting "MISP.baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.uuid" "$(uuid -v 4)"
     $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST"
     $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB"
-    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force>/dev/null 2>&1
+    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
     echo 'Setting "MISP.redis_password" changed to "[REDACTED]"'
     $CAKE Admin setSetting "GnuPG.email" "$MISP_EMAIL_ADDRESS"
-    $CAKE Admin setSetting "GnuPG.password" "$GPG_PASSPHRASE">/dev/null 2>&1
+    $CAKE Admin setSetting "GnuPG.password" "$GPG_PASSPHRASE" >/dev/null 2>&1
     echo 'Setting "GnuPG.password" changed to "[REDACTED]"'
     $CAKE Admin setSetting "GnuPG.binary" "$(which gpg)"
     $CAKE Admin setSetting "MISP.email" "$MISP_EMAIL_ADDRESS"
@@ -249,15 +244,15 @@ initial_config() {
     $CAKE Admin setSetting "Plugin.Action_services_url" "http://$MODULES_HOSTNAME"
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST"
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_database" "$REDIS_WORKER_DB"
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force>/dev/null 2>&1
+    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.redis_password" changed to "[REDACTED]"'
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_host" "$WORKERS_HOSTNAME"
-    $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD">/dev/null 2>&1
+    $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" >/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'
     $CAKE Admin setSetting "SimpleBackgroundJobs.enabled" true
     $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
     echo "Setting $(grep --count CAKE /opt/scripts/misp-base-config.sh) base configuration settings..."
-    /opt/scripts/misp-base-config.sh>/dev/null
+    /opt/scripts/misp-base-config.sh >/dev/null
     echo "Base configuration complete."
     setup_smtp
 
@@ -265,14 +260,14 @@ initial_config() {
     /wait-for-it.sh -h "${WORKERS_HOSTNAME:-misp_workers}" -p 9001 -t 0 -- true
 
     echo "Executing all updates to bring the database up to date with the current version."
-    $CAKE Admin runUpdates>/dev/null 2>&1
+    $CAKE Admin runUpdates >/dev/null 2>&1
     echo "All updates completed."
-    $CAKE Admin setSetting "Security.encryption_key" "$(openssl rand -base64 32)">/dev/null 2>&1
+    $CAKE Admin setSetting "Security.encryption_key" "$(openssl rand -base64 32)" >/dev/null 2>&1
     echo 'Setting "Security.encryption_key" changed to "[REDACTED]"'
     $CAKE Admin setSetting "MISP.email_from_name" "$MISP_EMAIL_NAME"
     $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
     echo "Setting $(grep --count CAKE /opt/scripts/misp-post-update-config.sh) post upgrade configuration settings..."
-    /opt/scripts/misp-post-update-config.sh>/dev/null
+    /opt/scripts/misp-post-update-config.sh >/dev/null
     echo "Post upgrade configuration complete."
 
     # Enable OpenID connect (OIDC) support
@@ -286,7 +281,7 @@ initial_config() {
     # Set MISP Live
     $CAKE Live 1 >/dev/null 2>&1
     echo "Maintenance mode disabled"
-    
+
     $CAKE Admin setSetting "MISP.server_settings_skip_backup_rotate" false
     echo "Initial configuration finished."
 }
@@ -319,7 +314,7 @@ check_gnupg() {
         # Do a commit here, so that we can later print 'done'
         %commit
         %echo done" >/tmp/gen-key-script
-        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --gen-key /tmp/gen-key-script">/dev/null 2>&1
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --gen-key /tmp/gen-key-script" >/dev/null 2>&1
         rm /tmp/gen-key-script
         echo "GnuPG key generated, exporting to webroot..."
         su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS>/var/www/MISP/app/webroot/gpg.asc"
@@ -333,7 +328,7 @@ check_gnupg() {
 
 generate_self_signed_certificate() {
     openssl req -x509 -newkey rsa:4096 -subj "/CN=$(hostname)" \
-        -keyout /etc/ssl/private/misp.key -out /etc/ssl/private/misp.crt -sha256 -days 365 -nodes>/dev/null 2>&1
+        -keyout /etc/ssl/private/misp.key -out /etc/ssl/private/misp.crt -sha256 -days 365 -nodes >/dev/null 2>&1
     cat /etc/ssl/private/misp.crt /etc/ssl/private/misp.key >/etc/ssl/private/haproxy.pem
 }
 
@@ -366,8 +361,8 @@ on_start() {
     sed -i "s/^\(ServerName\).*/\1 \${FQDN}/" /etc/apache2/sites-enabled/000-default.conf
     setup_smtp
     check_gnupg
-    if echo "1234" | su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode loopback -o /dev/null --local-user $MISP_EMAIL_ADDRESS -as -">/dev/null 2>&1; then
-        $CAKE Admin setSetting "GnuPG.password" "$GPG_PASSPHRASE">/dev/null 2>&1
+    if echo "1234" | su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode loopback -o /dev/null --local-user $MISP_EMAIL_ADDRESS -as -" >/dev/null 2>&1; then
+        $CAKE Admin setSetting "GnuPG.password" "$GPG_PASSPHRASE" >/dev/null 2>&1
         echo 'Setting "GnuPG.password" changed to "[REDACTED]"'
     else
         echo "GPG Passphrase not changed as new value doesn't unlock the current key"
@@ -391,11 +386,11 @@ on_start() {
     /wait-for-it.sh -h "${REDIS_HOST:-misp_redis}" -p 6379 -t 0 -- true
     $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST"
     $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB"
-    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force>/dev/null 2>&1
+    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
     echo 'Setting "MISP.redis_password" changed to "[REDACTED]"'
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST"
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_database" "$REDIS_WORKER_DB"
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force>/dev/null 2>&1
+    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.redis_password" changed to "[REDACTED]"'
 
     /wait-for-it.sh -h "${MODULES_HOSTNAME:-misp_modules}" -p 6666 -t 0 -- true
@@ -409,7 +404,7 @@ on_start() {
 
     /wait-for-it.sh -h "${WORKERS_HOSTNAME:-misp_workers}" -p 9001 -t 0 -- true
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_host" "$WORKERS_HOSTNAME"
-    $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD">/dev/null 2>&1
+    $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" >/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'
     echo "Settings updated based on environment variables."
 }

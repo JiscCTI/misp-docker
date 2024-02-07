@@ -7,52 +7,49 @@
 
 restore_persistence() {
     echo "Restoring persistent file storage..."
-    cd /var/www/
-    set +e
-    mkdir -p MISPData/config MISPData/icons MISPData/images MISPData/files MISPData/tmp
+    cd /var/www/ || exit 1
 
-    if [ -d MISP/app/Config ]; then
-        #mv MISP/app/Config/* MISPData/config/
+    if [ ! -L MISP/app/Config ]; then
+        echo "Persisting config..."
         rm -rf MISP/app/Config
-    fi
-    if [ ! -L /var/www/MISP/app/Config ]; then
         ln -s /var/www/MISPData/config/ /var/www/MISP/app/Config
+    else
+        echo "Config already persistent."
     fi
 
-    if [ -d MISP/app/files ]; then
-        #mv MISP/app/files/* MISPData/files/
+    if [ ! -L MISP/app/files ]; then
+        echo "Persisting app files..."
         rm -rf MISP/app/files
-    fi
-    if [ ! -L /var/www/MISP/app/Config ]; then
         ln -s /var/www/MISPData/files/ /var/www/MISP/app/files
+    else
+        echo "App files already persistent."
     fi
 
-    if [ -d MISP/app/tmp ]; then
-        #mv MISP/app/tmp/* MISPData/tmp/
+    if [ ! -L MISP/app/tmp ]; then
+        echo "Persisting temp files..."
         rm -rf MISP/app/tmp
-    fi
-    if [ ! -L /var/www/MISP/app/tmp ]; then
         ln -s /var/www/MISPData/tmp/ /var/www/MISP/app/tmp
+    else
+        echo "Temp files already persistent."
     fi
 
-    if [ -d MISP/app/webroot/img/orgs ]; then
-        #mv MISP/app/webroot/img/orgs/* MISPData/icons/
+    if [ ! -L MISP/app/webroot/img/orgs ]; then
+        echo "Persisting org icons..."
         rm -rf MISP/app/webroot/img/orgs
-    fi
-    if [ ! -L /var/www/MISP/app/Config ]; then
         ln -s /var/www/MISPData/icons/ /var/www/MISP/app/webroot/img/orgs
+    else
+        echo "Org icons already persistent."
     fi
 
-    if [ -d MISP/app/webroot/img/custom ]; then
-        #mv MISP/app/webroot/img/custom/* MISPData/images/
+    if [ ! -L MISP/app/webroot/img/custom ]; then
+        echo "Persisting images..."
         rm -rf MISP/app/webroot/img/custom
-    fi
-    if [ ! -L /var/www/MISP/app/Config ]; then
         ln -s /var/www/MISPData/images/ /var/www/MISP/app/webroot/img/custom
+    else
+        echo "Images already persistent."
     fi
 
-    set -e
-    echo "Persistent file storage created."
+    echo "Persistent file storage restored."
 }
 
 if [ ! -f /var/www/MISPData/.configured ]; then

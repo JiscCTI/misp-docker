@@ -28,6 +28,7 @@ logs = [
     "/var/www/MISPData/tmp/logs/exec-errors.log",
     "/var/www/MISPData/tmp/logs/misp-workers-errors.log",
     "/var/www/MISPData/tmp/logs/misp-workers.log",
+    "/var/www/MISPData/tmp/logs/update_objects.log",
 ]
 
 for logFile in logs:

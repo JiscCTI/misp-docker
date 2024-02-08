@@ -21,5 +21,6 @@ COPY entrypoint.sh /entrypoint.sh
 COPY healthcheck.sh /healthcheck.sh
 RUN chmod 755 /*.sh
 
+EXPOSE 9001
 ENTRYPOINT /wait-for-it.sh -h ${REDIS_HOST:-misp_redis} -p 6379 -t 0 -- /entrypoint.sh
 HEALTHCHECK --start-period=10m --timeout=5s CMD /healthcheck.sh

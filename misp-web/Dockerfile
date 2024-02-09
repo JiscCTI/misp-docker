@@ -78,7 +78,7 @@ RUN php composer.phar -q self-update &&\
     php composer.phar -q config --no-plugins allow-plugins.php-http/discovery true &&\
     php composer.phar -q install --no-dev &&\
     php composer.phar suggests --all | sed -nr 's/- (.+\/.+):/\1/p' | awk '{print $1}' | sort | uniq \
-        | xargs -i php composer.phar -q require --with-all-dependencies {}
+        | xargs -I {} php composer.phar -q require --with-all-dependencies {}
 WORKDIR /var/www/MISP
 RUN cp -fa INSTALL/setup/config.php app/Plugin/CakeResque/Config/config.php &&\
     python3 -m venv venv &&\

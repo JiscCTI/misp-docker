@@ -17,7 +17,7 @@ RUN git clone --branch ${MISP_VERSION} --single-branch https://github.com/MISP/m
     /usr/local/src/misp_modules
 WORKDIR /usr/local/src/misp_modules
 RUN python3 -m venv /misp_modules &&\
-    /misp_modules/bin/pip3 install --upgrade pip --no-cache-dir &&\
+    /misp_modules/bin/pip3 install --upgrade pip setuptools --no-cache-dir &&\
     /misp_modules/bin/pip3 install greynoise pyeti redis --no-cache-dir &&\
     /misp_modules/bin/pip3 install git+https://github.com/abenassi/Google-Search-API --no-cache-dir &&\
     /misp_modules/bin/pip3 install -I -r REQUIREMENTS --no-cache-dir &&\
@@ -34,7 +34,8 @@ EXPOSE 6666
 
 RUN apt-get update &&\
     apt-get install -y curl libgl1 libglib2.0-0 libpoppler-cpp0v5 libzbar0 &&\
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* &&\
+    python3 -m pip install --upgrade pip setuptools --no-cache-dir
 
 COPY --from=build /misp_modules/ /misp_modules/
 WORKDIR /misp_modules/bin/

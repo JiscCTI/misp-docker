@@ -86,7 +86,7 @@ $CAKE Admin setSetting "Plugin.S3_enable" false 2> /dev/null
 # Plugin CustomAuth tuneable
 $CAKE Admin setSetting "Plugin.CustomAuth_disable_logout" false
 # RPZ Plugin settings
-$CAKE Admin setSetting "Plugin.RPZ_policy" "DROP"
+$CAKE Admin setSetting "Plugin.RPZ_policy" 0
 $CAKE Admin setSetting "Plugin.RPZ_walled_garden" "127.0.0.1"
 $CAKE Admin setSetting "Plugin.RPZ_serial" "\$date00"
 $CAKE Admin setSetting "Plugin.RPZ_refresh" "2h"
@@ -164,8 +164,6 @@ $CAKE Admin setSetting "MISP.disable_user_add" false
 $CAKE Admin setSetting "MISP.block_event_alert" false
 $CAKE Admin setSetting "MISP.block_event_alert_tag" "no-alerts=\"true\""
 $CAKE Admin setSetting "MISP.block_old_event_alert" false
-$CAKE Admin setSetting "MISP.block_old_event_alert_age" ""
-$CAKE Admin setSetting "MISP.block_old_event_alert_by_date" ""
 $CAKE Admin setSetting "MISP.event_alert_republish_ban" false
 $CAKE Admin setSetting "MISP.event_alert_republish_ban_threshold" 5
 $CAKE Admin setSetting "MISP.event_alert_republish_ban_refresh_on_retry" false

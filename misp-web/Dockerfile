@@ -15,6 +15,7 @@ RUN apt-get -qy update &&\
     docker-php-ext-install bcmath curl gd intl json mysqli opcache pcntl pdo_mysql zip
 RUN pecl install apcu &&\
     pecl install gnupg &&\
+    pecl install mongodb &&\
     pecl install rdkafka &&\
     pecl install redis &&\
     pecl install simdjson &&\
@@ -28,7 +29,7 @@ RUN git clone -q --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.g
     make install
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp &&\
     docker-php-ext-install gd gettext sockets &&\
-    docker-php-ext-enable apcu brotli gd gettext gnupg rdkafka redis simdjson sockets ssdeep
+    docker-php-ext-enable apcu brotli gd gettext gnupg mongodb rdkafka redis simdjson sockets ssdeep
 
 # Build Python 3.10
 FROM debian:bullseye AS python_build
@@ -71,18 +72,13 @@ COPY --from=php_build --chown=root:root /usr/local/etc/php/ /usr/local/etc/php/
 COPY --from=python_build /usr/local /usr/local
 
 WORKDIR /var/www/MISP/app
+ARG COMPOSER_ALLOW_SUPERUSER=1
 RUN php composer.phar -q self-update &&\
     php composer.phar -q config --no-plugins allow-plugins.composer/installers true &&\
     php composer.phar -q config --no-plugins allow-plugins.php-http/discovery true &&\
     php composer.phar -q install --no-dev &&\
-    php composer.phar -q require --with-all-dependencies supervisorphp/supervisor:^4.0 \
-    guzzlehttp/guzzle \
-    php-http/message \
-    lstrojny/fxmlrpc \
-    elasticsearch/elasticsearch \
-    aws/aws-sdk-php \
-    jakub-onderka/openid-connect-php \
-    php-http/message-factory
+    php composer.phar suggests --all | sed -nr 's/- (.+\/.+):/\1/p' | awk '{print $1}' | sort | uniq \
+        | xargs -I {} php composer.phar -q require --with-all-dependencies {}
 WORKDIR /var/www/MISP
 RUN cp -fa INSTALL/setup/config.php app/Plugin/CakeResque/Config/config.php &&\
     python3 -m venv venv &&\

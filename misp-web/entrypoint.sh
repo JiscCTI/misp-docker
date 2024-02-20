@@ -135,20 +135,11 @@ restore_persistence() {
     chmod 644 MISPData/tmp/logs/*
     chown -R www-data: MISPData/tmp/logs
 
-    if [ ! -L MISP/app/webroot/img/orgs ]; then
-        echo "Persisting org icons..."
-        if [ ! -f /var/www/MISPData/.configured ]; then
-            if [ "$(ls -A MISPData/icons/)" ]; then
-                echo "MISP isn't configured but files exist - assuming files are valid"
-                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
-            else
-                mv MISP/app/webroot/img/orgs/* MISPData/icons/
-            fi
-        fi
-        rm -rf MISP/app/webroot/img/orgs
-        ln -s /var/www/MISPData/icons/ /var/www/MISP/app/webroot/img/orgs
-    else
-        echo "Org icons already persistent."
+    # Migrate organisation icons from pre v2.4.185
+    if [ -d MISPData/icons/ ]; then
+        echo "Relocating org icons..."
+        mv MISPData/icons/* MISPData/files/img/orgs/
+        rm -rf MISPData/icons/
     fi
 
     if [ ! -L MISP/app/webroot/img/custom ]; then

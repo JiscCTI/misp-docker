@@ -80,7 +80,7 @@ setup_smtp() {
 restore_persistence() {
     echo "Restoring persistent file storage..."
     cd /var/www/ || exit 1
-    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files MISPData/files/img/orgs MISPData/images MISPData/tmp
+    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files MISPData/images MISPData/tmp
 
     if [ ! -L MISP/app/Config ]; then
         echo "Persisting config..."
@@ -141,6 +141,7 @@ restore_persistence() {
         if [ ! -z "$(ls -A MISPData/icons/)" ]; then
             # If MISPData/icons is not empty
             echo "Relocating org icons..."
+            mkdir -p MISPData/files/img/orgs
             mv MISPData/icons/* MISPData/files/img/orgs/
         fi
         rm -rf MISPData/icons/

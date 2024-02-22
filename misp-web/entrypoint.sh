@@ -3,6 +3,7 @@
 # SPDX-FileCopyrightText: 2023 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 # SPDX-FileContributor: James Acris - OIDC Support
+# SPDX-FileContributor: James Ellor
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
@@ -79,7 +80,7 @@ setup_smtp() {
 restore_persistence() {
     echo "Restoring persistent file storage..."
     cd /var/www/ || exit 1
-    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files MISPData/icons MISPData/images MISPData/tmp
+    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files MISPData/images MISPData/tmp
 
     if [ ! -L MISP/app/Config ]; then
         echo "Persisting config..."
@@ -137,8 +138,11 @@ restore_persistence() {
 
     # Migrate organisation icons from pre v2.4.185
     if [ -d MISPData/icons/ ]; then
-        echo "Relocating org icons..."
-        mv MISPData/icons/* MISPData/files/img/orgs/
+        if [ ! -z "$(ls -A MISPData/icons/)" ]; then
+            # If MISPData/icons is not empty 
+            echo "Relocating org icons..."
+            mv MISPData/icons/* MISPData/files/img/orgs/
+        fi
         rm -rf MISPData/icons/
     fi
 

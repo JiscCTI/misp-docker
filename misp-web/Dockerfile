@@ -11,7 +11,7 @@ COPY --chown=root:root php.ini /usr/local/etc/php/php.ini
 
 RUN apt-get -qy update &&\
     apt-get -qy install --no-install-recommends git libc6 libcurl4-openssl-dev libfuzzy-dev libfreetype-dev libgd3 \
-    libicu-dev libjpeg-dev libgpgme-dev libpng-dev librdkafka-dev libwebp-dev libzip-dev &&\
+    libicu-dev libjpeg-dev libgpgme-dev libonig-dev libpng-dev librdkafka-dev libwebp-dev libzip-dev &&\
     docker-php-ext-install bcmath curl gd intl json mysqli opcache pcntl pdo_mysql zip
 RUN pecl install apcu &&\
     pecl install gnupg &&\
@@ -28,8 +28,8 @@ RUN git clone -q --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.g
     ./configure &&\
     make install
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp &&\
-    docker-php-ext-install gd gettext sockets &&\
-    docker-php-ext-enable apcu brotli gd gettext gnupg mongodb rdkafka redis simdjson sockets ssdeep
+    docker-php-ext-install exif gd gettext mbstring sockets &&\
+    docker-php-ext-enable apcu brotli exif gd gettext gnupg mbstring mongodb rdkafka redis simdjson sockets ssdeep
 
 # Build Python 3.10
 FROM debian:bullseye AS python_build

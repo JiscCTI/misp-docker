@@ -3,6 +3,7 @@
 # SPDX-FileCopyrightText: 2023 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 # SPDX-FileContributor: James Acris - OIDC Support
+# SPDX-FileContributor: James Ellor
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
@@ -79,7 +80,7 @@ setup_smtp() {
 restore_persistence() {
     echo "Restoring persistent file storage..."
     cd /var/www/ || exit 1
-    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files MISPData/icons MISPData/images MISPData/tmp
+    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files MISPData/images MISPData/tmp
 
     if [ ! -L MISP/app/Config ]; then
         echo "Persisting config..."
@@ -135,20 +136,15 @@ restore_persistence() {
     chmod 644 MISPData/tmp/logs/*
     chown -R www-data: MISPData/tmp/logs
 
-    if [ ! -L MISP/app/webroot/img/orgs ]; then
-        echo "Persisting org icons..."
-        if [ ! -f /var/www/MISPData/.configured ]; then
-            if [ "$(ls -A MISPData/icons/)" ]; then
-                echo "MISP isn't configured but files exist - assuming files are valid"
-                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
-            else
-                mv MISP/app/webroot/img/orgs/* MISPData/icons/
-            fi
+    # Migrate organisation icons from pre v2.4.185
+    if [ -d MISPData/icons/ ]; then
+        if [ ! -z "$(ls -A MISPData/icons/)" ]; then
+            # If MISPData/icons is not empty
+            echo "Relocating org icons..."
+            mkdir -p MISPData/files/img/orgs
+            mv MISPData/icons/* MISPData/files/img/orgs/
         fi
-        rm -rf MISP/app/webroot/img/orgs
-        ln -s /var/www/MISPData/icons/ /var/www/MISP/app/webroot/img/orgs
-    else
-        echo "Org icons already persistent."
+        rm -rf MISPData/icons/
     fi
 
     if [ ! -L MISP/app/webroot/img/custom ]; then

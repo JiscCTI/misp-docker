@@ -76,7 +76,7 @@ setup_smtp() {
     }" >config/email.php
 }
 
-setup_auth() {
+setup_oidc() {
     # Enable the OidcAuth plugin
     cd /var/www/MISP/app/Config
     echo "CakePlugin::load('OidcAuth');" >>bootstrap.php
@@ -97,12 +97,12 @@ setup_auth() {
             'redirect_uri' => '$FQDN/users/login',
             'role_mapper' =>
             array (
-                'misp-admin-access' => 1,
-                'misp-org-admin-access' => 2,
-                'misp-sync-access' => 5,
-                'misp-publisher-access' => 4,
-                'misp-api-access' => 'User with API access',
-                'misp-access' => 3,
+                '$OIDC_ORG_ADMIN_ROLE' => 2,
+                '$OIDC_ADMIN_ROLE' => 1,
+                '$OIDC_SYNC_ROLE' => 5,
+                '$OIDC_PUBLISHER_ROLE' => 4,
+                '$OIDC_API_ROLE' => 'User with API access',
+                '$OIDC_USER_ROLE' => 3,
             ),
             'default_org' => '$ORG_NAME',
         ),
@@ -308,7 +308,7 @@ initial_config() {
     /opt/scripts/misp-post-update-config.sh>/dev/null
     echo "Post upgrade configuration complete."
 
-    setup_auth
+    setup_oidc
 
     if [ -f /var/www/MISPData/custom-config.sh ]; then
         echo "Custom config options script found, executing..."

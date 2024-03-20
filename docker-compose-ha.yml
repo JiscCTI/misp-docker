@@ -116,3 +116,4 @@ services:
     restart: unless-stopped
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData
+      - ./persistent/${COMPOSE_PROJECT_NAME}/gpg/:/var/www/MISPGnuPG

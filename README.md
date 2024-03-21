@@ -112,7 +112,7 @@ to fail.
 | MYSQL_USERNAME | The username MISP will use to connect to MySQL. |
 | OIDC_ADMIN_ROLE | The OIDC user role to grant admin access to. |
 | OIDC_API_ROLE | The OIDC user role to grant API access to. |
-| OIDC_AUTH_METHO | The OIDC Authentication method ot use, defaults to `client-secret-jwt` |
+| OIDC_AUTH_METHO | The OIDC Authentication method ot use, defaults to `client_secret_jwt` |
 | OIDC_CLIENT_ID | The OIDC Client ID for MISP. |
 | OIDC_CLIENT_SECRET | The OIDC Client Secret for MISP. |
 | OIDC_CODE_CHALLENGE_METHOD | The OIDC challenge signing algorithm, defaults to `S256` |

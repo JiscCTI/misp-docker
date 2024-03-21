@@ -36,7 +36,7 @@ set_env_vars() {
     OIDC_PUBLISHER_ROLE=${OIDC_publisher_ROLE:-misp-publisher-access}
     OIDC_API_ROLE=${OIDC_API_ROLE:-misp-api-access}
     OIDC_USER_ROLE=${OIDC_USER_ROLE:-misp-user-access}
-    OIDC_AUTH_METHOD=${OIDC_AUTH_METHOD:-client-secret-jwt}
+    OIDC_AUTH_METHOD=${OIDC_AUTH_METHOD:-client_secret_jwt}
     OIDC_CODE_CHALLENGE_METHOD=${OIDC_CODE_CHALLENGE_METHOD:-S256}
     ORG_NAME="${ORG_NAME:-ORGNAME}"
     REDIS_HOST="${REDIS_HOST:-misp_redis}"

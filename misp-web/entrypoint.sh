@@ -10,7 +10,7 @@
 set -e
 
 set_env_vars() {
-    AUTH_METHOD="${$AUTH_METHOD:-basic}"
+    AUTH_METHOD="${AUTH_METHOD:-misp}"
     CLAMAV_HOSTNAME="${CLAMAV_HOSTNAME:misp_clamav}"
     FQDN="${FQDN:-misp.local}"
     GPG_PASSPHRASE="${GPG_PASSPHRASE:-misp}"
@@ -91,35 +91,35 @@ setup_smtp() {
 
 setup_oidc() {
     # Configure Authentication method
-    if [[ "$AUTH_METHOD" = OidcAuth.Oidc ]];
-        # Enable the OidcAuth plugin
-        cd /var/www/MISP/app/Config
-        echo "CakePlugin::load('OidcAuth');" >>bootstrap.php
-        auth_config="'auth' => array('$AUTH_METHOD'),"
 
-        # Configure OIDC
-        sed -i "/auth_enforced/a \    $auth_config" config.php
-        sed -i '$ d' config.php
-        echo "  'OidcAuth' =>
-            array (
-                'provider_url' => '$OIDC_PROVIDER',
-                'client_id' => '$OIDC_CLIENT_ID',
-                'client_secret' => '$OIDC_CLIENT_SECRET',
-                'authentication_method' => '$OIDC_AUTH_METHOD',
-                'code_challenge_method' => '$OIDC_CODE_CHALLENGE_METHOD',
-                'redirect_uri' => '$FQDN/users/login',
-                'role_mapper' =>
-                array (
-                    '$OIDC_ORG_ADMIN_ROLE' => 2,
-                    '$OIDC_ADMIN_ROLE' => 1,
-                    '$OIDC_SYNC_ROLE' => 5,
-                    '$OIDC_PUBLISHER_ROLE' => 4,
-                    '$OIDC_API_ROLE' => 'User with API access',
-                    '$OIDC_USER_ROLE' => 3,
-                ),
-                'default_org' => '$ORG_NAME',
-            ),
-        );" >>config.php
+    # Enable the OidcAuth plugin
+    cd /var/www/MISP/app/Config
+    echo "CakePlugin::load('OidcAuth');" >>bootstrap.php
+    auth_config="'auth' => array('OidcAuth.Oidc'),"
+
+    # Configure OIDC
+    sed -i "/auth_enforced/a \    $auth_config" config.php
+    sed -i '$ d' config.php
+    echo "  'OidcAuth' =>
+        array (
+            'provider_url' => '$OIDC_PROVIDER',
+            'client_id' => '$OIDC_CLIENT_ID',
+            'client_secret' => '$OIDC_CLIENT_SECRET',
+            'authentication_method' => '$OIDC_AUTH_METHOD',
+            'code_challenge_method' => '$OIDC_CODE_CHALLENGE_METHOD',
+            'redirect_uri' => '$FQDN/users/login',
+            'role_mapper' =>
+              array (
+                '$OIDC_ORG_ADMIN_ROLE' => 2,
+                '$OIDC_ADMIN_ROLE' => 1,
+                '$OIDC_SYNC_ROLE' => 5,
+                '$OIDC_PUBLISHER_ROLE' => 4,
+                '$OIDC_API_ROLE' => 'User with API access',
+                '$OIDC_USER_ROLE' => 3,
+              ),
+            'default_org' => '$ORG_NAME',
+        ),
+    );" >>config.php
 }
 
 restore_persistence() {
@@ -311,8 +311,14 @@ initial_config() {
     /opt/scripts/misp-post-update-config.sh >/dev/null
     echo "Post upgrade configuration complete."
 
-    setup_oidc
-
+    if [ "$AUTH_METHOD" == oidc ]; then
+        setup_oidc
+    #elif [ "$AUTH_METHOD" == shib ]; then
+	  #    setup_shib
+    elif [ "$AUTH_METHOD" != misp ]; then
+        echo "No valid auth method set, defaulting to MISP basic auth"
+    fi
+    
     if [ -f /var/www/MISPData/custom-config.sh ]; then
         echo "Custom config options script found, executing..."
         bash /var/www/MISPData/custom-config.sh

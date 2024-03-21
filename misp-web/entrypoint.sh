@@ -96,7 +96,7 @@ setup_oidc() {
             'client_secret' => '$OIDC_CLIENT_SECRET',
             'authentication_method' => '$OIDC_AUTH_METHOD',
             'code_challenge_method' => '$OIDC_CODE_CHALLENGE_METHOD',
-            'redirect_uri' => '$FQDN/users/login',
+            'redirect_uri' => '$MISP_URL/users/login',
             'role_mapper' =>
               array (
                 '$OIDC_ORG_ADMIN_ROLE' => 2,

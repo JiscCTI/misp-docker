@@ -21,7 +21,8 @@ RUN pecl install apcu &&\
     pecl install simdjson &&\
     ln -s /usr/lib/x86_64-linux-gnu/libfuzzy.so /usr/lib/libfuzzy.so &&\
     ldconfig &&\
-    pecl install ssdeep
+    pecl install ssdeep &&\
+    pecl install zstd
 RUN git clone -q --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git &&\
     cd php-ext-brotli &&\
     phpize &&\
@@ -29,7 +30,7 @@ RUN git clone -q --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.g
     make install
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp &&\
     docker-php-ext-install exif gd gettext mbstring sockets &&\
-    docker-php-ext-enable apcu brotli exif gd gettext gnupg mbstring mongodb rdkafka redis simdjson sockets ssdeep
+    docker-php-ext-enable apcu brotli exif gd gettext gnupg mbstring mongodb rdkafka redis simdjson sockets ssdeep zstd
 
 # Build Python 3.10
 FROM debian:bullseye AS python_build

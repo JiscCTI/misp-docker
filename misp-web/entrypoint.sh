@@ -220,7 +220,7 @@ initial_config() {
     echo 'Setting "Security.salt" changed to "[REDACTED]"'
     $CAKE userInit -q >/dev/null 2>&1
     $CAKE Admin setSetting "Security.advanced_authkeys" false
-    python3 /opt/scripts/set_auth_key.py -k "$($CAKE Admin getAuthKey admin@admin.test 2>&1)" >/dev/null 2>&1
+    python3 /opt/scripts/set_auth_key.py -k "$($CAKE Admin getAuthKey admin@admin.test | tr -d "[:blank:]" 2>&1)" >/dev/null 2>&1
     $CAKE Admin setSetting "MISP.baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.uuid" "$(uuid -v 4)"

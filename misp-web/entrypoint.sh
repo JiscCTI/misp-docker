@@ -138,7 +138,7 @@ restore_persistence() {
 
     # Migrate organisation icons from pre v2.4.185
     if [ -d MISPData/icons/ ]; then
-        if [ ! -z "$(ls -A MISPData/icons/)" ]; then
+        if [ -n "$(ls -A MISPData/icons/)" ]; then
             # If MISPData/icons is not empty
             echo "Relocating org icons..."
             mkdir -p MISPData/files/img/orgs

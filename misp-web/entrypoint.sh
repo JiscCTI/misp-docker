@@ -33,7 +33,7 @@ set_env_vars() {
     OIDC_ADMIN_ROLE=${OIDC_ADMIN_ROLE:-misp-admin-access}
     OIDC_ORG_ADMIN_ROLE=${OIDC_ORG_ADMIN_ROLE:-misp-org-admin-access}
     OIDC_SYNC_ROLE=${OIDC_SYNC_ROLE:-misp-sync-access}
-    OIDC_PUBLISHER_ROLE=${OIDC_publisher_ROLE:-misp-publisher-access}
+    OIDC_PUBLISHER_ROLE=${OIDC_PUBLISHER_ROLE:-misp-publisher-access}
     OIDC_API_ROLE=${OIDC_API_ROLE:-misp-api-access}
     OIDC_USER_ROLE=${OIDC_USER_ROLE:-misp-user-access}
     OIDC_AUTH_METHOD=${OIDC_AUTH_METHOD:-client_secret_jwt}

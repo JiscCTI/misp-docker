@@ -2,7 +2,7 @@
 
 """Rotate logs that do not rotate automatically"""
 
-# SPDX-FileCopyrightText: 2023 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
 # SPDX-FileContributor: James Ellor
 #
 # SPDX-License-Identifier: GPL-3.0-only

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2023 Jisc Services Limited
-# SPDX-FileContributor: Joe Pitt
-# SPDX-FileContributor: James Acris - OIDC Support
+# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileContributor: James Acris
 # SPDX-FileContributor: James Ellor
+# SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
 

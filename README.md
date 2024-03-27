@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2023 Jisc Services Limited
+SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
 SPDX-FileContributor: Joe Pitt
 
 SPDX-License-Identifier: GPL-3.0-only

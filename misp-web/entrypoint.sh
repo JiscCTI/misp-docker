@@ -78,39 +78,6 @@ setup_smtp() {
     }" >config/email.php
 }
 
-setup_oidc() {
-    # Configure Authentication method
-
-    # Enable the OidcAuth plugin
-    cd /var/www/MISP/app/Config
-    echo "CakePlugin::load('OidcAuth');" >>bootstrap.php
-    auth_config="'auth' => array('OidcAuth.Oidc'),"
-
-    # Configure OIDC
-    sed -i "/auth_enforced/a \    $auth_config" config.php
-    sed -i '$ d' config.php
-    echo "  'OidcAuth' =>
-        array (
-            'provider_url' => '$OIDC_PROVIDER',
-            'client_id' => '$OIDC_CLIENT_ID',
-            'client_secret' => '$OIDC_CLIENT_SECRET',
-            'authentication_method' => '$OIDC_AUTH_METHOD',
-            'code_challenge_method' => '$OIDC_CODE_CHALLENGE_METHOD',
-            'redirect_uri' => '$MISP_URL/users/login',
-            'role_mapper' =>
-              array (
-                '$OIDC_ORG_ADMIN_ROLE' => 2,
-                '$OIDC_ADMIN_ROLE' => 1,
-                '$OIDC_SYNC_ROLE' => 5,
-                '$OIDC_PUBLISHER_ROLE' => 4,
-                '$OIDC_API_ROLE' => 'User with API access',
-                '$OIDC_USER_ROLE' => 3,
-              ),
-            'default_org' => '$ORG_NAME',
-        ),
-    );" >>config.php
-}
-
 restore_persistence() {
     echo "Restoring persistent file storage..."
     cd /var/www/ || exit 1
@@ -512,11 +479,11 @@ on_start() {
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" >/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'
 
-    #if [ "$AUTH_METHOD" == oidc ]; then
-        #echo "Enabling OIDC Authentication"
-        #cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
-        #php /opt/scripts/auth_oidc.php
-    if [ "$AUTH_METHOD" == shibb ]; then
+    if [ "$AUTH_METHOD" == oidc ]; then
+        echo "Enabling OIDC Authentication"
+        cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
+        php /opt/scripts/auth_oidc.php
+    elif [ "$AUTH_METHOD" == shibb ]; then
         echo "Enabling Shibboleth Authentication"
         cp /etc/apache2/sites-available/apache.shibb.conf /etc/apache2/sites-enabled/000-default.conf
         php /opt/scripts/auth_shibb.php

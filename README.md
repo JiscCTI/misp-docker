@@ -95,6 +95,7 @@ to fail.
 
 | Variable | Description |
 | -------- | ----------- |
+| AUTH_METHOD | The method to use for user authentication. Can be `misp` (default) or `oidc` |
 | CLAMAV_HOSTNAME | The hostname or IP of a host with ClamAV exposed on port 3310. |
 | FQDN | The fully qualified domain name users will use to access MISP. |
 | GPG_PASSPHRASE | The passphrase to generate / access the GnuPG key used by MISP. |
@@ -109,6 +110,17 @@ to fail.
 | MYSQL_PASSWORD | The password MISP will use to connect to MySQL. |
 | MYSQL_ROOT_PASSWORD | The root password that will be set in the MySQL container. |
 | MYSQL_USERNAME | The username MISP will use to connect to MySQL. |
+| OIDC_ADMIN_ROLE | The OIDC user role to grant admin access to. |
+| OIDC_API_ROLE | The OIDC user role to grant API access to. |
+| OIDC_AUTH_METHO | The OIDC Authentication method ot use, defaults to `client_secret_jwt` |
+| OIDC_CLIENT_ID | The OIDC Client ID for MISP. |
+| OIDC_CLIENT_SECRET | The OIDC Client Secret for MISP. |
+| OIDC_CODE_CHALLENGE_METHOD | The OIDC challenge signing algorithm, defaults to `S256` |
+| OIDC_ORG_ADMIN_ROLE | The OIDC user role to grant org admin access to. |
+| OIDC_PROVIDER | The OIDC provider URL of the Identity Provider. |
+| OIDC_PUBLISHER_ROLE | The OIDC user role to grant publisher access to. |
+| OIDC_SYNC_ROLE | The OIDC user role to grant sync user access to. |
+| OIDC_USER_ROLE | The OIDC user role to grant user access to. |
 | ORG_NAME | The organisation that owns this instance of MISP. |
 | REDIS_HOST | The hostname of the Redis container OR the FQDN of the external Redis service. |
 | REDIS_MISP_DB | The database number to use for MISP within Redis. |

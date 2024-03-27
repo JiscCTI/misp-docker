@@ -10,6 +10,7 @@
 set -e
 
 set_env_vars() {
+    AUTH_METHOD="${AUTH_METHOD:-misp}"
     CLAMAV_HOSTNAME="${CLAMAV_HOSTNAME:misp_clamav}"
     FQDN="${FQDN:-misp.local}"
     GPG_PASSPHRASE="${GPG_PASSPHRASE:-misp}"
@@ -26,6 +27,17 @@ set_env_vars() {
     MYSQL_HOSTNAME="${MYSQL_HOSTNAME:-misp_db}"
     MYSQL_PASSWORD="${MYSQL_PASSWORD:-misp}"
     MYSQL_USERNAME="${MYSQL_USERNAME:-misp}"
+    OIDC_ADMIN_ROLE="${OIDC_ADMIN_ROLE:-misp-admin-access}"
+    OIDC_API_ROLE="${OIDC_API_ROLE:-misp-api-access}"
+    OIDC_AUTH_METHOD="${OIDC_AUTH_METHOD:-client_secret_jwt}"
+    OIDC_CLIENT_ID="${OIDC_CLIENT_ID:-misp}"
+    OIDC_CLIENT_SECRET="${OIDC_CLIENT_SECRET:-misp}"
+    OIDC_CODE_CHALLENGE_METHOD="${OIDC_CODE_CHALLENGE_METHOD:-S256}"
+    OIDC_ORG_ADMIN_ROLE="${OIDC_ORG_ADMIN_ROLE:-misp-org-admin-access}"
+    OIDC_PROVIDER="${OIDC_PROVIDER:-example.com/auth/realms/realm/.well-known/openid-configuration}"
+    OIDC_PUBLISHER_ROLE="${OIDC_PUBLISHER_ROLE:-misp-publisher-access}"
+    OIDC_SYNC_ROLE="${OIDC_SYNC_ROLE:-misp-sync-access}"
+    OIDC_USER_ROLE="${OIDC_USER_ROLE:-misp-user-access}"
     ORG_NAME="${ORG_NAME:-ORGNAME}"
     REDIS_HOST="${REDIS_HOST:-misp_redis}"
     REDIS_MISP_DB="${REDIS_MISP_DB:-2}"
@@ -266,9 +278,6 @@ initial_config() {
     /opt/scripts/misp-post-update-config.sh >/dev/null
     echo "Post upgrade configuration complete."
 
-    # Enable OpenID connect (OIDC) support
-    echo "CakePlugin::load('OidcAuth');" >>/var/www/MISP/app/Config/bootstrap.php
-
     if [ -f /var/www/MISPData/custom-config.sh ]; then
         echo "Custom config options script found, executing..."
         bash /var/www/MISPData/custom-config.sh
@@ -402,6 +411,21 @@ on_start() {
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_host" "$WORKERS_HOSTNAME"
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" >/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'
+
+    if [ "$AUTH_METHOD" == oidc ]; then
+        echo "Enabling OIDC Authentication"
+        php /opt/scripts/auth_oidc.php
+    #elif [ "$AUTH_METHOD" == shibb ]; then
+        #echo "Enabling Shibboleth Authentication"
+        #php /opt/scripts/auth_shibb.php
+    else
+        if [ "$AUTH_METHOD" != misp ]; then
+            echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp' or 'oidc'"
+        fi
+        echo "Enabling MISP Native Authentication"
+        php /opt/scripts/auth_misp.php
+    fi
+
     echo "Settings updated based on environment variables."
 }
 

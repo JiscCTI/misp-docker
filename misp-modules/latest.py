@@ -12,9 +12,9 @@ from sys import path
 
 try:
     path.insert(0, join(dirname(__file__), "..", "lib"))
-    from semver import GetLatestVersionFromGitHubTags
-except (OSError, ImportError):
-    raise ImportError("Failed to load semver")
+    from semver import get_latest_from_github_tags
+except (OSError, ImportError) as e:
+    raise ImportError("Failed to load semver") from e
 
 
 __author__ = "Joe Pitt"
@@ -25,4 +25,4 @@ __maintainer__ = "Joe Pitt"
 __status__ = "Production"
 __version__ = "1.0.0"
 
-print(GetLatestVersionFromGitHubTags(Repository="MISP/misp-modules", MaxMajor=2))
+print(get_latest_from_github_tags("MISP/misp-modules", 2))

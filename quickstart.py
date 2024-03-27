@@ -49,7 +49,7 @@ Args = Parser.parse_args()
 Base = dirname(abspath(__file__))
 chdir(Base)
 DotEnv = join(Base, ".env")
-PersistentStorage = join(Base, "persistent")
+PersistentStorage = join(Base, "persistent", "misp")
 
 run(["/usr/bin/docker", "compose", "down", "--remove-orphans"], check=False)
 
@@ -67,13 +67,21 @@ if not exists(DotEnv):
 if exists(PersistentStorage):
     print("Deleting old persistent storage...")
     try:
-        rmtree(PersistentStorage)
-    except OSError:
+        rmtree(join(PersistentStorage, "db"))
+    except OSError as e:
         print(
-            'Failed to delete persistent storage. Delete "{}" manually, then run this script again.'.format(
-                PersistentStorage
-            )
+            f"Failed to delete persistent storage. Delete {join(PersistentStorage, 'db')} "
+            "manually, then run this script again."
         )
+        raise e
+    try:
+        rmtree(join(PersistentStorage, "data"))
+    except OSError as e:
+        print(
+            f"Failed to delete persistent storage. Delete {join(PersistentStorage, 'data')} "
+            "manually, then run this script again."
+        )
+        raise e
 
 print("Pulling external images...")
 run(["/usr/bin/docker", "pull", "clamav/clamav:1.0_base"], check=True)

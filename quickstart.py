@@ -29,6 +29,15 @@ from lib.semver import (
 )
 
 
+__author__ = "Joe Pitt"
+__copyright__ = "Copyright 2023-2024, Jisc Services Limited"
+__email__ = "Joe.Pitt@jisc.ac.uk"
+__license__ = "GPL-3.0-only"
+__maintainer__ = "Joe Pitt"
+__status__ = "Production"
+__version__ = "1.0.1"
+
+
 def generate_password() -> str:
     """Generate a 32 character alphanumeric password
 

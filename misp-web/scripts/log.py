@@ -13,59 +13,57 @@ from socket import gethostname
 
 
 __author__ = "Joe Pitt"
-__copyright__ = "Copyright 2023, Jisc Services Limited"
+__copyright__ = "Copyright 2023-2024, Jisc Services Limited"
 __email__ = "Joe.Pitt@jisc.ac.uk"
 __license__ = "GPL-3.0-only"
 __maintainer__ = "Joe Pitt"
 __status__ = "Production"
-__version__ = "1.0.1"
+__version__ = "2.0.0"
 
 
-def CreateLogger(
-    App: str,
-    Hostname: str = gethostname(),
-    LogDirectory: str = "/var/log",
-    Debug: bool = False,
-    Stderr: bool = False,
+def create_logger(
+    app: str,
+    hostname: str = gethostname(),
+    log_directory: str = "/var/log",
+    debug: bool = False,
+    stderr: bool = False,
 ) -> Logger:
     """Initialise a Logger using syslog formatting into a self-rotating file
 
     Args:
-        App (str): The name of the app the logger is for
-        Hostname (str, optional): The hostname to show in log entries. Defaults to gethostname().
-        LogDirectory (str, optional): The directory to store the log file. Defaults to "/var/log".
-        Debug (bool, optional): Whether to write debug logging to file. Defaults to False.
-        Stderr (bool, optional): Whether to write logging to stderr. Defaults to False.
+        app (str): The name of the app the logger is for
+        hostname (str, optional): The hostname to show in log entries. Defaults to gethostname().
+        log_directory (str, optional): The directory to store the log file. Defaults to "/var/log".
+        debug (bool, optional): Whether to write debug logging to file. Defaults to False.
+        stderr (bool, optional): Whether to write logging to stderr. Defaults to False.
 
     Returns:
         Logger: A configured Logger object
     """
 
-    logger = getLogger(App)
+    logger = getLogger(app)
     logger.propagate = False
-    if Debug:
+    if debug:
         logger.setLevel(DEBUG)
     else:
         logger.setLevel(INFO)
 
-    LogPath = "{}/{}.log".format(LogDirectory, App)
+    log_file = f"{log_directory}/{app}.log"
 
-    LogFormatter = Formatter(
-        "%(asctime)s {} %(name)s[%(process)d]: [%(levelname)s] %(message)s".format(
-            Hostname
-        ),
+    log_formatter = Formatter(
+        f"%(asctime)s {hostname} %(name)s[%(process)d]: [%(levelname)s] %(message)s",
         "%b %d %H:%M:%S",
     )
 
     # Prevent the log from growing beyond 20MB
-    LogHandler = RotatingFileHandler(LogPath, maxBytes=20000000, backupCount=1)
-    LogHandler.setFormatter(LogFormatter)
-    logger.addHandler(LogHandler)
+    log_handler = RotatingFileHandler(log_file, maxBytes=20000000, backupCount=1)
+    log_handler.setFormatter(log_formatter)
+    logger.addHandler(log_handler)
 
-    if Stderr:
+    if stderr:
         # defaults to stderr
-        StderrHandler = StreamHandler()
-        StderrHandler.setFormatter(LogFormatter)
-        logger.addHandler(StderrHandler)
+        stderr_handler = StreamHandler()
+        stderr_handler.setFormatter(log_formatter)
+        logger.addHandler(stderr_handler)
 
     return logger

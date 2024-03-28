@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-"""Update the name Org ID"""
+"""Update the name of the default organisation"""
 
-# SPDX-FileCopyrightText: 2023 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -13,28 +13,28 @@ from os import environ
 from pymisp import PyMISP
 
 __author__ = "Joe Pitt"
-__copyright__ = "Copyright 2023, Jisc Services Limited"
+__copyright__ = "Copyright 2023-2024, Jisc Services Limited"
 __email__ = "Joe.Pitt@jisc.ac.uk"
 __license__ = "GPL-3.0-only"
 __maintainer__ = "Joe Pitt"
 __status__ = "Production"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 try:
     environ["ORG_NAME"]
-except KeyError:
+except KeyError as e:
     print("ORG_NAME environment variable missing")
-    exit(1)
+    raise e
 
-configFile = "/var/www/MISPData/misp_maintenance_jobs.ini"
+CONFIG_FILE = "/var/www/MISPData/misp_maintenance_jobs.ini"
 Config = ConfigParser()
-Config.read(configFile)
+Config.read(CONFIG_FILE)
 
 MISP = PyMISP(
     Config.get("DEFAULT", "baseUrl"),
     Config.get("DEFAULT", "authKey"),
     Config.getboolean("DEFAULT", "verifyTls"),
-    tool="set_org_name/v{}".format(__version__),
+    tool=f"set_org_name/v{__version__}",
 )
 Organisation = MISP.get_organisation(1, pythonify=True)
 Organisation.name = environ["ORG_NAME"]

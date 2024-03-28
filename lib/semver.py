@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# SPDX-FileCopyrightText: 2023 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -9,24 +9,23 @@
 
 from json import loads
 from re import finditer
-from sys import exit as sys_exit
 from typing import List
 
 try:
     from requests import get
-except ImportError:
+except ImportError as e:
     print("Failed to import requests. Install it using:")
     print("python3 -m pip install --user requests")
-    sys_exit(1)
+    raise e
 
 
 __author__ = "Joe Pitt"
-__copyright__ = "Copyright 2023, Jisc Services Limited"
+__copyright__ = "Copyright 2023-2024, Jisc Services Limited"
 __email__ = "Joe.Pitt@jisc.ac.uk"
 __license__ = "GPL-3.0-only"
 __maintainer__ = "Joe Pitt"
 __status__ = "Production"
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 
 def get_highest_version(

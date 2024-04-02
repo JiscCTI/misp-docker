@@ -56,6 +56,7 @@ properly.
 | REDIS_MISP_DB | The database number to use for MISP within Redis. | `2` |
 | **REDIS_PASSWORD** | The password MISP will use to connect to Redis. | `misp` |
 | REDIS_WORKER_DB | The database number to use for the MISP Workers within Redis. | `3` |
+| REQUIRE_TOTP | Toggle if Time-based One Time Passwords are required. | `true` |
 | **SMTP_HOSTNAME** | The FQDN of the SMTP service. | `localhost` |
 | **SMTP_PASSWORD** | The password MISP will use to connect to the SMTP service. | `misp` |
 | SMTP_PORT | The port the SMTP service is listening on. | `587` |

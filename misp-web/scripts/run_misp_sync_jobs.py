@@ -91,7 +91,7 @@ try:
     misp = PyMISP(base_url, auth_key, verify_tls)
 except PyMISPError as e:
     LOGGER.critical("Failed to connect to the MISP instance: (%s) %s", type(e), e)
-    sys_exit(1)
+    raise e
 
 LOGGER.debug("Fetching list of configured feeds")
 feeds = misp.feeds()

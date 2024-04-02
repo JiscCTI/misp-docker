@@ -60,9 +60,9 @@ properly.
 | **SMTP_PASSWORD** | The password MISP will use to connect to the SMTP service. | `misp` |
 | SMTP_PORT | The port the SMTP service is listening on. | `587` |
 | SMTP_STARTTLS | If the SMTP service supports STARTTLS encryption, **case-sensitive** `true` or `false`. | `true` |
-| SMTP_USERNAME | The username MISP will use to connect to the SMTP service. | `misp` |
+| **SMTP_USERNAME** | The username MISP will use to connect to the SMTP service. | `misp` |
 | WORKERS_HOSTNAME | The hostname of the MISP Workers container. | `misp_workers` |
-| WORKERS_PASSWORD | The password MISP will use to connect to the MISP Workers container's Supervisor interface. | `misp` |
+| **WORKERS_PASSWORD** | The password MISP will use to connect to the MISP Workers container's Supervisor interface. | `misp` |
 
 ## 3 - Import TLS Certificate
 
@@ -110,7 +110,7 @@ Any other custom files, such as tagging taxonomies, must be placed in
 ## 6 - MISP Settings
 
 The container configures MISP into a usable state during initial start up, however, if you'd like to
-further customise MISP during this initial startup create a shell scripts named
+further customise MISP during this initial startup create a shell script named
 `./persistent/{instanceName}/data/custom-config.sh`. `$CAKE` is set to the command to run MISP's CLI
 tool (CakePHP) properly.
 
@@ -151,7 +151,7 @@ firewall may be preventing cross container communication.
 ## 8 - Access MISP
 
 Once MISP is up, if can be accessed at `https://{FQDN}:{HTTPS_PORT}` the default credentials are
-email: `admin@admin.test` password: `admin`. You will be force to change the password.
+email: `admin@admin.test` password: `admin`. You will be forced to change the password.
 
 MISP has a diagnostics page you can check at Administration / Server Settings & Maintenance /
 Diagnostics, the expected output is all green down to the Database Schema and again from Redis to
@@ -200,7 +200,7 @@ To add a custom automation:
   task.
     * The section name must be unique.
     * `command` should use absolute paths to executables and scripts.
-    * `enabled` allows a job to be temporarily disabled without removing it.
+    * `enabled` can be set to `false` to temporarily disable a job without removing it.
     * `interval` sets how often the automation should be triggered, in minutes.
     * `lastRun` is set by the scheduling system and should be set to 0 on creation.
     * Setting `needsAuthKey` to `True` will prevent the automation from running until a valid Auth

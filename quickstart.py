@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-# SPDX-FileCopyrightText: 2023 Jisc Services Limited
+"""Quickly create a testing instance of MISP."""
+
+# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -16,20 +18,27 @@ from subprocess import run
 
 try:
     from dotenv import set_key
-except ImportError:
-    from sys import executable
-
+except ImportError as e:
     print("Failed to import dotenv. Install it using:")
-    print('"{}" -m pip install --user python-dotenv'.format(executable))
-    exit(1)
+    print("python3 -m pip install --user python-dotenv")
+    raise e
 
 from lib.semver import (
-    GetLatestVersionFromGitHubReleases,
-    GetLatestVersionFromGitHubTags,
+    get_latest_from_github_releases,
+    get_latest_from_github_tags,
 )
 
 
-def GeneratePassword() -> str:
+__author__ = "Joe Pitt"
+__copyright__ = "Copyright 2023-2024, Jisc Services Limited"
+__email__ = "Joe.Pitt@jisc.ac.uk"
+__license__ = "GPL-3.0-only"
+__maintainer__ = "Joe Pitt"
+__status__ = "Production"
+__version__ = "1.0.1"
+
+
+def generate_password() -> str:
     """Generate a 32 character alphanumeric password
 
     Returns:
@@ -49,41 +58,49 @@ Args = Parser.parse_args()
 Base = dirname(abspath(__file__))
 chdir(Base)
 DotEnv = join(Base, ".env")
-PersistentStorage = join(Base, "persistent")
+PersistentStorage = join(Base, "persistent", "misp")
 
-run(["/usr/bin/docker", "compose", "down", "--remove-orphans"])
+run(["/usr/bin/docker", "compose", "down", "--remove-orphans"], check=False)
 
 if not exists(DotEnv):
     print("Creating best guess .env file...")
     copy(join(Base, "example.env"), DotEnv)
     set_key(DotEnv, "FQDN", getfqdn())
-    set_key(DotEnv, "MISP_EMAIL_ADDRESS", "misp@{}".format(getfqdn()))
-    set_key(DotEnv, "GPG_PASSPHRASE", GeneratePassword())
-    set_key(DotEnv, "MYSQL_PASSWORD", GeneratePassword())
-    set_key(DotEnv, "MYSQL_ROOT_PASSWORD", GeneratePassword())
-    set_key(DotEnv, "REDIS_PASSWORD", GeneratePassword())
-    set_key(DotEnv, "WORKERS_PASSWORD", GeneratePassword())
+    set_key(DotEnv, "MISP_EMAIL_ADDRESS", f"misp@{getfqdn()}")
+    set_key(DotEnv, "GPG_PASSPHRASE", generate_password())
+    set_key(DotEnv, "MYSQL_PASSWORD", generate_password())
+    set_key(DotEnv, "MYSQL_ROOT_PASSWORD", generate_password())
+    set_key(DotEnv, "REDIS_PASSWORD", generate_password())
+    set_key(DotEnv, "WORKERS_PASSWORD", generate_password())
 
 if exists(PersistentStorage):
     print("Deleting old persistent storage...")
     try:
-        rmtree(PersistentStorage)
-    except OSError:
+        rmtree(join(PersistentStorage, "db"))
+    except OSError as e:
         print(
-            'Failed to delete persistent storage. Delete "{}" manually, then run this script again.'.format(
-                PersistentStorage
-            )
+            f"Failed to delete persistent storage. Delete {join(PersistentStorage, 'db')} "
+            "manually, then run this script again."
         )
+        raise e
+    try:
+        rmtree(join(PersistentStorage, "data"))
+    except OSError as e:
+        print(
+            f"Failed to delete persistent storage. Delete {join(PersistentStorage, 'data')} "
+            "manually, then run this script again."
+        )
+        raise e
 
 print("Pulling external images...")
-run(["/usr/bin/docker", "pull", "clamav/clamav:1.0_base"]).check_returncode()
-run(["/usr/bin/docker", "pull", "redis:7"]).check_returncode()
-run(["/usr/bin/docker", "pull", "mysql/mysql-server:8.0"]).check_returncode()
+run(["/usr/bin/docker", "pull", "clamav/clamav:1.0_base"], check=True)
+run(["/usr/bin/docker", "pull", "redis:7"], check=True)
+run(["/usr/bin/docker", "pull", "mysql/mysql-server:8.0"], check=True)
 
 print("Building MISP Modules image...")
 chdir(join(Base, "misp-modules"))
-ModulesVersion = GetLatestVersionFromGitHubTags(
-    Repository="MISP/misp-modules", MaxMajor=2
+MODULES_VERSION = get_latest_from_github_tags(
+    repository="MISP/misp-modules", max_major=2
 )
 run(
     [
@@ -93,16 +110,17 @@ run(
         "--tag",
         "jisccti/misp-modules:latest",
         "--tag",
-        "jisccti/misp-modules:{}".format(ModulesVersion),
+        f"jisccti/misp-modules:{MODULES_VERSION}",
         "--build-arg",
-        "MISP_VERSION={}".format(ModulesVersion),
+        f"MISP_VERSION={MODULES_VERSION}",
         ".",
-    ]
-).check_returncode()
+    ],
+    check=True,
+)
 
 print("Building MISP Web image...")
 chdir(join(Base, "misp-web"))
-WebVersion = GetLatestVersionFromGitHubReleases(Repository="MISP/MISP", MaxMajor=2)
+WEB_VERSION = get_latest_from_github_releases(repository="MISP/MISP", max_major=2)
 run(
     [
         "/usr/bin/docker",
@@ -111,12 +129,13 @@ run(
         "--tag",
         "jisccti/misp-web:latest",
         "--tag",
-        "jisccti/misp-web:{}".format(WebVersion),
+        f"jisccti/misp-web:{WEB_VERSION}",
         "--build-arg",
-        "MISP_VERSION={}".format(WebVersion),
+        f"MISP_VERSION={WEB_VERSION}",
         ".",
-    ]
-).check_returncode()
+    ],
+    check=True,
+)
 
 print("Building MISP Workers image...")
 chdir(join(Base, "misp-workers"))
@@ -127,18 +146,20 @@ run(
         "--tag",
         "jisccti/misp-workers:latest",
         "--tag",
-        "jisccti/misp-workers:{}".format(WebVersion),
+        f"jisccti/misp-workers:{WEB_VERSION}",
         "--build-arg",
-        "MISP_VERSION={}".format(WebVersion),
+        f"MISP_VERSION={WEB_VERSION}",
         ".",
-    ]
-).check_returncode()
+    ],
+    check=True,
+)
 
 print("Starting MISP...")
 chdir(Base)
 if Args.ha:
     run(
-        ["/usr/bin/docker", "compose", "-f", "docker-compose-ha.yml", "up", "-d"]
-    ).check_returncode()
+        ["/usr/bin/docker", "compose", "-f", "docker-compose-ha.yml", "up", "-d"],
+        check=True,
+    )
 else:
-    run(["/usr/bin/docker", "compose", "up", "-d"]).check_returncode()
+    run(["/usr/bin/docker", "compose", "up", "-d"], check=True)

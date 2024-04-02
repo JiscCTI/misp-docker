@@ -1,9 +1,8 @@
-# SPDX-FileCopyrightText: 2023 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-version: '3'
 name: misp-ha
 services:
   clamav:
@@ -36,7 +35,6 @@ services:
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
-      - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
     hostname: ${MODULES_HOSTNAME:-misp_modules}
     image: jisccti/misp-modules:latest
     restart: unless-stopped

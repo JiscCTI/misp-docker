@@ -2,7 +2,7 @@
 
 """Run feed and server synchronisation tasks in MISP"""
 
-# SPDX-FileCopyrightText: 2023 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
 # SPDX-FileContributor: James Ellor
 # SPDX-FileContributor: Joe Pitt
 #
@@ -13,31 +13,33 @@ from os import environ, getpid, kill, remove
 from os.path import isfile
 from socket import gethostname
 from subprocess import PIPE, run
+from sys import exit as sys_exit
 
 try:
     from pymisp import PyMISP
-except ImportError:
+    from pymisp.exceptions import PyMISPError
+except ImportError as e:
     print("PyMISP is not installed, cannot run")
-    exit(1)
+    raise e
 
-from log import CreateLogger
+from log import create_logger
 
 
 __author__ = "James Ellor"
-__copyright__ = "Copyright 2023, Jisc Services Limited"
+__copyright__ = "Copyright 2023-2024, Jisc Services Limited"
 __email__ = "James.Ellor@jisc.ac.uk"
 __license__ = "GPL-3.0-only"
 __maintainer__ = "James Ellor"
 __status__ = "Production"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 
-configFile = "/var/www/MISPData/misp_maintenance_jobs.ini"
+CONFIG_FILE = "/var/www/MISPData/misp_maintenance_jobs.ini"
 config = ConfigParser()
-config.read(configFile)
-baseUrl = config.get("DEFAULT", "baseUrl")
-authKey = config.get("DEFAULT", "authKey")
-verifyTls = config.getboolean("DEFAULT", "verifyTls")
+config.read(CONFIG_FILE)
+base_url = config.get("DEFAULT", "baseUrl")
+auth_key = config.get("DEFAULT", "authKey")
+verify_tls = config.getboolean("DEFAULT", "verifyTls")
 debug = config.getboolean("DEFAULT", "debug")
 
 hostname = gethostname()
@@ -46,207 +48,210 @@ try:
         hostname = environ["FQDN"]
 except KeyError:
     pass
-MISPLogger = CreateLogger(
+LOGGER = create_logger(
     "run_misp_sync_jobs",
     hostname,
     "/var/www/MISPData/tmp/logs",
     debug,
 )
-MISPLogger.info("Starting sync script")
+LOGGER.info("Starting sync script")
 
-MISPLogger.debug("Checking for mutex")
-Mutex = "/var/www/MISPData/tmp/run_misp_sync_jobs.pid"
-if isfile(Mutex):
-    with open(Mutex, "r") as f:
+LOGGER.debug("Checking for mutex")
+MUTEX_FILE = "/var/www/MISPData/tmp/run_misp_sync_jobs.pid"
+if isfile(MUTEX_FILE):
+    with open(MUTEX_FILE, "r", encoding="utf-8") as f:
         try:
             PID = int(f.read())
-            MISPLogger.debug("Mutex found, validating it")
-        except Exception:
+            LOGGER.debug("Mutex found, validating it")
+        except ValueError:
             # Didn't look like a PID
             PID = None
-    if PID == None:
-        remove(Mutex)
+    if PID is None:
+        remove(MUTEX_FILE)
     else:
         try:
             # Use kill to check if process exists, but do not send a signal
             kill(PID, 0)
         except (OSError, SystemError):
             # PID not running
-            remove(Mutex)
-            MISPLogger.debug("Mutex is invalid, removing it")
+            remove(MUTEX_FILE)
+            LOGGER.debug("Mutex is invalid, removing it")
         else:
             # PID is running
-            MISPLogger.warn("Already running under PID {}. Aborting.".format(PID))
-            exit(1)
+            LOGGER.warning("Already running under PID %s. Aborting.", PID)
+            sys_exit(1)
 
 # Create Mutex with process PID in
-with open(Mutex, "w") as f:
+with open(MUTEX_FILE, "w", encoding="utf-8") as f:
     f.write(str(getpid()))
-    MISPLogger.debug("Mutex obtained")
+    LOGGER.debug("Mutex obtained")
 
-MISPLogger.info("Connecting to MISP API")
+LOGGER.info("Connecting to MISP API")
 try:
-    misp = PyMISP(baseUrl, authKey, verifyTls)
-except Exception as e:
-    MISPLogger.critical(
-        "Failed to connect to the MISP instance: ({}) {}".format(type(e), e)
-    )
-    exit(1)
+    misp = PyMISP(base_url, auth_key, verify_tls)
+except PyMISPError as e:
+    LOGGER.critical("Failed to connect to the MISP instance: (%s) %s", type(e), e)
+    raise e
 
-MISPLogger.debug("Fetching list of configured feeds")
+LOGGER.debug("Fetching list of configured feeds")
 feeds = misp.feeds()
-MISPLogger.debug("{} configured feeds found".format(len(feeds)))
+LOGGER.debug("%s configured feeds found", len(feeds))
 for feed in feeds:
     feed = feed["Feed"]
     if feed["enabled"]:
-        MISPLogger.info(
-            'Fetching feed feed_id={} feed_name="{}" action=fetch'.format(
-                feed["id"], feed["name"]
-            )
+        LOGGER.info(
+            'Fetching feed feed_id=%s feed_name="%s" action=fetch',
+            feed["id"],
+            feed["name"],
         )
         fetch = run(
             [
                 "/bin/bash",
                 "-c",
-                "$CAKE Server fetchFeed 1 {}".format(feed["id"]),
+                f"$CAKE Server fetchFeed 1 {feed['id']}",
             ],
             stdout=PIPE,
             stderr=PIPE,
+            check=False,
         )
         if b"Stack Trace" not in fetch.stderr:
-            MISPLogger.info(
-                'Successfully fetched feed feed_id={} feed_name="{}" action=fetch'.format(
-                    feed["id"], feed["name"]
-                )
+            LOGGER.info(
+                'Successfully fetched feed feed_id=%s feed_name="%s" action=fetch',
+                feed["id"],
+                feed["name"],
             )
         else:
-            MISPLogger.error(
-                'Failed to fetch feed feed_id={} feed_name="{}" action=fetch'.format(
-                    feed["id"], feed["name"]
-                )
+            LOGGER.error(
+                'Failed to fetch feed feed_id=%s feed_name="%s" action=fetch',
+                feed["id"],
+                feed["name"],
             )
 
     if feed["caching_enabled"]:
-        MISPLogger.info(
-            'Caching feed feed_id={} feed_name="{}" action=cache'.format(
-                feed["id"], feed["name"]
-            )
+        LOGGER.info(
+            'Caching feed feed_id=%s feed_name="%s" action=cache',
+            feed["id"],
+            feed["name"],
         )
         cache = run(
             [
                 "/bin/bash",
                 "-c",
-                "$CAKE Server cacheFeed 1 {}".format(feed["id"]),
+                f"$CAKE Server cacheFeed 1 {feed['id']}",
             ],
             stdout=PIPE,
             stderr=PIPE,
+            check=False,
         )
         if b"Stack Trace" not in cache.stderr:
-            MISPLogger.info(
-                'Successfully cached feed feed_id={} feed_name="{}" action=cache'.format(
-                    feed["id"], feed["name"]
-                )
+            LOGGER.info(
+                'Successfully cached feed feed_id=%s feed_name="%s" action=cache',
+                feed["id"],
+                feed["name"],
             )
         else:
-            MISPLogger.error(
-                'Failed to cache feed feed_id={} feed_name="{}" action=cache'.format(
-                    feed["id"], feed["name"]
-                )
+            LOGGER.error(
+                'Failed to cache feed feed_id=%s feed_name="%s" action=cache',
+                feed["id"],
+                feed["name"],
             )
 
-MISPLogger.debug("Fetching list of configured servers")
+LOGGER.debug("Fetching list of configured servers")
 servers = misp.servers()
-MISPLogger.debug("{} configured servers found".format(len(servers)))
+LOGGER.debug("%s configured servers found", len(servers))
 for server in servers:
     server = server["Server"]
     if server["pull"]:
-        MISPLogger.info(
-            'Pulling from server server_id={} server_name="{}" action=pull'.format(
-                server["id"], server["name"]
-            )
+        LOGGER.info(
+            'Pulling from server server_id=%s server_name="%s" action=pull',
+            server["id"],
+            server["name"],
         )
         pull = run(
             [
                 "/bin/bash",
                 "-c",
-                "$CAKE Server pull 1 {} full".format(feed["id"]),
+                f"$CAKE Server pull 1 {feed['id']} full",
             ],
             stdout=PIPE,
             stderr=PIPE,
+            check=False,
         )
         if b"Stack Trace" not in pull.stderr:
-            MISPLogger.info(
-                'Successfully pulled from server server_id={} server_name="{}" action=pull'.format(
-                    server["id"], server["name"]
-                )
+            LOGGER.info(
+                'Successfully pulled from server server_id=%s server_name="%s" action=pull',
+                server["id"],
+                server["name"],
             )
         else:
-            MISPLogger.error(
-                'Failed to pull from server server_id={} server_name="{}" action=pull'.format(
-                    server["id"], server["name"]
-                )
+            LOGGER.error(
+                'Failed to pull from server server_id=%s server_name="%s" action=pull',
+                server["id"],
+                server["name"],
             )
 
     if server["caching_enabled"]:
-        MISPLogger.info(
-            'Caching server server_id={} server_name="{}" action=cache'.format(
-                server["id"], server["name"]
-            )
+        LOGGER.info(
+            'Caching server server_id=%s server_name="%s" action=cache',
+            server["id"],
+            server["name"],
         )
         cache = run(
             [
                 "/bin/bash",
                 "-c",
-                "$CAKE Server cacheServer 1 {}".format(server["id"]),
+                f"$CAKE Server cacheServer 1 {server['id']}",
             ],
             stdout=PIPE,
             stderr=PIPE,
+            check=False,
         )
         if b"Stack Trace" not in cache.stderr:
-            MISPLogger.info(
-                'Successfully cached server server_id={} server_name="{}" action=cache'.format(
-                    server["id"], server["name"]
-                )
+            LOGGER.info(
+                'Successfully cached server server_id=%s server_name="%s" action=cache',
+                server["id"],
+                server["name"],
             )
         else:
-            MISPLogger.error(
-                'Failed to cache server server_id={} server_name="{}" action=cache'.format(
-                    server["id"], server["name"]
-                )
+            LOGGER.error(
+                'Failed to cache server server_id=%s server_name="%s" action=cache',
+                server["id"],
+                server["name"],
             )
 
 for server in servers:
     server = server["Server"]
     if server["push"]:
-        MISPLogger.info(
-            'Pushing to server server_id={} server_name="{}" action=push'.format(
-                server["id"], server["name"]
-            )
+        LOGGER.info(
+            'Pushing to server server_id=%s server_name="%s" action=push',
+            server["id"],
+            server["name"],
         )
         pull = run(
             [
                 "/bin/bash",
                 "-c",
-                "$CAKE Server push 1 {} full".format(feed["id"]),
+                f"$CAKE Server push 1 {feed['id']} full",
             ],
             stdout=PIPE,
             stderr=PIPE,
+            check=False,
         )
         if b"Stack Trace" not in pull.stderr:
-            MISPLogger.info(
-                'Successfully pushed to server server_id={} server_name="{}" action=push'.format(
-                    server["id"], server["name"]
-                )
+            LOGGER.info(
+                'Successfully pushed to server server_id=%s server_name="%s" action=push',
+                server["id"],
+                server["name"],
             )
         else:
-            MISPLogger.error(
-                'Failed to push to server server_id={} server_name="{}" action=push'.format(
-                    server["id"], server["name"]
-                )
+            LOGGER.error(
+                'Failed to push to server server_id=%s server_name="%s" action=push',
+                server["id"],
+                server["name"],
             )
 
-MISPLogger.info("Sync script finished")
+LOGGER.info("Sync script finished")
 
 # Remove Mutex file
-MISPLogger.debug("Releasing mutex")
-remove(Mutex)
+LOGGER.debug("Releasing mutex")
+remove(MUTEX_FILE)

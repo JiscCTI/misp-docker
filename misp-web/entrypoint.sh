@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2023 Jisc Services Limited
-# SPDX-FileContributor: Joe Pitt
-# SPDX-FileContributor: James Acris - OIDC Support
+# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileContributor: James Acris
 # SPDX-FileContributor: James Ellor
+# SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
@@ -318,6 +318,8 @@ check_gnupg() {
         echo "GnuPG key found, exporting to webroot..."
         su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS>/var/www/MISP/app/webroot/gpg.asc"
     fi
+    echo "Exporting encrypted GnuPG privtate key to ASCII File"
+    su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode=loopback --yes --export-secret-key --armor $MISP_EMAIL_ADDRESS>/var/www/MISPGnuPG/import.asc"
     chown -R www-data: /var/www/MISPGnuPG
     chmod 700 /var/www/MISPGnuPG
 }

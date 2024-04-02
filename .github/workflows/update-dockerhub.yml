@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2024 Jisc Services Limited
+# SPDX-FileContributor: Joe Pitt
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
+name: Update DockerHub
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  run:
+    name: Update DockerHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      # Environment Setup
+      - id: checkout
+        name: Checkout Project
+        uses: actions/checkout@v3
+      - id: modules
+        name: MISP Modules
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules
+          short-description: MISP Modules for use with ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web.
+          readme-filepath: docs/misp-modules.md
+      - id: web
+        name: MISP Web
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web
+          short-description: MISP with self-configuration into a usable state from first start.
+          readme-filepath: docs/misp-web.md
+      - id: workers
+        name: MISP Workers
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers
+          short-description: MISP Simple Background Job Workers for use with ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web.
+          readme-filepath: docs/misp-modules.md

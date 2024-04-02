@@ -100,6 +100,7 @@ services:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
       - ORG_NAME=${ORG_NAME:-ORGNAME}
+      - ORG_UUID=${ORG_UUID:-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
     hostname: ${WORKERS_HOSTNAME:-misp_workers}

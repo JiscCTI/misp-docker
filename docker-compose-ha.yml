@@ -86,6 +86,7 @@ services:
       - REDIS_MISP_DB=${REDIS_MISP_DB:-2}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-misp}
       - REDIS_WORKER_DB=${REDIS_MISP_DB:-3}
+      - REQUIRE_TOTP=${REQUIRE_TOTP:-true}
       - SMTP_HOSTNAME=${SMTP_HOSTNAME:-localhost}
       - SMTP_PASSWORD=${SMTP_PASSWORD:-misp}
       - SMTP_PORT=${SMTP_PORT:-587}

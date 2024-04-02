@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2023 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -15,4 +15,3 @@ $CAKE Admin setSetting "MISP.self_update" false
 $CAKE Admin setSetting "MISP.store_api_access_time" true
 $CAKE Admin setSetting "MISP.thumbnail_in_redis" true
 $CAKE Admin setSetting "MISP.unpublishedprivate" false
-$CAKE Admin setSetting "Security.otp_required" true

@@ -30,6 +30,7 @@ set_env_vars() {
     REDIS_HOST="${REDIS_HOST:-misp_redis}"
     REDIS_MISP_DB="${REDIS_MISP_DB:-2}"
     REDIS_WORKER_DB="${REDIS_MISP_DB:-3}"
+    REQUIRE_TOTP="${REQUIRE_TOTP:-true}"
     SMTP_HOSTNAME="${SMTP_HOSTNAME:-localhost}"
     SMTP_PASSWORD="${SMTP_PASSWORD:-misp}"
     SMTP_PORT="${SMTP_PORT:-587}"
@@ -372,6 +373,8 @@ on_start() {
     $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
     /usr/local/bin/python3 /opt/scripts/trigger_set_org_name.py
+    $CAKE Admin setSetting "Security.otp_required" "$REQUIRE_TOTP"
+
     sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini
     if [ -z "${REDIS_PASSWORD}" ]; then
         echo "Warning: No Redis password is set, ensure network access control is implemented"

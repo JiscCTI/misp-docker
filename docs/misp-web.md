@@ -52,6 +52,7 @@ properly.
 | **MYSQL_ROOT_PASSWORD** | The root password that will be set in the MySQL container. Not used for a third-party DB. | `misp` |
 | MYSQL_USERNAME | The username MISP will use to connect to MySQL. | `misp` |
 | **ORG_NAME** | The organisation that owns this instance of MISP. | `ORGNAME` |
+| **ORG_UUID** | The unique identifier of the organisation that owns this instance of MISP. | (generate a new UUID on first start) |
 | REDIS_HOST | The hostname of the Redis service. | `misp_redis` |
 | REDIS_MISP_DB | The database number to use for MISP within Redis. | `2` |
 | **REDIS_PASSWORD** | The password MISP will use to connect to Redis. | `misp` |

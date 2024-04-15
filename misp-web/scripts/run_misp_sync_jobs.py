@@ -114,7 +114,7 @@ for feed in feeds:
             stderr=PIPE,
             check=False,
         )
-        if b"Stack Trace" not in fetch.stderr:
+        if b"Error" not in fetch.stderr and b"Stack Trace" not in fetch.stderr:
             LOGGER.info(
                 'Successfully fetched feed feed_id=%s feed_name="%s" action=fetch',
                 feed["id"],
@@ -143,7 +143,7 @@ for feed in feeds:
             stderr=PIPE,
             check=False,
         )
-        if b"Stack Trace" not in cache.stderr:
+        if b"Error" not in cache.stderr and b"Stack Trace" not in cache.stderr:
             LOGGER.info(
                 'Successfully cached feed feed_id=%s feed_name="%s" action=cache',
                 feed["id"],
@@ -177,7 +177,7 @@ for server in servers:
             stderr=PIPE,
             check=False,
         )
-        if b"Stack Trace" not in pull.stderr:
+        if b"Error" not in pull.stderr and b"Stack Trace" not in pull.stderr:
             LOGGER.info(
                 'Successfully pulled from server server_id=%s server_name="%s" action=pull',
                 server["id"],
@@ -206,7 +206,7 @@ for server in servers:
             stderr=PIPE,
             check=False,
         )
-        if b"Stack Trace" not in cache.stderr:
+        if b"Error" not in cache.stderr and b"Stack Trace" not in cache.stderr:
             LOGGER.info(
                 'Successfully cached server server_id=%s server_name="%s" action=cache',
                 server["id"],
@@ -227,7 +227,7 @@ for server in servers:
             server["id"],
             server["name"],
         )
-        pull = run(
+        push = run(
             [
                 "/bin/bash",
                 "-c",
@@ -237,7 +237,7 @@ for server in servers:
             stderr=PIPE,
             check=False,
         )
-        if b"Stack Trace" not in pull.stderr:
+        if b"Error" not in push.stderr and b"Stack Trace" not in push.stderr:
             LOGGER.info(
                 'Successfully pushed to server server_id=%s server_name="%s" action=push',
                 server["id"],

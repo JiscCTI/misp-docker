@@ -171,7 +171,7 @@ for server in servers:
             [
                 "/bin/bash",
                 "-c",
-                f"$CAKE Server pull 1 {feed['id']} full",
+                f"$CAKE Server pull 1 {server['id']} full",
             ],
             stdout=PIPE,
             stderr=PIPE,
@@ -231,7 +231,7 @@ for server in servers:
             [
                 "/bin/bash",
                 "-c",
-                f"$CAKE Server push 1 {feed['id']} full",
+                f"$CAKE Server push 1 {server['id']} full",
             ],
             stdout=PIPE,
             stderr=PIPE,

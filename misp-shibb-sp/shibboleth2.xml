@@ -1,0 +1,48 @@
+<SPConfig xmlns="urn:mace:shibboleth:3.0:native:sp:config"
+    xmlns:conf="urn:mace:shibboleth:3.0:native:sp:config"
+    clockSkew="180">
+
+    <OutOfProcess tranLogFormat="%u|%s|%IDP|%i|%ac|%t|%attr|%n|%b|%E|%S|%SS|%L|%UA|%a" />
+
+    <ApplicationDefaults entityID="https://sp.example.org/shibboleth"
+        REMOTE_USER="eppn c pairwise-id persistent-id"
+        cipherSuites="DEFAULT:!EXP:!LOW:!aNULL:!eNULL:!DES:!IDEA:!SEED:!RC4:!3DES:!kRSA:!SSLv2:!SSLv3:!TLSv1:!TLSv1.1"
+        signing="true" encryption="true">
+
+        <Sessions lifetime="28800" timeout="3600" relayState="ss:mem"
+            checkAddress="true" handlerSSL="true" cookieProps="; path=/; secure; HttpOnly"
+            redirectLimit="exact" sameSiteSession="Lax">
+
+            <SSO entityID="https://idp.example.org/idp/shibboleth">
+                SAML2
+            </SSO>
+
+            <!-- SAML and local-only logout. -->
+            <Logout>SAML2 Local</Logout>
+
+            <!-- Session diagnostic service. -->
+            <Handler type="Session" Location="/Session" showAttributeValues="false" />
+        </Sessions>
+
+        <Errors supportContact="root@localhost" />
+
+        <MetadataProvider type="XML" validate="true" path="idp-metadata.xml" />
+
+        <!-- Map to extract attributes from SAML assertions. -->
+        <AttributeExtractor type="XML" validate="true" reloadChanges="false"
+            path="attribute-map.xml" />
+
+        <!-- Default filtering policy for recognized attributes, lets other data pass. -->
+        <AttributeFilter type="XML" validate="true" path="attribute-policy.xml" />
+
+        <CredentialResolver type="File" use="signing" key="misp-sign-key.pem" certificate="misp-sign-cert.pem" />
+        <CredentialResolver type="File" use="encryption" key="misp-encrypt-key.pem"
+            certificate="misp-encrypt-cert.pem" />
+    </ApplicationDefaults>
+
+    <!-- Policies that determine how to process and authenticate runtime messages. -->
+    <SecurityPolicyProvider type="XML" validate="true" path="security-policy.xml" />
+
+    <!-- Low-level configuration about protocols and bindings available for use. -->
+    <ProtocolProvider type="XML" validate="true" reloadChanges="false" path="protocols.xml" />
+</SPConfig>

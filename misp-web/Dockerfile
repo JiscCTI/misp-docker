@@ -123,20 +123,21 @@ ENV CAKE="sudo -H -u www-data /var/www/MISP/app/Console/cake"
 # Install runtime dependencies
 RUN apt-get -qy update &&\
     apt-get -qy upgrade apache2 &&\
-    apt-get -qy install --no-install-recommends git gnupg iputils-ping libfuzzy2 libgd3 libgpgme11 libpng16-16 librdkafka1\
-    libzip4 mariadb-client ssdeep sudo uuid zip &&\
+    apt-get -qy install --no-install-recommends git gnupg iputils-ping libapache2-mod-shib\
+        libfuzzy2 libgd3 libgpgme11 libpng16-16 librdkafka1 libzip4 mariadb-client ssdeep sudo uuid\
+        zip &&\
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=php_build --chown=root:root /usr/local/lib/php/extensions/no-debug-non-zts-20190902/ /usr/local/lib/php/extensions/no-debug-non-zts-20190902/
 COPY --from=php_build --chown=root:root /usr/local/etc/php/ /usr/local/etc/php/
 COPY --from=python_build /usr/local /usr/local
 COPY --from=misp_build --chown=www-data:www-data /var/www/ /var/www
-COPY --chown=root:root apache.conf /etc/apache2/sites-enabled/000-default.conf
+COPY --chown=root:root apache.* /etc/apache2/sites-available/
 COPY --chown=root:root scripts/ /opt/scripts
 COPY entrypoint.sh /entrypoint.sh
 COPY wait-for-it.sh /wait-for-it.sh
 RUN a2dismod status &&\
-    a2enmod ssl rewrite headers setenvif &&\
+    a2enmod ssl rewrite headers shib setenvif &&\
     chmod +x /opt/scripts/* /*.sh
 WORKDIR /var/www/MISP/
 ENTRYPOINT /wait-for-it.sh -h ${MYSQL_HOSTNAME:-misp_db} -p 3306 -t 0 -- /entrypoint.sh

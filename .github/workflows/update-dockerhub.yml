@@ -17,7 +17,7 @@ jobs:
       # Environment Setup
       - id: checkout
         name: Checkout Project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - id: modules
         name: MISP Modules
         uses: peter-evans/dockerhub-description@v4

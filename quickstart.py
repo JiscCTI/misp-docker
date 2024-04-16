@@ -26,6 +26,7 @@ except ImportError as e:
 from lib.semver import (
     get_latest_from_github_releases,
     get_latest_from_github_tags,
+    get_latest_from_rpm_repo,
 )
 
 
@@ -49,48 +50,63 @@ def generate_password() -> str:
     return "".join(choice(alphabet) for i in range(32))
 
 
-Parser = ArgumentParser(
+argument_parser = ArgumentParser(
     "MISP Quickstart", description="Quickstart script for MISP containers"
 )
-Parser.add_argument("--ha", action="store_true")
-Args = Parser.parse_args()
+run_modes = argument_parser.add_mutually_exclusive_group()
+run_modes.add_argument("--ha", action="store_true", help="High availability simulation")
+run_modes.add_argument("--shibb", action="store_true", help="Shibboleth authentication mode")
+run_mode = argument_parser.parse_args()
 
-Base = dirname(abspath(__file__))
-chdir(Base)
-DotEnv = join(Base, ".env")
-PersistentStorage = join(Base, "persistent", "misp")
+home_directory = dirname(abspath(__file__))
+chdir(home_directory)
+dot_env_file = join(home_directory, ".env")
+persistent_storage_directory = join(home_directory, "persistent", "misp")
 
 run(["/usr/bin/docker", "compose", "down", "--remove-orphans"], check=False)
 
-if not exists(DotEnv):
+if not exists(dot_env_file):
     print("Creating best guess .env file...")
-    copy(join(Base, "example.env"), DotEnv)
-    set_key(DotEnv, "FQDN", getfqdn())
-    set_key(DotEnv, "MISP_EMAIL_ADDRESS", f"misp@{getfqdn()}")
-    set_key(DotEnv, "GPG_PASSPHRASE", generate_password())
-    set_key(DotEnv, "MYSQL_PASSWORD", generate_password())
-    set_key(DotEnv, "MYSQL_ROOT_PASSWORD", generate_password())
-    set_key(DotEnv, "REDIS_PASSWORD", generate_password())
-    set_key(DotEnv, "WORKERS_PASSWORD", generate_password())
+    copy(join(home_directory, "example.env"), dot_env_file)
+    set_key(dot_env_file, "FQDN", getfqdn())
+    set_key(dot_env_file, "MISP_EMAIL_ADDRESS", f"misp@{getfqdn()}")
+    set_key(dot_env_file, "GPG_PASSPHRASE", generate_password())
+    set_key(dot_env_file, "MYSQL_PASSWORD", generate_password())
+    set_key(dot_env_file, "MYSQL_ROOT_PASSWORD", generate_password())
+    set_key(dot_env_file, "REDIS_PASSWORD", generate_password())
+    set_key(dot_env_file, "WORKERS_PASSWORD", generate_password())
 
-if exists(PersistentStorage):
-    print("Deleting old persistent storage...")
-    try:
-        rmtree(join(PersistentStorage, "db"))
-    except OSError as e:
-        print(
-            f"Failed to delete persistent storage. Delete {join(PersistentStorage, 'db')} "
-            "manually, then run this script again."
-        )
-        raise e
-    try:
-        rmtree(join(PersistentStorage, "data"))
-    except OSError as e:
-        print(
-            f"Failed to delete persistent storage. Delete {join(PersistentStorage, 'data')} "
-            "manually, then run this script again."
-        )
-        raise e
+if exists(persistent_storage_directory):
+    if exists(join(persistent_storage_directory, "db")):
+        print("Deleting old persistent storage...")
+        try:
+            rmtree(join(persistent_storage_directory, "db"))
+        except OSError as e:
+            print(
+                "Failed to delete persistent storage. Delete "
+                f"{join(persistent_storage_directory, 'db')} manually, then run this script again."
+            )
+            raise e
+    if exists(join(persistent_storage_directory, "data")):
+        try:
+            rmtree(join(persistent_storage_directory, "data"))
+        except OSError as e:
+            print(
+                "Failed to delete persistent storage. Delete "
+                f"{join(persistent_storage_directory, 'data')} manually, "
+                "then run this script again."
+            )
+            raise e
+    if exists(join(persistent_storage_directory, "shibb", "run")):
+        try:
+            rmtree(join(persistent_storage_directory, "shibb", "run"))
+        except OSError as e:
+            print(
+                "Failed to delete persistent storage. Delete "
+                f"{join(persistent_storage_directory, 'shibb', 'run')} manually, "
+                "then run this script again."
+            )
+            raise e
 
 print("Pulling external images...")
 run(["/usr/bin/docker", "pull", "clamav/clamav:1.0_base"], check=True)
@@ -98,7 +114,7 @@ run(["/usr/bin/docker", "pull", "redis:7"], check=True)
 run(["/usr/bin/docker", "pull", "mysql/mysql-server:8.0"], check=True)
 
 print("Building MISP Modules image...")
-chdir(join(Base, "misp-modules"))
+chdir(join(home_directory, "misp-modules"))
 MODULES_VERSION = get_latest_from_github_tags(
     repository="MISP/misp-modules", max_major=2
 )
@@ -119,7 +135,7 @@ run(
 )
 
 print("Building MISP Web image...")
-chdir(join(Base, "misp-web"))
+chdir(join(home_directory, "misp-web"))
 WEB_VERSION = get_latest_from_github_releases(repository="MISP/MISP", max_major=2)
 run(
     [
@@ -138,7 +154,7 @@ run(
 )
 
 print("Building MISP Workers image...")
-chdir(join(Base, "misp-workers"))
+chdir(join(home_directory, "misp-workers"))
 run(
     [
         "/usr/bin/docker",
@@ -154,11 +170,38 @@ run(
     check=True,
 )
 
+if run_mode.shibb:
+    print("Building MISP Shibboleth image...")
+    SHIBB_VERSION = get_latest_from_rpm_repo(
+        mirror_list_url="https://shibboleth.net/cgi-bin/mirrorlist.cgi/rockylinux9",
+        package_name="shibboleth",
+    )
+    chdir(join(home_directory, "misp-shibb-sp"))
+    run(
+        [
+            "/usr/bin/docker",
+            "build",
+            "--tag",
+            "jisccti/misp-shibb-sp:latest",
+            "--tag",
+            f"jisccti/misp-shibb-sp:{SHIBB_VERSION}",
+            "--build-arg",
+            f"SHIBB_VERSION={SHIBB_VERSION}",
+            ".",
+        ],
+        check=True,
+    )
+
 print("Starting MISP...")
-chdir(Base)
-if Args.ha:
+chdir(home_directory)
+if run_mode.ha:
     run(
         ["/usr/bin/docker", "compose", "-f", "docker-compose-ha.yml", "up", "-d"],
+        check=True,
+    )
+elif run_mode.shibb:
+    run(
+        ["/usr/bin/docker", "compose", "-f", "docker-compose-shibb.yml", "up", "-d"],
         check=True,
     )
 else:

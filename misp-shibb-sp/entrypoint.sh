@@ -5,12 +5,14 @@ set -e
 set_env_vars() {
     FQDN="${FQDN:-misp.local}"
     HTTPS_PORT="${HTTPS_PORT:-443}"
-    MISP_EMAIL_ADDRESS="${MISP_EMAIL_ADDRESS:-misp@local}"
-    SHIBB_EMAIL_TAG="${SHIBB_EMAIL_TAG:-urn:oid:0.9.2342.19200300.100.1.3}"
-    SHIBB_GROUP_TAG="${SHIBB_GROUP_TAG:-urn:oid:1.3.6.1.4.1.5923.1.5.1.1}"
+    SHIBB_EMAIL_FORMAT="${SHIBB_EMAIL_FORMAT:-urn:oasis:names:tc:SAML:2.0:attrname-format:uri}"
+    SHIBB_EMAIL_NAME="${SHIBB_EMAIL_NAME:-urn:oid:0.9.2342.19200300.100.1.3}"
+    SHIBB_GROUP_FORMAT="${SHIBB_GROUP_FORMAT:-urn:oasis:names:tc:SAML:2.0:attrname-format:uri}"
+    SHIBB_GROUP_NAME="${SHIBB_GROUP_NAME:-urn:oid:1.3.6.1.4.1.5923.1.5.1.1}"
     SHIBB_IDP_ENTITY_ID="${SHIBB_IDP_ENTITY_ID:-https://idp.example.org/idp/shibboleth}"
     SHIBB_IDP_METADATA_URL="${SHIBB_IDP_METADATA_URL:-false}"
-    SHIBB_ORG_TAG="${SHIBB_ORG_TAG:-urn:oid:1.3.6.1.4.1.25178.1.2.9}"
+    SHIBB_ORG_FORMAT="${SHIBB_ORG_FORMAT:-urn:oasis:names:tc:SAML:2.0:attrname-format:uri}"
+    SHIBB_ORG_NAME="${SHIBB_ORG_NAME:-urn:oid:1.3.6.1.4.1.25178.1.2.9}"
     SHIBB_SP_ENCRYPT_REQUESTS="${SHIBB_SP_ENCRYPT_REQUESTS:-true}"
     SHIBB_SP_ENTITY_ID="${SHIBB_SP_ENTITY_ID:-default}"
     SHIBB_SP_SHARE_KEY="${SHIBB_SP_SHARE_KEY:-true}"
@@ -58,7 +60,6 @@ on_start() {
     cp -a /etc/shibboleth.dist/shibboleth2.xml /etc/shibboleth/shibboleth2.xml
     sed -i "s|https://sp.example.org/shibboleth|${SHIBB_SP_ENTITY_ID}|" /etc/shibboleth/shibboleth2.xml
     sed -i "s|https://idp.example.org/idp/shibboleth|${SHIBB_IDP_ENTITY_ID}|" /etc/shibboleth/shibboleth2.xml
-    sed -i "s|root@localhost|${MISP_EMAIL_ADDRESS}|" /etc/shibboleth/shibboleth2.xml
     if [[ "${SHIBB_SP_ENCRYPT_REQUESTS}" == "false" ]]; then
         sed -i 's|encryption="true"|encryption="false"|' /etc/shibboleth/shibboleth2.xml
     fi
@@ -69,9 +70,15 @@ on_start() {
         sed -i 's|misp-encrypt|misp|g' /etc/shibboleth/shibboleth2.xml
         sed -i 's|misp-sign|misp|g' /etc/shibboleth/shibboleth2.xml
     fi
-    sed -i "s/Email/${SHIBB_EMAIL_TAG}/" attribute-map.xml
-    sed -i "s/Group/${SHIBB_GROUP_TAG}/" attribute-map.xml
-    sed -i "s/Organisaiton/${SHIBB_ORG_TAG}/" attribute-map.xml
+
+    echo "Updating attribute-map.xml"
+    cp -a /etc/shibboleth.dist/attribute-map.xml /etc/shibboleth/attribute-map.xml
+    sed -i "s/SHIBB_EMAIL_FORMAT/${SHIBB_EMAIL_FORMAT}/" /etc/shibboleth/attribute-map.xml
+    sed -i "s/SHIBB_EMAIL_NAME/${SHIBB_EMAIL_NAME}/" /etc/shibboleth/attribute-map.xml
+    sed -i "s/SHIBB_GROUP_FORMAT/${SHIBB_GROUP_FORMAT}/" /etc/shibboleth/attribute-map.xml
+    sed -i "s/SHIBB_GROUP_NAME/${SHIBB_GROUP_NAME}/" /etc/shibboleth/attribute-map.xml
+    sed -i "s/SHIBB_ORG_FORMAT/${SHIBB_ORG_FORMAT}/" /etc/shibboleth/attribute-map.xml
+    sed -i "s/SHIBB_ORG_NAME/${SHIBB_ORG_NAME}/" /etc/shibboleth/attribute-map.xml
 
     rm -rf /run/shibboleth/*
 

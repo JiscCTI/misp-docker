@@ -1,8 +1,8 @@
 <Attributes xmlns="urn:mace:shibboleth:2.0:attribute-map"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <Attribute name="Email" id="mail" />
-    <Attribute name="Group" id="memberOf" />
-    <Attribute name="Organisation" id="org" />
+    <Attribute name="SHIBB_EMAIL_NAME" nameFormat="SHIBB_EMAIL_FORMAT" id="mail" />
+    <Attribute name="SHIBB_GROUP_NAME" nameFormat="SHIBB_GROUP_FORMAT" id="memberOf" />
+    <Attribute name="SHIBB_ORG_NAME" nameFormat="SHIBB_ORG_FORMAT" id="org" />
 
 </Attributes>

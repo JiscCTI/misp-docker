@@ -17,9 +17,7 @@ $config["ApacheShibbAuth"] = array(
     'DefaultOrg' => getenv("ORG_NAME"),
 );
 
-if (in_array(getenv("SHIBB_DEFAULT_ROLE"), array("false", "False", "0"))) {
-    $config["ApacheShibbAuth"]["DefaultRole"] = false;
-} else {
+if (!in_array(getenv("SHIBB_DEFAULT_ROLE"), array("false", "False", "0"))) {
     $config["ApacheShibbAuth"]["DefaultRole"] = getenv("SHIBB_DEFAULT_ROLE");
 }
 if (in_array(getenv("SHIBB_BLOCK_ROLE_CHANGE"), array("true", "True", "1"))) {

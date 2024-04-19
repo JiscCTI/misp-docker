@@ -56,6 +56,9 @@ jobs:
       - id: modules_version
         name: Get current MISP modules version number
         run: echo "MODULES_VERSION=$(python3 ./misp-modules/latest.py)" >> $GITHUB_ENV
+      - id: shibb_version
+        name: Get current Shibboleth SP version number
+        run: echo "SHIBB_VERSION=$(python3 ./misp-shibb-sp/latest.py)" >> $GITHUB_ENV
       - id: modules_image_exists
         continue-on-error: true
         name: Check If misp-modules Image Exists
@@ -83,6 +86,15 @@ jobs:
           registry: registry.hub.docker.com
           repository: misp-workers
           tag: ${{ env.MISP_VERSION }}
+      - id: shibb_image_exists
+        continue-on-error: true
+        name: Check If misp-shibb-sp Image Exists
+        uses: cloudposse/github-action-docker-image-exists@main
+        with:
+          organization: ${{ vars.DOCKERHUB_ORGANISATION }}
+          registry: registry.hub.docker.com
+          repository: misp-shibb-sp
+          tag: ${{ env.SHIBB_VERSION }}
 
       # Build / Pull Images
       - id: build_modules
@@ -118,6 +130,13 @@ jobs:
         if: ${{ steps.workers_image_exists.outcome != 'failure' && github.event_name != 'push' && github.event_name != 'workflow_dispatch' }}
         name: Pull misp-workers
         run: docker pull ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest
+      - id: build_shibb
+        if: ${{ steps.shibb_image_exists.outcome == 'failure' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+        name: Build misp-shibb-sp
+        run: |
+          cd misp-shibb-sp
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.SHIBB_VERSION }} --build-arg SHIBB_VERSION="${{ env.SHIBB_VERSION }}" .
+          cd ..
 
       # Test
       - id: start_test_env
@@ -160,3 +179,9 @@ jobs:
         run: |
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.MISP_VERSION }}
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest
+      - id: push-shibb
+        name: Push misp-shibb-sp
+        if: steps.build_shibb.outcome == 'success'
+        run: |
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.SHIBB_VERSION }}
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:latest

@@ -424,7 +424,7 @@ on_start() {
         php /opt/scripts/auth_shibb.php
     else
         if [ "$AUTH_METHOD" != misp ]; then
-            echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp' or 'oidc'"
+            echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp' or 'shibb'"
         fi
         echo "Enabling MISP Native Authentication"
         cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf

@@ -32,15 +32,12 @@ set_env_vars() {
 initial_config() {
     echo "Copying in default config files"
     cp -a /etc/shibboleth.dist/* /etc/shibboleth/
-    if [[ "${SHIBB_SP_SHARE_KEY}" == "false" ]]; then
-        echo "Generating shibboleth encryption key pair"
-        /etc/shibboleth/keygen.sh -f -h "${FQDN}" -y 5 -e "${SHIBB_SP_ENTITY_ID}" -o /etc/shibboleth -n misp-encrypt 2>/dev/null
-        echo "Generating shibboleth signing key pair"
-        /etc/shibboleth/keygen.sh -f -h "${FQDN}" -y 5 -e "${SHIBB_SP_ENTITY_ID}" -o /etc/shibboleth -n misp-sign 2>/dev/null
-    else
-        echo "Generating shibboleth signing and encryption key pair"
-        /etc/shibboleth/keygen.sh -f -h "${FQDN}" -y 5 -e "${SHIBB_SP_ENTITY_ID}" -o /etc/shibboleth -n misp 2>/dev/null
-    fi
+    echo "Generating shibboleth encryption key pair"
+    /etc/shibboleth/keygen.sh -f -h "${FQDN}" -y 5 -e "${SHIBB_SP_ENTITY_ID}" -o /etc/shibboleth -n misp-encrypt 2>/dev/null
+    echo "Generating shibboleth signing key pair"
+    /etc/shibboleth/keygen.sh -f -h "${FQDN}" -y 5 -e "${SHIBB_SP_ENTITY_ID}" -o /etc/shibboleth -n misp-sign 2>/dev/null
+    echo "Generating shibboleth shared signing and encryption key pair"
+    /etc/shibboleth/keygen.sh -f -h "${FQDN}" -y 5 -e "${SHIBB_SP_ENTITY_ID}" -o /etc/shibboleth -n misp 2>/dev/null
 
     touch /etc/shibboleth/.configured
 }

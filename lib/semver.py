@@ -214,4 +214,4 @@ def get_latest_from_rpm_repo(
             pass
 
     latest = get_highest_version(versions, max_major, max_minor, max_hotfix)
-    return f'v{latest["major"]}.{latest["minor"]}.{latest["hotfix"]}'
+    return f'{latest["major"]}.{latest["minor"]}.{latest["hotfix"]}'

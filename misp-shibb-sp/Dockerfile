@@ -10,7 +10,7 @@ VOLUME "/etc/shibboleth" "/run/shibboleth/" "/var/log/shibboleth/"
 COPY shibboleth.repo /etc/yum.repos.d/shibboleth.repo
 COPY *.xml /etc/shibboleth/
 COPY entrypoint.sh /entrypoint.sh
-RUN dnf install -yq shibboleth.x86_64 && \
+RUN dnf install -yq shibboleth-${SHIBB_VERSION} && \
     dnf clean all && \
     rm -f /etc/shibboleth/*.dist /etc/shibboleth/*.html /etc/shibboleth/*.rpmnew \
         /etc/shibboleth/apache* /etc/shibboleth/attribute-policy.xml /etc/shibboleth/example-* \

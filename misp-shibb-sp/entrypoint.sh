@@ -80,12 +80,39 @@ on_start() {
     rm -rf /run/shibboleth/*
 
     echo "Generating MISP Service Provider Metadata"
-    if [[ "${SHIBB_SP_SHARE_KEY}" == "false" ]]; then
-        /etc/shibboleth/metagen.sh -2 -T SHIB -L -c /etc/shibboleth/misp-encrypt-cert.pem -c /etc/shibboleth/misp-sign-cert.pem -h "${FQDN}" -e "${SHIBB_SP_ENTITY_ID}" >/etc/shibboleth/misp-metadata.xml
+    if [ "${SHIBB_SP_ENCRYPT_REQUESTS}" != "false" ] && [ "${SHIBB_SP_SIGN_REQUESTS}" != "false" ]; then
+        #encrypted and signed
+        if [ "${SHIBB_SP_SHARE_KEY}" == "false" ]; then
+            /etc/shibboleth/metagen.sh -2 -T SHIB -L -c /etc/shibboleth/misp-encrypt-cert.pem -c /etc/shibboleth/misp-sign-cert.pem -h "${FQDN}" -e "${SHIBB_SP_ENTITY_ID}" >/etc/shibboleth/misp-metadata.xml
+        else
+            /etc/shibboleth/metagen.sh -2 -T SHIB -L -c /etc/shibboleth/misp-cert.pem -c /etc/shibboleth/misp-cert.pem -h "${FQDN}" -e "${SHIBB_SP_ENTITY_ID}" >/etc/shibboleth/misp-metadata.xml
+        fi
+        sed -i '1,/<md:KeyDescriptor>/ s/<md:KeyDescriptor>/<md:KeyDescriptor use="encryption">/' /etc/shibboleth/misp-metadata.xml
+        sed -i '1,/<md:KeyDescriptor>/ s/<md:KeyDescriptor>/<md:KeyDescriptor use="signing">/' /etc/shibboleth/misp-metadata.xml
+    elif [ "${SHIBB_SP_ENCRYPT_REQUESTS}" != "false" ]; then
+        #encrypted and unsigned
+        if [ "${SHIBB_SP_SHARE_KEY}" == "false" ]; then
+            /etc/shibboleth/metagen.sh -2 -T SHIB -L -c /etc/shibboleth/misp-encrypt-cert.pem -h "${FQDN}" -e "${SHIBB_SP_ENTITY_ID}" >/etc/shibboleth/misp-metadata.xml
+        else
+            /etc/shibboleth/metagen.sh -2 -T SHIB -L -c /etc/shibboleth/misp-cert.pem -h "${FQDN}" -e "${SHIBB_SP_ENTITY_ID}" >/etc/shibboleth/misp-metadata.xml
+        fi
+        sed -i 's/<md:KeyDescriptor>/<md:KeyDescriptor use="encryption">/' /etc/shibboleth/misp-metadata.xml
+    elif [ "${SHIBB_SP_SIGN_REQUESTS}" != "false" ]; then
+        #unencrypted and signed
+        if [ "${SHIBB_SP_SHARE_KEY}" == "false" ]; then
+            /etc/shibboleth/metagen.sh -2 -T SHIB -L -c /etc/shibboleth/misp-sign-cert.pem -h "${FQDN}" -e "${SHIBB_SP_ENTITY_ID}" >/etc/shibboleth/misp-metadata.xml
+        else
+            /etc/shibboleth/metagen.sh -2 -T SHIB -L -c /etc/shibboleth/misp-cert.pem -h "${FQDN}" -e "${SHIBB_SP_ENTITY_ID}" >/etc/shibboleth/misp-metadata.xml
+        fi
+        sed -i 's/<md:KeyDescriptor>/<md:KeyDescriptor use="signing">/' /etc/shibboleth/misp-metadata.xml
     else
+        # have to generate metadata with a certificate then remove it or generation fails
         /etc/shibboleth/metagen.sh -2 -T SHIB -L -c /etc/shibboleth/misp-cert.pem -h "${FQDN}" -e "${SHIBB_SP_ENTITY_ID}" >/etc/shibboleth/misp-metadata.xml
+        sed -i '/<md:KeyDescriptor>/,/<\/md:KeyDescriptor>/d' /etc/shibboleth/misp-metadata.xml
     fi
     echo "Saved to: [Volume:/etc/shibboleth]/misp-metadata.xml"
+
+    chown shibd: /etc/shibboleth/*
 }
 
 set_env_vars

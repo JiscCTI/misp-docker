@@ -7,11 +7,14 @@ LABEL org.opencontainers.image.title="misp-shibb-sp" org.opencontainers.image.ve
     org.opencontainers.image.base.name="hub.docker.com/_/rockylinux:9.3"
 VOLUME "/etc/shibboleth" "/run/shibboleth/" "/var/log/shibboleth/"
 
-COPY entrypoint.sh /entrypoint.sh
 COPY shibboleth.repo /etc/yum.repos.d/shibboleth.repo
 COPY *.xml /etc/shibboleth/
+COPY entrypoint.sh /entrypoint.sh
 RUN dnf install -yq shibboleth.x86_64 && \
     dnf clean all && \
+    rm -f /etc/shibboleth/*.dist /etc/shibboleth/*.html /etc/shibboleth/*.rpmnew \
+        /etc/shibboleth/apache* /etc/shibboleth/attribute-policy.xml /etc/shibboleth/example-* \
+        /etc/shibboleth/shibd-* /etc/shibboleth/sp-* && \
     cp -a /etc/shibboleth /etc/shibboleth.dist && \
     chmod +x /entrypoint.sh
 

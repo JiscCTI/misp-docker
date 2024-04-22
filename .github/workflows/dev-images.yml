@@ -50,7 +50,7 @@ jobs:
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/tls/misp.key
           ${{ secrets.TEST_TLS_KEY }}
           EOF
-          python3 -m pip install --user --upgrade requests
+          python3 -m pip install --user --upgrade defusedxml requests
 
       # Load statuses
       - id: misp_version

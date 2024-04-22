@@ -12,7 +12,8 @@ from io import BytesIO
 from json import loads
 from re import finditer
 from typing import Dict, List
-from xml.etree import ElementTree
+
+from defusedxml import ElementTree
 
 try:
     from requests import get
@@ -168,7 +169,7 @@ def get_latest_from_rpm_repo(
                 if "type" in metadata.attrib and metadata.attrib["type"] == "primary":
                     for option in metadata:
                         if "href" in option.attrib:
-                            repo: ElementTree.Element = ElementTree.parse(
+                            repo = ElementTree.parse(
                                 gzip_open(
                                     BytesIO(
                                         get(

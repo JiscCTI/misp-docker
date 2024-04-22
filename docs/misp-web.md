@@ -14,6 +14,13 @@ This image is designed to be used in conjunction with
 [jisccti/misp-workers](https://hub.docker.com/r/jisccti/misp-workers) and is dependent on
 third-party ClamAV, MySQL, Redis and SMTP services.
 
+Single Sign On (SSO) support:
+
+* Microsoft Entra ID (formerly Azure Active Directory) -
+  [awaiting upstream fixes](https://github.com/JiscCTI/misp-docker/issues/20).
+* OpenID Connect (OIDC) - under development.
+* Shibboleth / SAML 2.0 - [Configuration guide](https://hub.docker.com/r/jisccti/misp-shibb-sp).
+
 ## 1 - Docker Compose
 
 Create a directory to host your MISP instance and download the latest

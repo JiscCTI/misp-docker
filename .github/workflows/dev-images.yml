@@ -22,16 +22,16 @@ jobs:
       # Environment Setup
       - id: checkout
         name: Checkout Project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - id: docker-login
         name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           username: ${{ vars.DOCKERHUB_USERNAME }}
       - id: setup-buildx
         name: Setup Docker buildx Environment
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
       - id: test-env-setup
         name: Configure Environment
         run: |
@@ -50,7 +50,7 @@ jobs:
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/tls/misp.key
           ${{ secrets.TEST_TLS_KEY }}
           EOF
-          python3 -m pip install --user --upgrade requests
+          python3 -m pip install --user --upgrade defusedxml requests
 
       # Load statuses
       - id: misp_version
@@ -59,6 +59,9 @@ jobs:
       - id: modules_version
         name: Get current MISP modules version number
         run: echo "MODULES_VERSION=$(python3 ./misp-modules/latest.py)" >> $GITHUB_ENV
+      - id: shibb_version
+        name: Get current Shibboleth SP version number
+        run: echo "SHIBB_VERSION=$(python3 ./misp-shibb-sp/latest.py)" >> $GITHUB_ENV
 
       # Build / Pull Images
       - id: build_modules
@@ -78,6 +81,12 @@ jobs:
         run: |
           cd misp-workers
           docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.BRANCH_NAME }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
+          cd ..
+      - id: build_shibb
+        name: Build misp-shibb-sp
+        run: |
+          cd misp-shibb-sp
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.BRANCH_NAME }} --build-arg SHIBB_VERSION="${{ env.SHIBB_VERSION }}" .
           cd ..
 
       # Test
@@ -118,3 +127,8 @@ jobs:
         if: steps.build_workers.outcome == 'success'
         run: |
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.BRANCH_NAME }}
+      - id: push-shibb
+        name: Push misp-shibb-sp
+        if: steps.build_shibb.outcome == 'success'
+        run: |
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.BRANCH_NAME }}

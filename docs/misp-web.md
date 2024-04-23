@@ -14,6 +14,13 @@ This image is designed to be used in conjunction with
 [jisccti/misp-workers](https://hub.docker.com/r/jisccti/misp-workers) and is dependent on
 third-party ClamAV, MySQL, Redis and SMTP services.
 
+Single Sign On (SSO) support:
+
+* Microsoft Entra ID (formerly Azure Active Directory) -
+  [awaiting upstream fixes](https://github.com/JiscCTI/misp-docker/issues/20).
+* OpenID Connect (OIDC) - under development.
+* Shibboleth / SAML 2.0 - [Configuration guide](https://hub.docker.com/r/jisccti/misp-shibb-sp).
+
 ## 1 - Docker Compose
 
 Create a directory to host your MISP instance and download the latest
@@ -52,10 +59,12 @@ properly.
 | **MYSQL_ROOT_PASSWORD** | The root password that will be set in the MySQL container. Not used for a third-party DB. | `misp` |
 | MYSQL_USERNAME | The username MISP will use to connect to MySQL. | `misp` |
 | **ORG_NAME** | The organisation that owns this instance of MISP. | `ORGNAME` |
+| **ORG_UUID** | The unique identifier of the organisation that owns this instance of MISP. | (generate a new UUID on first start) |
 | REDIS_HOST | The hostname of the Redis service. | `misp_redis` |
 | REDIS_MISP_DB | The database number to use for MISP within Redis. | `2` |
 | **REDIS_PASSWORD** | The password MISP will use to connect to Redis. | `misp` |
 | REDIS_WORKER_DB | The database number to use for the MISP Workers within Redis. | `3` |
+| REQUIRE_TOTP | Toggle if Time-based One Time Passwords are required. | `true` |
 | **SMTP_HOSTNAME** | The FQDN of the SMTP service. | `localhost` |
 | **SMTP_PASSWORD** | The password MISP will use to connect to the SMTP service. | `misp` |
 | SMTP_PORT | The port the SMTP service is listening on. | `587` |

@@ -10,6 +10,7 @@
 set -e
 
 set_env_vars() {
+    AUTH_METHOD="${AUTH_METHOD:-misp}"
     CLAMAV_HOSTNAME="${CLAMAV_HOSTNAME:misp_clamav}"
     FQDN="${FQDN:-misp.local}"
     GPG_PASSPHRASE="${GPG_PASSPHRASE:-misp}"
@@ -30,6 +31,15 @@ set_env_vars() {
     REDIS_HOST="${REDIS_HOST:-misp_redis}"
     REDIS_MISP_DB="${REDIS_MISP_DB:-2}"
     REDIS_WORKER_DB="${REDIS_MISP_DB:-3}"
+    REQUIRE_TOTP="${REQUIRE_TOTP:-true}"
+    SHIBB_ADMIN_ROLE="${SHIBB_ADMIN_ROLE:-misp-admin-access}"
+    SHIBB_BLOCK_ORG_CHANGE="${SHIBB_BLOCK_ORG_CHANGE:-false}"
+    SHIBB_BLOCK_ROLE_CHANGE="${SHIBB_BLOCK_ROLE_CHANGE:-false}"
+    SHIBB_DEFAULT_ROLE="${SHIBB_DEFAULT_ROLE:-false}"
+    SHIBB_ORG_ADMIN_ROLE="${SHIBB_ORG_ADMIN_ROLE:-misp-org-admin-access}"
+    SHIBB_PUBLISHER_ROLE="${SHIBB_PUBLISHER_ROLE:-misp-publisher-access}"
+    SHIBB_SYNC_ROLE="${SHIBB_SYNC_ROLE:-misp-sync-access}"
+    SHIBB_USER_ROLE="${SHIBB_USER_ROLE:-misp-access}"
     SMTP_HOSTNAME="${SMTP_HOSTNAME:-localhost}"
     SMTP_PASSWORD="${SMTP_PASSWORD:-misp}"
     SMTP_PORT="${SMTP_PORT:-587}"
@@ -266,9 +276,6 @@ initial_config() {
     /opt/scripts/misp-post-update-config.sh >/dev/null
     echo "Post upgrade configuration complete."
 
-    # Enable OpenID connect (OIDC) support
-    echo "CakePlugin::load('OidcAuth');" >>/var/www/MISP/app/Config/bootstrap.php
-
     if [ -f /var/www/MISPData/custom-config.sh ]; then
         echo "Custom config options script found, executing..."
         bash /var/www/MISPData/custom-config.sh
@@ -372,6 +379,8 @@ on_start() {
     $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
     /usr/local/bin/python3 /opt/scripts/trigger_set_org_name.py
+    $CAKE Admin setSetting "Security.otp_required" "$REQUIRE_TOTP"
+
     sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini
     if [ -z "${REDIS_PASSWORD}" ]; then
         echo "Warning: No Redis password is set, ensure network access control is implemented"
@@ -404,6 +413,24 @@ on_start() {
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_host" "$WORKERS_HOSTNAME"
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" >/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'
+
+    #if [ "$AUTH_METHOD" == oidc ]; then
+        #echo "Enabling OIDC Authentication"
+        #cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
+        #php /opt/scripts/auth_oidc.php
+    if [ "$AUTH_METHOD" == shibb ]; then
+        echo "Enabling Shibboleth Authentication"
+        cp /etc/apache2/sites-available/apache.shibb.conf /etc/apache2/sites-enabled/000-default.conf
+        php /opt/scripts/auth_shibb.php
+    else
+        if [ "$AUTH_METHOD" != misp ]; then
+            echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp' or 'shibb'"
+        fi
+        echo "Enabling MISP Native Authentication"
+        cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
+        php /opt/scripts/auth_misp.php
+    fi
+
     echo "Settings updated based on environment variables."
 }
 

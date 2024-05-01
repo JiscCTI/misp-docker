@@ -13,6 +13,7 @@ $config["ApacheShibbAuth"] = array(
         getenv("SHIBB_USER_ROLE") => 3,
         getenv("SHIBB_PUBLISHER_ROLE") => 4,
         getenv("SHIBB_SYNC_ROLE") => 5,
+        getenv("SHIBB_READONLY_ROLE") => 6,
     ),
     'DefaultOrg' => getenv("ORG_NAME"),
 );

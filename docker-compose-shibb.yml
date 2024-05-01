@@ -84,6 +84,7 @@ services:
       - SHIBB_DEFAULT_ROLE=${SHIBB_DEFAULT_ROLE:-false}
       - SHIBB_ORG_ADMIN_ROLE=${SHIBB_ORG_ADMIN_ROLE:-misp-orgadmin}
       - SHIBB_PUBLISHER_ROLE=${SHIBB_PUBLISHER_ROLE:-misp-publisher}
+      - SHIBB_READONLY_ROLE=${SHIBB_READONLY_ROLE:-misp-readonly}
       - SHIBB_SYNC_ROLE=${SHIBB_SYNC_ROLE:-misp-sync}
       - SHIBB_USER_ROLE=${SHIBB_USER_ROLE:-misp-user}
       - SMTP_HOSTNAME=${SMTP_HOSTNAME:-localhost}

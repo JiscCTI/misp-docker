@@ -27,6 +27,7 @@ file. You only need to add those that you will change from their default value. 
 | SHIBB_ORG_FORMAT | The Name Format of the attribute containing a user's organisation. | `urn:oasis:names:tc:SAML:2.0:attrname-format:uri` |
 | SHIBB_ORG_NAME | The Name (not Friendly Name) of the attribute containing a user's organisation. | `urn:oid:1.3.6.1.4.1.25178.1.2.9` |
 | SHIBB_PUBLISHER_ROLE | The shibboleth group / role to be granted the MISP publisher role. | `misp-publisher` |
+| SHIBB_READONLY_ROLE | The shibboleth group / role to be granted the MISP read only role. | `misp-readonly` |
 | SHIBB_SP_ENCRYPT_REQUESTS | If the MISP Service Provider should encrypt the shibboleth requests. | `true` |
 | SHIBB_SP_ENTITY_ID | The entity ID of MISP's Service Provider. `default` = `https://{FQDN}[:{HTTPS_PORT}]/shibboleth`. | `default` |
 | SHIBB_SP_SHARE_KEY | If the MISP Service Provider should use the same (`true`) or separate (`false`) keys for signing and encryption. | `true` |

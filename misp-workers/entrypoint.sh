@@ -5,6 +5,16 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
+set_env_vars() {
+    # export variables for use in scripts
+    export FQDN="${FQDN:-misp.local}"
+    export HTTPS_PORT="${HTTPS_PORT:-443}"
+    export ORG_NAME="${ORG_NAME:-ORGNAME}"
+    export ORG_UUID="${ORG_UUID:-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"
+    # not exported as only used in entrypoint.sh
+    WORKERS_PASSWORD="${WORKERS_PASSWORD:-misp}"
+}
+
 restore_persistence() {
     echo "Restoring persistent file storage..."
     cd /var/www/ || exit 1
@@ -59,6 +69,7 @@ if [ ! -f /var/www/MISPData/.configured ]; then
     done
 fi
 
+set_env_vars
 restore_persistence
 mkdir -p /var/www/MISPData/tmp/logs
 WORKERS_PASSWORD="${WORKERS_PASSWORD:-misp}"

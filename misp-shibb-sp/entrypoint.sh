@@ -3,8 +3,9 @@
 set -e
 
 set_env_vars() {
-    FQDN="${FQDN:-misp.local}"
-    HTTPS_PORT="${HTTPS_PORT:-443}"
+    # export for jisccti/misp-splunk-forwarder support
+    export FQDN="${FQDN:-misp.local}"
+    export HTTPS_PORT="${HTTPS_PORT:-443}"
     SHIBB_EMAIL_FORMAT="${SHIBB_EMAIL_FORMAT:-urn:oasis:names:tc:SAML:2.0:attrname-format:uri}"
     SHIBB_EMAIL_NAME="${SHIBB_EMAIL_NAME:-urn:oid:0.9.2342.19200300.100.1.3}"
     SHIBB_GROUP_FORMAT="${SHIBB_GROUP_FORMAT:-urn:oasis:names:tc:SAML:2.0:attrname-format:uri}"

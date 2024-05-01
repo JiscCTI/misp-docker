@@ -52,5 +52,5 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp
-          short-description: Shibboleth Service Prvider handler for use with ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web.
+          short-description: Shibboleth Service Provider for use with ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web.
           readme-filepath: docs/misp-shibb-sp.md

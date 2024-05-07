@@ -11,7 +11,7 @@ on:
 
 env:
   COMPOSE_PROJECT_NAME: misp_dev
-  BRANCH_NAME: ${{ github.event.pull_request.id || github.head_ref || github.ref_name }} 
+  BRANCH_NAME: ${{ github.event.pull_request.number || github.head_ref || github.ref_name }} 
 jobs:
   run-dev:
     name: Build, Test, and Release (Dev)

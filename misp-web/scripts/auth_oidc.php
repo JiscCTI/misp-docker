@@ -16,7 +16,7 @@ $config["OidcAuth"] = array(
         getenv('OIDC_USER_ROLE') => 3,
         getenv('OIDC_PUBLISHER_ROLE') => 4,
         getenv('OIDC_SYNC_ROLE') => 5,
-        getenv('OIDC_API_ROLE') => 'User with API access',
+        getenv("OIDC_READONLY_ROLE") => 6,
     ),
     'default_org' => getenv('ORG_NAME'),
 );
@@ -24,6 +24,6 @@ file_put_contents("/var/www/MISPData/config/config.php", "<?php\n\$config = " . 
 
 $bootstrap = file_get_contents("/var/www/MISPData/config/bootstrap.php");
 if (strpos($bootstrap, "CakePlugin::load('OidcAuth');") === false) {
-    $bootstrap = $bootstrap . "\nCakePlugin::load('OidcAuth');";
+    $bootstrap = $bootstrap . "\nCakePlugin::load('OidcAuth');\n";
     file_put_contents("/var/www/MISPData/config/bootstrap.php", $bootstrap);
 }

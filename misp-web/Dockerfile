@@ -99,14 +99,23 @@ FROM php:8.3-apache AS final
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 ENV AUTH_METHOD=misp CLAMAV_HOSTNAME=misp_clamav FQDN=misp.local GPG_PASSPHRASE=misp \
     HTTPS_PORT=443 MISP_EMAIL_ADDRESS=misp@misp.local MISP_EMAIL_NAME=MISP \
-    MODULES_HOSTNAME=misp_modules MYSQL_DBNAME=misp MYSQL_HOSTNAME=misp_db MYSQL_PASSWORD=misp \
-    MYSQL_USERNAME=misp ORG_NAME=ORGNAME REDIS_HOST=misp_redis REDIS_MISP_DB=2 REDIS_PORT=6379 \
-    REDIS_TLS=false REDIS_WORKER_DB=3 REQUIRE_TOTP=true SHIBB_ADMIN_ROLE=misp-admin \
-    SHIBB_BLOCK_ORG_CHANGE=false SHIBB_BLOCK_ROLE_CHANGE=false SHIBB_DEFAULT_ROLE=false \
-    SHIBB_ORG_ADMIN_ROLE=misp-orgadmin SHIBB_PUBLISHER_ROLE=misp-publisher \
-    SHIBB_READONLY_ROLE=misp-readonly SHIBB_SYNC_ROLE=misp-sync SHIBB_USER_ROLE=misp-user \
+    MODULES_HOSTNAME=misp_modules \
+    MYSQL_DBNAME=misp MYSQL_HOSTNAME=misp_db MYSQL_PASSWORD=misp MYSQL_USERNAME=misp \
+    OIDC_ADMIN_ROLE=misp-admin OIDC_AUTH_METHOD=client_secret_jwt OIDC_CLIENT_ID=misp \
+    OIDC_CLIENT_SECRET=misp OIDC_CODE_CHALLENGE_METHOD=S256 OIDC_ORG_ADMIN_ROLE=misp-orgadmin \
+    OIDC_PROVIDER=example.com/auth/realms/realm/.well-known/openid-configuration \
+    OIDC_PUBLISHER_ROLE=misp-publisher OIDC_READONLY_ROLE=misp-readonly OIDC_SYNC_ROLE=misp-sync \
+    OIDC_USER_ROLE=misp-user \
+    ORG_NAME=ORGNAME \
+    REDIS_HOST=misp_redis REDIS_MISP_DB=2 REDIS_PORT=6379 REDIS_TLS=false REDIS_WORKER_DB=3 \
+    REQUIRE_TOTP=true \
+    SHIBB_ADMIN_ROLE=misp-admin SHIBB_BLOCK_ORG_CHANGE=false SHIBB_BLOCK_ROLE_CHANGE=false \
+    SHIBB_DEFAULT_ROLE=false SHIBB_ORG_ADMIN_ROLE=misp-orgadmin \
+    SHIBB_PUBLISHER_ROLE=misp-publisher SHIBB_READONLY_ROLE=misp-readonly \
+    SHIBB_SYNC_ROLE=misp-sync SHIBB_USER_ROLE=misp-user \
     SMTP_HOSTNAME=localhost SMTP_PASSWORD=misp SMTP_PORT=587 SMTP_STARTTLS=false \
-    SMTP_USERNAME=misp WORKERS_HOSTNAME=misp_workers WORKERS_PASSWORD=misp
+    SMTP_USERNAME=misp \
+    WORKERS_HOSTNAME=misp_workers WORKERS_PASSWORD=misp
 LABEL org.opencontainers.image.title="misp-web" org.opencontainers.image.version=${MISP_VERSION} \
     org.opencontainers.image.ref.name="misp-web" \
     org.opencontainers.image.description="Open Source Threat Intelligence and Sharing Platform." \

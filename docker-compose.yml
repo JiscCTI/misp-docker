@@ -77,7 +77,8 @@ services:
       - OIDC_CODE_CHALLENGE_METHOD=${OIDC_CODE_CHALLENGE_METHOD:-S256}
       - OIDC_ORG_ADMIN_ROLE=${OIDC_ORG_ADMIN_ROLE:-misp-orgadmin}
       - OIDC_PROVIDER=${OIDC_PROVIDER:-example.com/auth/realms/realm/.well-known/openid-configuration}
-      - OIDC_PUBLISHER_ROLE=${OIDC_publisher_ROLE:-misp-publisher}
+      - OIDC_PUBLISHER_ROLE=${OIDC_PUBLISHER_ROLE:-misp-publisher}
+      - OIDC_READONLY_ROLE=${OIDC_READONLY_ROLE:-misp-readonly}
       - OIDC_SYNC_ROLE=${OIDC_SYNC_ROLE:-misp-sync}
       - OIDC_USER_ROLE=${OIDC_USER_ROLE:-misp-user}
       - ORG_NAME=${ORG_NAME:-ORGNAME}

@@ -3,22 +3,6 @@
 set -e
 
 set_env_vars() {
-    # export for jisccti/misp-splunk-forwarder support
-    export FQDN="${FQDN:-misp.local}"
-    export HTTPS_PORT="${HTTPS_PORT:-443}"
-    SHIBB_EMAIL_FORMAT="${SHIBB_EMAIL_FORMAT:-urn:oasis:names:tc:SAML:2.0:attrname-format:uri}"
-    SHIBB_EMAIL_NAME="${SHIBB_EMAIL_NAME:-urn:oid:0.9.2342.19200300.100.1.3}"
-    SHIBB_GROUP_FORMAT="${SHIBB_GROUP_FORMAT:-urn:oasis:names:tc:SAML:2.0:attrname-format:uri}"
-    SHIBB_GROUP_NAME="${SHIBB_GROUP_NAME:-urn:oid:1.3.6.1.4.1.5923.1.5.1.1}"
-    SHIBB_IDP_ENTITY_ID="${SHIBB_IDP_ENTITY_ID:-https://idp.example.org/idp/shibboleth}"
-    SHIBB_IDP_METADATA_URL="${SHIBB_IDP_METADATA_URL:-false}"
-    SHIBB_ORG_FORMAT="${SHIBB_ORG_FORMAT:-urn:oasis:names:tc:SAML:2.0:attrname-format:uri}"
-    SHIBB_ORG_NAME="${SHIBB_ORG_NAME:-urn:oid:1.3.6.1.4.1.25178.1.2.9}"
-    SHIBB_SP_ENCRYPT_REQUESTS="${SHIBB_SP_ENCRYPT_REQUESTS:-true}"
-    SHIBB_SP_ENTITY_ID="${SHIBB_SP_ENTITY_ID:-default}"
-    SHIBB_SP_SHARE_KEY="${SHIBB_SP_SHARE_KEY:-true}"
-    SHIBB_SP_SIGN_REQUESTS="${SHIBB_SP_SIGN_REQUESTS:-true}"
-
     if [[ "$HTTPS_PORT" -eq 443 ]]; then
         MISP_URL="https://$FQDN"
     else

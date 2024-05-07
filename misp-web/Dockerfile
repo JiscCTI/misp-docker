@@ -110,10 +110,20 @@ RUN find /var/www -type d -name .git -exec rm -r {} + &&\
 # Build final image
 FROM php:7.4-apache AS final
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
-LABEL org.opencontainers.image.title="misp-web" org.opencontainers.image.version=${MISP_VERSION}\
-    org.opencontainers.image.ref.name="misp-web"\
-    org.opencontainers.image.description="Open Source Threat Intelligence and Sharing Platform."\
-    org.opencontainers.image.authors="Jisc <CTI.Analysts@jisc.ac.uk"\
+ENV AUTH_METHOD=misp CLAMAV_HOSTNAME=misp_clamav FQDN=misp.local GPG_PASSPHRASE=misp \
+    HTTPS_PORT=443 MISP_EMAIL_ADDRESS=misp@misp.local MISP_EMAIL_NAME=MISP \
+    MODULES_HOSTNAME=misp_modules MYSQL_DBNAME=misp MYSQL_HOSTNAME=misp_db MYSQL_PASSWORD=misp \
+    MYSQL_USERNAME=misp ORG_NAME=ORGNAME REDIS_HOST=misp_redis REDIS_MISP_DB=2 REDIS_WORKER_DB=3 \
+    REQUIRE_TOTP=true SHIBB_ADMIN_ROLE=misp-admin SHIBB_BLOCK_ORG_CHANGE=false \
+    SHIBB_BLOCK_ROLE_CHANGE=false SHIBB_DEFAULT_ROLE=false SHIBB_ORG_ADMIN_ROLE=misp-orgadmin \
+    SHIBB_PUBLISHER_ROLE=misp-publisher SHIBB_READONLY_ROLE=misp-readonly \
+    SHIBB_SYNC_ROLE=misp-sync SHIBB_USER_ROLE=misp-user SMTP_HOSTNAME=localhost SMTP_PASSWORD=misp \
+    SMTP_PORT=587 SMTP_STARTTLS=false SMTP_USERNAME=misp WORKERS_HOSTNAME=misp_workers \
+    WORKERS_PASSWORD=misp
+LABEL org.opencontainers.image.title="misp-web" org.opencontainers.image.version=${MISP_VERSION} \
+    org.opencontainers.image.ref.name="misp-web" \
+    org.opencontainers.image.description="Open Source Threat Intelligence and Sharing Platform." \
+    org.opencontainers.image.authors="Jisc <CTI.Analysts@jisc.ac.uk" \
     org.opencontainers.image.base.name="hub.docker.com/_/php:7.4-apache"
 VOLUME "/etc/ssl/private/" "/var/www/MISPData" "/var/www/MISPGnuPG"
 EXPOSE 80 443

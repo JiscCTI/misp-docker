@@ -16,7 +16,21 @@ jobs:
   run-dev:
     name: Build, Test, and Release (Dev)
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: 'write'
     steps:
+      - id: pr-comment-start
+        name: Add Comment to PR (Start)
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Test images for this PR are now being built, see Actions tab for details.'
+            })
       # Environment Setup
       - id: checkout
         name: Checkout Project
@@ -139,8 +153,8 @@ jobs:
         if: steps.build_shibb.outcome == 'success'
         run: |
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.BRANCH_NAME }}
-      - id: pr-comment
-        name: Add Comment to PR
+      - id: pr-comment-done
+        name: Add Comment to PR (Done)
         if: ${{ github.event_name == 'pull_request' }}
         uses: actions/github-script@v7
         with:

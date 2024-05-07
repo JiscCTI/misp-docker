@@ -61,6 +61,15 @@ jobs:
         name: Get current Shibboleth SP version number
         run: echo "SHIBB_VERSION=$(python3 ./misp-shibb-sp/latest.py)" >> $GITHUB_ENV
 
+      # Print Image tag and upstream version
+      - id: print_versions
+        name: Image Tag and Upstream Versions
+        run: |
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.BRANCH_NAME }} using upstream version ${{ env.MODULES_VERSION }}"
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.BRANCH_NAME }} using upstream version v${{ env.SHIBB_VERSION }}"
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.BRANCH_NAME }} using upstream version ${{ env.MISP_VERSION }}"
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.BRANCH_NAME }} using upstream version ${{ env.MISP_VERSION }}"
+      
       # Build / Pull Images
       - id: build_modules
         name: Build misp-modules

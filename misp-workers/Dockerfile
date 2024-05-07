@@ -7,10 +7,13 @@ ARG MISP_VERSION=0.0.0
 FROM jisccti/misp-web:${MISP_VERSION} as web
 FROM php:7.4-cli AS final
 ARG MISP_VERSION=0.0.0
-LABEL org.opencontainers.image.title="misp-workers" org.opencontainers.image.version=${MISP_VERSION}\
-    org.opencontainers.image.ref.name="misp-workers"\
-    org.opencontainers.image.description="Open Source Threat Intelligence and Sharing Platform."\
-    org.opencontainers.image.authors="Jisc <CTI.Analysts@jisc.ac.uk"\
+ENV FQDN=misp.local HTTPS_PORT=443 ORG_NAME=ORGNAME ORG_UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX \
+    WORKERS_PASSWORD=misp
+LABEL org.opencontainers.image.title="misp-workers" \
+    org.opencontainers.image.version=${MISP_VERSION} \
+    org.opencontainers.image.ref.name="misp-workers" \
+    org.opencontainers.image.description="Open Source Threat Intelligence and Sharing Platform." \
+    org.opencontainers.image.authors="Jisc <CTI.Analysts@jisc.ac.uk" \
     org.opencontainers.image.base.name="hub.docker.com/_/php:7.4-cli"
 ENV CAKE="sudo -H -u www-data /var/www/MISP/app/Console/cake"
 EXPOSE 9001

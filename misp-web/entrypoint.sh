@@ -10,43 +10,11 @@
 set -e
 
 set_env_vars() {
-    AUTH_METHOD="${AUTH_METHOD:-misp}"
-    CLAMAV_HOSTNAME="${CLAMAV_HOSTNAME:misp_clamav}"
-    FQDN="${FQDN:-misp.local}"
-    GPG_PASSPHRASE="${GPG_PASSPHRASE:-misp}"
-    HTTPS_PORT="${HTTPS_PORT:-443}"
-    MISP_EMAIL_ADDRESS="${MISP_EMAIL_ADDRESS:-misp@misp.local}"
-    MISP_EMAIL_NAME="${MISP_EMAIL_NAME:-MISP}"
     if [[ "$HTTPS_PORT" -eq 443 ]]; then
         MISP_URL="https://$FQDN"
     else
         MISP_URL="https://$FQDN:$HTTPS_PORT"
     fi
-    MODULES_HOSTNAME="${MODULES_HOSTNAME:-misp_modules}"
-    MYSQL_DBNAME="${MYSQL_DBNAME:-misp}"
-    MYSQL_HOSTNAME="${MYSQL_HOSTNAME:-misp_db}"
-    MYSQL_PASSWORD="${MYSQL_PASSWORD:-misp}"
-    MYSQL_USERNAME="${MYSQL_USERNAME:-misp}"
-    ORG_NAME="${ORG_NAME:-ORGNAME}"
-    REDIS_HOST="${REDIS_HOST:-misp_redis}"
-    REDIS_MISP_DB="${REDIS_MISP_DB:-2}"
-    REDIS_WORKER_DB="${REDIS_MISP_DB:-3}"
-    REQUIRE_TOTP="${REQUIRE_TOTP:-true}"
-    SHIBB_ADMIN_ROLE="${SHIBB_ADMIN_ROLE:-misp-admin-access}"
-    SHIBB_BLOCK_ORG_CHANGE="${SHIBB_BLOCK_ORG_CHANGE:-false}"
-    SHIBB_BLOCK_ROLE_CHANGE="${SHIBB_BLOCK_ROLE_CHANGE:-false}"
-    SHIBB_DEFAULT_ROLE="${SHIBB_DEFAULT_ROLE:-false}"
-    SHIBB_ORG_ADMIN_ROLE="${SHIBB_ORG_ADMIN_ROLE:-misp-org-admin-access}"
-    SHIBB_PUBLISHER_ROLE="${SHIBB_PUBLISHER_ROLE:-misp-publisher-access}"
-    SHIBB_SYNC_ROLE="${SHIBB_SYNC_ROLE:-misp-sync-access}"
-    SHIBB_USER_ROLE="${SHIBB_USER_ROLE:-misp-access}"
-    SMTP_HOSTNAME="${SMTP_HOSTNAME:-localhost}"
-    SMTP_PASSWORD="${SMTP_PASSWORD:-misp}"
-    SMTP_PORT="${SMTP_PORT:-587}"
-    SMTP_STARTTLS="${SMTP_STARTTLS:-false}"
-    SMTP_USERNAME="${SMTP_USERNAME:-misp}"
-    WORKERS_HOSTNAME="${WORKERS_HOSTNAME:-misp_workers}"
-    WORKERS_PASSWORD="${WORKERS_PASSWORD:-misp}"
 }
 
 setup_objects() {

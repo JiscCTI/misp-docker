@@ -79,7 +79,6 @@ services:
       replicas: 2
     environment:
       - AUTH_METHOD=${AUTH_METHOD:-misp}
-      - AUTH_METHOD=${AUTH_METHOD:-misp}
       - CLAMAV_HOSTNAME=${CLAMAV_HOSTNAME:-misp_clamav}
       - FQDN=${FQDN:-misp.local}
       - GPG_PASSPHRASE=${GPG_PASSPHRASE:-misp}

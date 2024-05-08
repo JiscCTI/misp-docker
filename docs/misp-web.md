@@ -18,7 +18,7 @@ Single Sign On (SSO) support:
 
 * Microsoft Entra ID (formerly Azure Active Directory) -
   [awaiting upstream fixes](https://github.com/JiscCTI/misp-docker/issues/20).
-* OpenID Connect (OIDC) - under development.
+* OpenID Connect (OIDC) - [Configuration guide](https://github.com/JiscCTI/misp-docker/blob/main/docs/oidc.md).
 * Shibboleth / SAML 2.0 - [Configuration guide](https://hub.docker.com/r/jisccti/misp-shibb-sp).
 
 ## 1 - Docker Compose

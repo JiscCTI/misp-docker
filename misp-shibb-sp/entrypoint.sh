@@ -4,6 +4,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
+# SPDX-FileCopyrightText: 2024 Jisc Services Limited
+# SPDX-FileContributor: Joe Pitt
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
 set -e
 
 set_env_vars() {

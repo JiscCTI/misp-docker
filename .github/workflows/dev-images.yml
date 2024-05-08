@@ -22,6 +22,7 @@ jobs:
       - id: pr-comment-start
         name: Add Comment to PR (Start)
         if: ${{ github.event_name == 'pull_request' }}
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
@@ -156,6 +157,7 @@ jobs:
       - id: pr-comment-done
         name: Add Comment to PR (Done)
         if: ${{ github.event_name == 'pull_request' }}
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+# SPDX-FileCopyrightText: 2024 Jisc Services Limited
+# SPDX-FileContributor: Joe Pitt
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
 """Get the latest version of the Shibboleth SP RPM"""
 
 from os.path import dirname, join

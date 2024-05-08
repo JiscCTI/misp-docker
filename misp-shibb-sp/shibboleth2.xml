@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileContributor: Joe Pitt
+
+SPDX-License-Identifier: GPL-3.0-only
+-->
 <SPConfig xmlns="urn:mace:shibboleth:3.0:native:sp:config"
     xmlns:conf="urn:mace:shibboleth:3.0:native:sp:config"
     clockSkew="180">

@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2024 Jisc Services Limited
+# SPDX-FileContributor: Joe Pitt
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
+site_name: Jisc CTI - MISP
+site_url: https://jisccti.github.io/misp-docker/
+repo_url: https://github.com/jisccti/misp-docker/
+repo_name: GitHub
+edit_uri: blob/main/pages/
+docs_dir: pages
+site_description: Documentation for running MISP with the Docker images produced by Jisc's Cyber Threat Intelligence team.
+site_author: Jisc's Cyber Threat Intelligence Team
+copyright: 2024 Jisc Services Limited
+nav:
+  - Introduction: index.md
+  - Requirements: requirements.md
+  - Known Issues: known_issues.md
+  - Configuration: configuration/general.md
+  - Single Sign On:
+    - OpenID Connect (OIDC): configuration/oidc.md
+    - SAML2/Shibboleth: configuration/shibb.md
+  - Deployment:
+    - Local / Virtual Machine: deploy/local.md
+    - Cloud: deploy/cloud.md
+  - First Start: first_start.md
+  - Logging: logging.md
+  - Maintenance Tasks: maint_tasks.md
+  - Upgrading MISP: updates.md
+  - Splunk Integration: splunk.md
+  - Development:
+    - Principles: dev/principles.md
+    - Images:
+      - misp-modules: dev/modules.md
+      - misp-shibb-sp: dev/shibb-sp.md
+      - misp-web: dev/web.md
+      - misp-workers: dev/workers.md
+    - GitHub Actions: dev/actions.md
+theme: 
+  name: readthedocs
+  hljs_languages:
+    - apache
+    - dockerfile

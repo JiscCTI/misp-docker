@@ -27,6 +27,7 @@ nav:
     - First Start: first_start.md
     - Splunk Integration (Optional): splunk.md
   - Management:
+    - Backups: backups.md
     - Logging: logging.md
     - Maintenance Tasks: maint_tasks.md
     - Upgrading MISP: updates.md

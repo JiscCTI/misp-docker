@@ -16,26 +16,28 @@ nav:
   - Introduction: index.md
   - Requirements: requirements.md
   - Known Issues: known_issues.md
-  - Configuration: configuration/general.md
-  - Single Sign On:
-    - OpenID Connect (OIDC): configuration/oidc.md
-    - SAML2/Shibboleth: configuration/shibb.md
-  - Deployment:
-    - Local / Virtual Machine: deploy/local.md
-    - Cloud: deploy/cloud.md
-  - First Start: first_start.md
-  - Logging: logging.md
-  - Maintenance Tasks: maint_tasks.md
-  - Upgrading MISP: updates.md
-  - Splunk Integration: splunk.md
+  - Setup:
+    - Configuration: configuration/general.md
+    - Single Sign On (Optional):
+      - OpenID Connect (OIDC): configuration/oidc.md
+      - SAML2/Shibboleth: configuration/shibb.md
+    - Deployment:
+      - Local / Virtual Machine: deploy/local.md
+      - Cloud: deploy/cloud.md
+    - First Start: first_start.md
+    - Splunk Integration (Optional): splunk.md
+  - Management:
+    - Logging: logging.md
+    - Maintenance Tasks: maint_tasks.md
+    - Upgrading MISP: updates.md
   - Development:
     - Principles: dev/principles.md
     - Images:
-      - misp-modules: dev/modules.md
-      - misp-shibb-sp: dev/shibb-sp.md
-      - misp-web: dev/web.md
-      - misp-workers: dev/workers.md
-    - GitHub Actions: dev/actions.md
+      - misp-modules: dev/misp-modules.md
+      - misp-shibb-sp: dev/misp-shibb-sp.md
+      - misp-web: dev/misp-web.md
+      - misp-workers: dev/misp-workers.md
+    - GitHub Actions: dev/gh-actions.md
 theme: 
   name: readthedocs
   hljs_languages:

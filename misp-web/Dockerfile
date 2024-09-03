@@ -38,9 +38,9 @@ RUN apt-get -yq update &&\
     apt-get -yq install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev\
     libffi-dev libsqlite3-dev wget libbz2-dev
 WORKDIR /opt/
-RUN wget --progress=dot:giga https://www.python.org/ftp/python/3.10.12/Python-3.10.12.tgz &&\
-    tar xfz Python-3.10.12.tgz
-WORKDIR /opt/Python-3.10.12
+RUN wget --progress=dot:giga https://www.python.org/ftp/python/3.12.5/Python-3.12.5.tgz &&\
+    tar xfz Python-3.12.5.tgz
+WORKDIR /opt/Python-3.12.5
 RUN ./configure --prefix=/usr/local --enable-optimizations &&\
     make &&\
     make install

@@ -150,5 +150,5 @@ RUN a2dismod status &&\
     a2enmod ssl rewrite headers shib setenvif &&\
     chmod +x /opt/scripts/* /*.sh
 WORKDIR /var/www/MISP/
-ENTRYPOINT /wait-for-it.sh -h ${MYSQL_HOSTNAME:-misp_db} -p 3306 -t 0 -- /entrypoint.sh
-HEALTHCHECK --start-period=10m --timeout=3s CMD curl -fk https://127.0.0.1/users/login || exit 1
+ENTRYPOINT ["sh", "-c", "/wait-for-it.sh -h ${MYSQL_HOSTNAME:-misp_db} -p 3306 -t 0 -- /entrypoint.sh"]
+HEALTHCHECK --start-period=10m --timeout=3s CMD ["sh", "-c", "curl -fk https://127.0.0.1/users/login || exit 1"]

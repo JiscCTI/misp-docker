@@ -3,7 +3,7 @@
 [![MISP-Modules release](https://img.shields.io/github/v/tag/MISP/misp-modules?logo=github&label=MISP-Modules%20(source))](https://github.com/MISP/misp-modules)
 [![misp-modules](https://img.shields.io/docker/v/jisccti/misp-modules?sort=semver&logo=docker&label=misp-modules)![misp-modules size](https://img.shields.io/docker/image-size/jisccti/misp-modules/latest?label=%20)](https://hub.docker.com/r/jisccti/misp-modules)
 
-Python 3.10 running MISP's modules server, exposed on port 6666.
+Python 3.12 running MISP's modules server, exposed on port 6666.
 
 The image is designed to be used with [jisccti/misp-web](https://hub.docker.com/r/jisccti/misp-web),
 but should work with any MISP instance.

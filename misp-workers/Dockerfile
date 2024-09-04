@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 ARG MISP_VERSION=0.0.0
-FROM jisccti/misp-web:${MISP_VERSION} as web
+FROM jisccti/misp-web:${MISP_VERSION} AS web
 FROM php:7.4-cli AS final
 ARG MISP_VERSION=0.0.0
 ENV FQDN=misp.local HTTPS_PORT=443 ORG_NAME=ORGNAME ORG_UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX \
@@ -39,5 +39,5 @@ COPY healthcheck.sh /healthcheck.sh
 RUN chmod 755 /*.sh
 
 WORKDIR /var/www/MISP/
-ENTRYPOINT /wait-for-it.sh -h ${REDIS_HOST:-misp_redis} -p 6379 -t 0 -- /entrypoint.sh
-HEALTHCHECK --start-period=10m --timeout=5s CMD /healthcheck.sh
+ENTRYPOINT ["sh", "-c", "/wait-for-it.sh -h ${REDIS_HOST:-misp_redis} -p 6379 -t 0 -- /entrypoint.sh"]
+HEALTHCHECK --start-period=10m --timeout=5s CMD ["/healthcheck.sh"]

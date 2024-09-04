@@ -38,9 +38,9 @@ RUN apt-get -yq update &&\
     apt-get -yq install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev\
     libffi-dev libsqlite3-dev wget libbz2-dev
 WORKDIR /opt/
-RUN wget --progress=dot:giga https://www.python.org/ftp/python/3.10.12/Python-3.10.12.tgz &&\
-    tar xfz Python-3.10.12.tgz
-WORKDIR /opt/Python-3.10.12
+RUN wget --progress=dot:giga https://www.python.org/ftp/python/3.12.5/Python-3.12.5.tgz &&\
+    tar xfz Python-3.12.5.tgz
+WORKDIR /opt/Python-3.12.5
 RUN ./configure --prefix=/usr/local --enable-optimizations &&\
     make &&\
     make install
@@ -150,5 +150,5 @@ RUN a2dismod status &&\
     a2enmod ssl rewrite headers shib setenvif &&\
     chmod +x /opt/scripts/* /*.sh
 WORKDIR /var/www/MISP/
-ENTRYPOINT /wait-for-it.sh -h ${MYSQL_HOSTNAME:-misp_db} -p 3306 -t 0 -- /entrypoint.sh
-HEALTHCHECK --start-period=10m --timeout=3s CMD curl -fk https://127.0.0.1/users/login || exit 1
+ENTRYPOINT ["sh", "-c", "/wait-for-it.sh -h ${MYSQL_HOSTNAME:-misp_db} -p 3306 -t 0 -- /entrypoint.sh"]
+HEALTHCHECK --start-period=10m --timeout=3s CMD ["sh", "-c", "curl -fk https://127.0.0.1/users/login || exit 1"]

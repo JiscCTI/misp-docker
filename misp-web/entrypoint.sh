@@ -346,7 +346,7 @@ on_start() {
     $CAKE Admin setSetting "MISP.baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
-    /usr/local/bin/python3 /opt/scripts/trigger_set_org_name.py
+    python3 /opt/scripts/trigger_set_org_name.py
     $CAKE Admin setSetting "Security.otp_required" "$REQUIRE_TOTP"
 
     sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini

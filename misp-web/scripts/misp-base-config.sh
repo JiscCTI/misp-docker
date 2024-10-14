@@ -198,7 +198,6 @@ $CAKE Admin setSetting "Plugin.Enrichment_hover_enable" true
 $CAKE Admin setSetting "Plugin.Enrichment_hover_popover_only" false
 $CAKE Admin setSetting "Plugin.Enrichment_hover_timeout" 150
 $CAKE Admin setSetting "Plugin.Enrichment_timeout" 300
-$CAKE Admin setSetting "Plugin.Enrichment_bgpranking_enabled" true
 $CAKE Admin setSetting "Plugin.Enrichment_countrycode_enabled" true
 $CAKE Admin setSetting "Plugin.Enrichment_cve_enabled" true
 $CAKE Admin setSetting "Plugin.Enrichment_cve_advanced_enabled" true

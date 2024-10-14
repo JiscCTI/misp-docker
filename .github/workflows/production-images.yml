@@ -48,7 +48,7 @@ jobs:
           ${{ secrets.TEST_TLS_KEY }}
           EOF
           python3 -m venv venv
-          ./venv/bin/pip install --user --upgrade defusedxml requests
+          ./venv/bin/pip install --upgrade defusedxml requests
 
       # Load statuses
       - id: misp_version

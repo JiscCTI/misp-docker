@@ -240,6 +240,7 @@ initial_config() {
     echo 'Setting "Security.encryption_key" changed to "[REDACTED]"'
     $CAKE Admin setSetting "MISP.email_from_name" "$MISP_EMAIL_NAME"
     $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
+    $CAKE Admin setSetting "MISP.email_reply_to" "$MISP_EMAIL_ADDRESS"
     echo "Setting $(grep --count CAKE /opt/scripts/misp-post-update-config.sh) post upgrade configuration settings..."
     /opt/scripts/misp-post-update-config.sh >/dev/null
     echo "Post upgrade configuration complete."

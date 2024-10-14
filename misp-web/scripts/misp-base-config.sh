@@ -260,4 +260,4 @@ $CAKE Admin setSetting "MISP.default_publish_alert" false
 $CAKE Admin setSetting "MISP.welcome_text_top" "" --force
 $CAKE Admin setSetting "MISP.welcome_text_bottom" "" --force
 $CAKE Admin setSetting "MISP.footermidleft" "" --force
-$CAKE Admin setSetting "MISP.footermidright" "" --force
+$CAKE Admin setSetting "MISP.footermidright" "and hub.docker.com/r/jisccti/misp-web"

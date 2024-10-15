@@ -11,7 +11,7 @@ on:
 
 env:
   COMPOSE_PROJECT_NAME: misp_dev
-  BRANCH_NAME: ${{ github.event.pull_request.number || github.head_ref || github.ref_name }} 
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name || github.event.pull_request.number }} 
 jobs:
   run-dev:
     name: Build, Test, and Release (Dev)
@@ -115,7 +115,7 @@ jobs:
       # Test
       - id: start_test_env
         name: Deploy Test Instance
-        run: docker compose up -d
+        run: docker compose -f docker-compose-dev.yml up -d
 
       - id: initial_setup
         name: Wait for Initial Setup
@@ -125,36 +125,36 @@ jobs:
       - id: dump_logs
         name: Dump Container Log
         run: |
-          docker compose logs
-          docker compose down
+          docker compose -f docker-compose-dev.yml logs
+          docker compose -f docker-compose-dev.yml down
           exit 1
         if: steps.initial_setup.outcome == 'failure'
 
       - id: stop_test_env
         name: Stop MISP
-        run: docker compose down
+        run: docker compose -f docker-compose-dev.yml down
 
       # Push New Images
       - id: push-modules
         name: Push misp-modules
         if: steps.build_modules.outcome == 'success'
         run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.BRANCH_NAME }}
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:${{ env.BRANCH_NAME }}
       - id: push-web
         name: Push misp-web
         if: steps.build_web.outcome == 'success'
         run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.BRANCH_NAME }}
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ env.BRANCH_NAME }}
       - id: push-workers
         name: Push misp-workers
         if: steps.build_workers.outcome == 'success'
         run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.BRANCH_NAME }}
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ env.BRANCH_NAME }}
       - id: push-shibb
         name: Push misp-shibb-sp
         if: steps.build_shibb.outcome == 'success'
         run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.BRANCH_NAME }}
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ env.BRANCH_NAME }}
       - id: pr-comment-done
         name: Add Comment to PR (Done)
         if: ${{ github.event_name == 'pull_request' }}
@@ -166,5 +166,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'New test images for this PR have been published: `${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.BRANCH_NAME }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.BRANCH_NAME }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.BRANCH_NAME }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.BRANCH_NAME }}`'
+              body: 'New test images for this PR have been published: `${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:${{ env.BRANCH_NAME }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ env.BRANCH_NAME }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ env.BRANCH_NAME }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ env.BRANCH_NAME }}`'
             })

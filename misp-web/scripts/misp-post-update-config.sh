@@ -15,3 +15,4 @@ $CAKE Admin setSetting "MISP.self_update" false
 $CAKE Admin setSetting "MISP.store_api_access_time" true
 $CAKE Admin setSetting "MISP.thumbnail_in_redis" true
 $CAKE Admin setSetting "MISP.unpublishedprivate" false
+$CAKE Admin setSetting "Security.alert_on_suspicious_logins" true

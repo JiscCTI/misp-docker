@@ -240,6 +240,7 @@ initial_config() {
     echo 'Setting "Security.encryption_key" changed to "[REDACTED]"'
     $CAKE Admin setSetting "MISP.email_from_name" "$MISP_EMAIL_NAME"
     $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
+    $CAKE Admin setSetting "MISP.email_reply_to" "$MISP_EMAIL_ADDRESS"
     echo "Setting $(grep --count CAKE /opt/scripts/misp-post-update-config.sh) post upgrade configuration settings..."
     /opt/scripts/misp-post-update-config.sh >/dev/null
     echo "Post upgrade configuration complete."
@@ -346,7 +347,7 @@ on_start() {
     $CAKE Admin setSetting "MISP.baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
-    /usr/local/bin/python3 /opt/scripts/trigger_set_org_name.py
+    python3 /opt/scripts/trigger_set_org_name.py
     $CAKE Admin setSetting "Security.otp_required" "$REQUIRE_TOTP"
 
     sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini

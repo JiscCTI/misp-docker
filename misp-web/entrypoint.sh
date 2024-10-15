@@ -383,17 +383,17 @@ on_start() {
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" >/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'
 
-    #if [ "$AUTH_METHOD" == oidc ]; then
-        #echo "Enabling OIDC Authentication"
-        #cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
-        #php /opt/scripts/auth_oidc.php
-    if [ "$AUTH_METHOD" == shibb ]; then
+    if [ "$AUTH_METHOD" == oidc ]; then
+        echo "Enabling OIDC Authentication"
+        cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
+        php /opt/scripts/auth_oidc.php
+    elif [ "$AUTH_METHOD" == shibb ]; then
         echo "Enabling Shibboleth Authentication"
         cp /etc/apache2/sites-available/apache.shibb.conf /etc/apache2/sites-enabled/000-default.conf
         php /opt/scripts/auth_shibb.php
     else
         if [ "$AUTH_METHOD" != misp ]; then
-            echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp' or 'shibb'"
+            echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp', 'oidc' or 'shibb'"
         fi
         echo "Enabling MISP Native Authentication"
         cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf

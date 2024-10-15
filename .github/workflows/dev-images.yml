@@ -91,25 +91,25 @@ jobs:
         name: Build misp-modules
         run: |
           cd misp-modules
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.BRANCH_NAME }} --build-arg MISP_VERSION="${{ env.MODULES_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:${{ env.BRANCH_NAME }} --build-arg MISP_VERSION="${{ env.MODULES_VERSION }}" .
           cd ..
       - id: build_web
         name: Build misp-web
         run: |
           cd misp-web
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.BRANCH_NAME }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ env.BRANCH_NAME }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
           cd ..
       - id: build_workers
         name: Build misp-workers
         run: |
           cd misp-workers
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.BRANCH_NAME }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ env.BRANCH_NAME }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
           cd ..
       - id: build_shibb
         name: Build misp-shibb-sp
         run: |
           cd misp-shibb-sp
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.BRANCH_NAME }} --build-arg SHIBB_VERSION="${{ env.SHIBB_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ env.BRANCH_NAME }} --build-arg SHIBB_VERSION="${{ env.SHIBB_VERSION }}" .
           cd ..
 
       # Test

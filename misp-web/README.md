@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-only
 -->
 # MISP Web Docker Image
 
-[![MISP release](https://img.shields.io/github/v/release/MISP/MISP?logo=github&label=MISP%20(source))](https://github.com/MISP/MISP)
+[![MISP release](https://img.shields.io/github/v/release/MISP/MISP?logo=github&sort=semver&label=MISP%20(source))](https://github.com/MISP/MISP)
 [![misp-web](https://img.shields.io/docker/v/jisccti/misp-web?logo=docker&label=misp-web)![misp-web size](https://img.shields.io/docker/image-size/jisccti/misp-web?label=%20)](https://hub.docker.com/r/jisccti/misp-web)
 
 Containerised version of the WebUI and API of MISP v2.x.

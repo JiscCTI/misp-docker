@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-only
 -->
 # MISP Modules Docker Image
 
-[![MISP release](https://img.shields.io/github/v/release/MISP/MISP?logo=github&label=MISP%20(source))](https://github.com/MISP/MISP)
+[![MISP release](https://img.shields.io/github/v/release/MISP/MISP?logo=github&sort=semver&label=MISP%20(source))](https://github.com/MISP/MISP)
 [![misp-modules](https://img.shields.io/docker/v/jisccti/misp-modules?logo=docker&label=misp-modules)![misp-modules size](https://img.shields.io/docker/image-size/jisccti/misp-modules?label=%20)](https://hub.docker.com/r/jisccti/misp-modules)
 
 Containerised version of v2.x of the MISP modules.

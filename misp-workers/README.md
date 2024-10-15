@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-only
 -->
 # MISP Workers
 
-[![MISP release](https://img.shields.io/github/v/release/MISP/MISP?logo=github&label=MISP%20(source))](https://github.com/MISP/MISP)
+[![MISP release](https://img.shields.io/github/v/release/MISP/MISP?logo=github&sort=semver&label=MISP%20(source))](https://github.com/MISP/MISP)
 [![misp-workers](https://img.shields.io/docker/v/jisccti/misp-workers?logo=docker&label=misp-workers)![misp-workers size](https://img.shields.io/docker/image-size/jisccti/misp-workers?label=%20)](https://hub.docker.com/r/jisccti/misp-workers)
 
 Containerised version of the MISP v2.x `SimpleBackgroundJobs` workers.

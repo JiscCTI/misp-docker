@@ -1,0 +1,137 @@
+# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileContributor: Joe Pitt
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
+name: misp
+services:
+  clamav:
+    environment:
+      - FQDN=${FQDN:-misp.local}
+      - HTTPS_PORT=${HTTPS_PORT:-443}
+    hostname: ${CLAMAV_HOSTNAME:-misp_clamav}
+    image: clamav/clamav:1.0_base
+    restart: unless-stopped
+    volumes:
+      - ./persistent/${COMPOSE_PROJECT_NAME}/clamav_db/:/var/lib/clamav
+  db:
+    command: [mysqld, --default-authentication-plugin=mysql_native_password, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb_monitor_enable=all]
+    environment:
+      - FQDN=${FQDN:-misp.local}
+      - HTTPS_PORT=${HTTPS_PORT:-443}
+      - MYSQL_DATABASE=${MYSQL_DBNAME:-misp}
+      - MYSQL_USER=${MYSQL_USERNAME:-misp}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-misp}
+    hostname: ${MYSQL_HOSTNAME:-misp_db}
+    image: mysql/mysql-server:8.0
+    restart: unless-stopped
+    volumes:
+      - ./persistent/${COMPOSE_PROJECT_NAME}/db:/var/lib/mysql
+  modules:
+    depends_on:
+      clamav:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - FQDN=${FQDN:-misp.local}
+      - HTTPS_PORT=${HTTPS_PORT:-443}
+      - REDIS_BACKEND=${REDIS_HOST:-misp_redis}
+      - REDIS_DATABASE=${REDIS_MODULES_DB:-1}
+      - REDIS_PW=${REDIS_PASSWORD:-misp}
+    hostname: ${MODULES_HOSTNAME:-misp_modules}
+    image: jisccti/misp-modules-dev:latest
+    restart: unless-stopped
+  redis:
+    entrypoint: redis-server --loglevel warning --requirepass ${REDIS_PASSWORD:-misp}
+    environment:
+      - FQDN=${FQDN:-misp.local}
+      - HTTPS_PORT=${HTTPS_PORT:-443}
+      - REDISCLI_AUTH=${REDIS_PASSWORD:-misp}
+    healthcheck:
+      test: redis-cli -e ping || exit 1
+    hostname: ${REDIS_HOST:-misp_redis}
+    image: redis:7
+    restart: unless-stopped
+  web:
+    depends_on:
+      db:
+        condition: service_healthy
+      modules:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - AUTH_METHOD=${AUTH_METHOD:-misp}
+      - CLAMAV_HOSTNAME=${CLAMAV_HOSTNAME:-misp_clamav}
+      - FQDN=${FQDN:-misp.local}
+      - GPG_PASSPHRASE=${GPG_PASSPHRASE:-misp}
+      - HTTPS_PORT=${HTTPS_PORT:-443}
+      - MISP_EMAIL_ADDRESS=${MISP_EMAIL_ADDRESS:-misp@misp.local}
+      - MISP_EMAIL_NAME=${MISP_EMAIL_NAME:-MISP}
+      - MODULES_HOSTNAME=${MODULES_HOSTNAME:-misp_modules}
+      - MYSQL_DBNAME=${MYSQL_DBNAME:-misp}
+      - MYSQL_HOSTNAME=${MYSQL_HOSTNAME:-misp_db}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
+      - MYSQL_USERNAME=${MYSQL_USERNAME:-misp}
+      - OIDC_ADMIN_ROLE=${OIDC_ADMIN_ROLE:-misp-admin}
+      - OIDC_AUTH_METHOD=${OIDC_AUTH_METHOD:-client_secret_jwt}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-misp}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-misp}
+      - OIDC_CODE_CHALLENGE_METHOD=${OIDC_CODE_CHALLENGE_METHOD:-S256}
+      - OIDC_ORG_ADMIN_ROLE=${OIDC_ORG_ADMIN_ROLE:-misp-orgadmin}
+      - OIDC_PROVIDER=${OIDC_PROVIDER:-example.com/auth/realms/realm/.well-known/openid-configuration}
+      - OIDC_PUBLISHER_ROLE=${OIDC_PUBLISHER_ROLE:-misp-publisher}
+      - OIDC_READONLY_ROLE=${OIDC_READONLY_ROLE:-misp-readonly}
+      - OIDC_SYNC_ROLE=${OIDC_SYNC_ROLE:-misp-sync}
+      - OIDC_USER_ROLE=${OIDC_USER_ROLE:-misp-user}
+      - ORG_NAME=${ORG_NAME:-ORGNAME}
+      - REDIS_HOST=${REDIS_HOST:-misp_redis}
+      - REDIS_MISP_DB=${REDIS_MISP_DB:-2}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-misp}
+      - REDIS_WORKER_DB=${REDIS_WORKER_DB:-3}
+      - REQUIRE_TOTP=${REQUIRE_TOTP:-true}
+      - SHIBB_ADMIN_ROLE=${SHIBB_ADMIN_ROLE:-misp-admin}
+      - SHIBB_BLOCK_ORG_CHANGE=${SHIBB_BLOCK_ORG_CHANGE:-false}
+      - SHIBB_BLOCK_ROLE_CHANGE=${SHIBB_BLOCK_ROLE_CHANGE:-false}
+      - SHIBB_DEFAULT_ROLE=${SHIBB_DEFAULT_ROLE:-false}
+      - SHIBB_ORG_ADMIN_ROLE=${SHIBB_ORG_ADMIN_ROLE:-misp-orgadmin}
+      - SHIBB_PUBLISHER_ROLE=${SHIBB_PUBLISHER_ROLE:-misp-publisher}
+      - SHIBB_READONLY_ROLE=${SHIBB_READONLY_ROLE:-misp-readonly}
+      - SHIBB_SYNC_ROLE=${SHIBB_SYNC_ROLE:-misp-sync}
+      - SHIBB_USER_ROLE=${SHIBB_USER_ROLE:-misp-user}
+      - SMTP_HOSTNAME=${SMTP_HOSTNAME:-localhost}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-misp}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_STARTTLS=${SMTP_STARTTLS:-true}
+      - SMTP_USERNAME=${SMTP_USERNAME:-misp}
+      - WORKERS_HOSTNAME=${WORKERS_HOSTNAME:-misp_workers}
+      - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
+    hostname: ${MISP_HOSTNAME:-misp_web}
+    image: jisccti/misp-web-dev:latest
+    ports:
+      - ${HTTP_PORT:-80}:80
+      - ${HTTPS_PORT:-443}:443
+    restart: unless-stopped
+    volumes:
+      - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData
+      - ./persistent/${COMPOSE_PROJECT_NAME}/gpg/:/var/www/MISPGnuPG
+      - ./persistent/${COMPOSE_PROJECT_NAME}/tls/:/etc/ssl/private
+  workers:
+    depends_on:
+      web:
+        condition: service_started
+    environment:
+      - FQDN=${FQDN:-misp.local}
+      - HTTPS_PORT=${HTTPS_PORT:-443}
+      - ORG_NAME=${ORG_NAME:-ORGNAME}
+      - ORG_UUID=${ORG_UUID:-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
+      - REDIS_HOST=${REDIS_HOST:-misp_redis}
+      - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
+    hostname: ${WORKERS_HOSTNAME:-misp_workers}
+    image: jisccti/misp-workers-dev:latest
+    restart: unless-stopped
+    volumes:
+      - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData
+      - ./persistent/${COMPOSE_PROJECT_NAME}/gpg/:/var/www/MISPGnuPG

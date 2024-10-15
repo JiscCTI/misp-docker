@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-FROM python:3.12-slim-bullseye AS build
+FROM python:3.12-slim-bookworm AS build
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 RUN apt-get update -yq &&\
     apt-get install -yq g++ git libpoppler-cpp-dev &&\
@@ -21,7 +21,7 @@ RUN apt-get update -yq &&\
     sed -i "s|print \"Could not find 'content.xml': {}\".format(str(e))|print(\"Could not find 'content.xml': {}\".format(str(e)))|" /misp_modules/lib/python3.12/site-packages/ODTReader/odtreader.py &&\
     sed -i "s|print output|print(output)|" /misp_modules/lib/python3.12/site-packages/ODTReader/odtreader.py
 
-FROM python:3.12-slim-bullseye AS final
+FROM python:3.12-slim-bookworm AS final
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical REDIS_BACKEND=misp_redis REDIS_DATABASE=1
 LABEL org.opencontainers.image.title="misp-modules" org.opencontainers.image.version=${MISP_VERSION}\
     org.opencontainers.image.ref.name="misp-modules"\

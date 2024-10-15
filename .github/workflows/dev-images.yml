@@ -48,8 +48,8 @@ jobs:
       - id: test-env-setup
         name: Configure Environment
         run: |
-          sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' docker-compose.yml
-          sed -i 's/latest/${{ env.BRANCH_NAME }}/g' docker-compose.yml
+          sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' docker-compose-dev.yml
+          sed -i 's/latest/${{ env.BRANCH_NAME }}/g' docker-compose-dev.yml
           sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' misp-workers/Dockerfile
           sed -i 's/\${MISP_VERSION}/${{ env.BRANCH_NAME }}/g' misp-workers/Dockerfile
           cp example.env .env

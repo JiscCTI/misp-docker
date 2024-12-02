@@ -1,20 +1,27 @@
+<!--
+SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileContributor: Joe Pitt
+SPDX-FileContributor: James Ellor
+
+SPDX-License-Identifier: GPL-3.0-only
+-->
 # misp-web Image
 
 The misp-web image contains the web front end of MISP, and can be deployed with multiple replicas to
 support high availability and load balancing deployments.
 
-The image only persists instances-specific directories, rather than the entire `/var/www` directory.
+The image only persists instance-specific directories, rather than the entire `/var/www` directory.
 Symbolic links are used to remap these instance-specific directories.
 
 ## Build
 
-The images uses a multi-stage build to minimise the size of the final image and keep build tools and
+The image uses a multi-stage build to minimise the size of the final image and keep build tools and
 artefacts out of the final image.
 
 ### php_build
 
 As not all of the required PHP modules are available out of the box in the official PHP image, the
-`php_build` phrase starts from the `php:8.3-apache` image and installs or builds then enables the
+`php_build` phase starts from the `php:8.3-apache` image and installs or builds then enables the
 required modules. A customised
 [php.ini](https://github.com/JiscCTI/misp-docker/blob/main/misp-web/php.ini) file is also copied in.
 
@@ -34,17 +41,17 @@ repo for an up to date list.
 
 MISP uses a Python virtual environment for all of its Python needs.
 
-To minimise the image size, most git files and dynamically updates git submodules are deleted; only
+To minimise the image size, most git files and dynamically updated git submodules are deleted; only
 those git files used for version checking are retained.
 
 ### final
 
-The `final` stage pulls together what has been build in earlier stages, while only installing what
+The `final` stage pulls together what has been built in earlier stages, while only installing what
 is required to operate the modules (i.e. no build tools of -dev packages). The image starts from the
 `php:8.3-apache` image.
 
 Default values are set for all environment variables, to allow MISP to start without any being
-provided, though this is not recommended. For ease of use the environment variable `$CAKE` is set to
+provided, though this is **not** recommended. For ease of use, the environment variable `$CAKE` is set to
 the full command required to invoke CakePHP as the correct user.
 
 The Apache `status` module is disabled, while the `headers`, `rewrite`, `setenvif`, `shib` and `ssl`

@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileContributor: Joe Pitt
+SPDX-FileContributor: James Ellor
+
+SPDX-License-Identifier: GPL-3.0-only
+-->
 # misp-workers Image
 
 The misp-workers image contains the background workers for MISP. This image must not be replicated,
@@ -5,7 +12,7 @@ or race conditions will occur starting background jobs.
 
 ## Build
 
-The images starts from the `php:8.3-cli` and imports MISP from the `jisccti/misp-web` image for the
+The image starts from the `php:8.3-cli` and imports MISP from the `jisccti/misp-web` image for the
 MISP version being built.
 
 The image also installs Supervisor for managing the workers.

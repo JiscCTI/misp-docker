@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileContributor: Joe Pitt
+SPDX-FileContributor: James Ellor
+
+SPDX-License-Identifier: GPL-3.0-only
+-->
 # misp-shibb-sp Image
 
 The misp-shibb-sp image contains a pre-configured Shibboleth Service Provider module for use with
@@ -5,7 +12,7 @@ MISP.
 
 ## Build
 
-The images starts from the `rockylinux:9.3` and installs the `shibboleth` repository and package.
+The image starts from the `rockylinux:9.3` and installs the `shibboleth` repository and package.
 
 ## Entrypoint
 

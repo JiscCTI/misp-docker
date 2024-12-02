@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileContributor: Joe Pitt
+SPDX-FileContributor: James Ellor
+
+SPDX-License-Identifier: GPL-3.0-only
+-->
 # misp-modules Image
 
 The misp-modules image contains the import, export and enrichment modules for MISP. This image can
@@ -5,7 +12,7 @@ be replicated to support high availability.
 
 ## Build
 
-The images starts from the `python:3.12-slim-bookworm` and installs the `misp-modules` package and
+The image starts from the `python:3.12-slim-bookworm` and installs the `misp-modules` package and
 its dependencies in one stage, patches a python2 to 3 migration issue before copying the compiled
 modules into the final image.
 

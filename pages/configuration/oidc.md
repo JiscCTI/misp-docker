@@ -1,7 +1,8 @@
-<!-- # SPDX-FileCopyrightText: 2024 Jisc Services Limited
-# SPDX-FileContributor: James Ellor
-#
-# SPDX-License-Identifier: GPL-3.0-only
+<!--
+SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileContributor: James Ellor
+
+SPDX-License-Identifier: GPL-3.0-only
 -->
 
 # OpenID Connect (OIDC)

@@ -1,8 +1,10 @@
-<!-- # SPDX-FileCopyrightText: 2024 Jisc Services Limited
-# SPDX-FileContributor: James Ellor
-#
-# SPDX-License-Identifier: GPL-3.0-only
+<!--
+SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileContributor: James Ellor
+
+SPDX-License-Identifier: GPL-3.0-only
 -->
+
 # System Requirements
 
 A Linux system is essential for this deployment method, we have not attempted to create a Windows version of this project and it is currently not a planned update.

@@ -1,8 +1,10 @@
-<!-- # SPDX-FileCopyrightText: 2024 Jisc Services Limited
-# SPDX-FileContributor: James Ellor
-#
-# SPDX-License-Identifier: GPL-3.0-only
+<!--
+SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileContributor: James Ellor
+
+SPDX-License-Identifier: GPL-3.0-only
 -->
+
 # Introduction
 
 This guide will endeavour to walk through each of the steps required to deploy a customised and fully operational MISP instance within Docker. It will also cover reasonings behind certain aspects of the build and why specific choices were made.

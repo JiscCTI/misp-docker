@@ -15,7 +15,6 @@ copyright: 2024 Jisc Services Limited
 nav:
   - Introduction: index.md
   - Requirements: requirements.md
-  - Known Issues: known_issues.md
   - Setup:
     - Configuration: configuration/general.md
     - Single Sign On (Optional):
@@ -40,7 +39,7 @@ nav:
       - misp-workers: dev/misp-workers.md
     - GitHub Actions: dev/gh-actions.md
 theme: 
-  name: readthedocs
+  name: material
   hljs_languages:
     - apache
     - dockerfile

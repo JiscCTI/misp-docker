@@ -6,7 +6,7 @@
 
 # Configuring MISP
 
-Before configuring MISP, it is recommended to view the steps necessary in deploying the Docker containers that best suit your deployment methods using either the [Local Deployment Page](/deploy/local/) or the [Cloud Deployment Page](/deploy/cloud/)  
+Before configuring MISP, it is recommended to view the steps necessary in deploying the Docker containers that best suit your deployment methods using either the [Local Deployment Page](../deploy/local.md) or the [Cloud Deployment Page](../deploy/cloud.md)  
 
 ### Environment Variables
 
@@ -17,7 +17,7 @@ The format of the file should be as follows:
 
 ***Note*** In the table below there are multiple settings formatted in **bold**, it is highly recommended that these values are overridden as a bare minimum.
 
-***Note*** Any passwords used ***MUST NOT*** contain the backslash (`\`) character otherwise the container will not start correctly.
+***Note*** Any passwords used ***MUST NOT*** contain the backslash (`\`) character or the plus (`+`) symbol otherwise the container will not start correctly.
 
 | Option Name | Description | Default Value |
 | ----------- | ----------- | ------------- |

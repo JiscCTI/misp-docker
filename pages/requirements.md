@@ -13,7 +13,7 @@ When testing our images, the lowest spec system we tried utilised;
 - 8GB RAM
 - 50GB Storage (Dependant upon ingested feeds and events, the storage space used by MISP may grow significantly, it is advised to provide a generous amount of dedicated storage to the MISP instance)
 
-It may be possible to run a MISP instance on a lower spec, however this is not advisable and has not been tested. As mentioned in the [Introduction](/) it is strongly recommended that initial deployments of MISP are deployed in a dev environment and are not used in a production sense straight away, it is also not recommended to convert the dev instance into a production instance without tearing the instance down, applying necessary resources to the system and then bringing a new instance up that can be used in production.
+It may be possible to run a MISP instance on a lower spec, however this is not advisable and has not been tested. As mentioned in the [Introduction](index.md) it is strongly recommended that initial deployments of MISP are deployed in a dev environment and are not used in a production sense straight away, it is also not recommended to convert the dev instance into a production instance without tearing the instance down, applying necessary resources to the system and then bringing a new instance up that can be used in production.
 
 # Build Dependancies
 

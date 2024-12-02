@@ -1,8 +1,9 @@
-<!-- # SPDX-FileCopyrightText: 2024 Jisc Services Limited
-# SPDX-FileContributor: Clive Bream
-# SPDX-FileContributor: James Ellor
-#
-# SPDX-License-Identifier: GPL-3.0-only
+<!--
+SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileContributor: Clive Bream
+SPDX-FileContributor: James Ellor
+
+SPDX-License-Identifier: GPL-3.0-only
 -->
 
 ## Deploying MISP For the First Time

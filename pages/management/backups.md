@@ -4,6 +4,7 @@ SPDX-FileContributor: James Ellor
 
 SPDX-License-Identifier: GPL-3.0-only
 -->
+
 # Creating Backups
 
 It is recommended to tear down the container first, to ensure nothing in memory is also persisted when the backup is taken. Once the container has been tore down, create a backup of the `persistent/misp` directory using a method of your choice, e.g. creating a `.tar`/`.targz` or using a backup solution.

@@ -1,7 +1,8 @@
-<!-- # SPDX-FileCopyrightText: 2024 Jisc Services Limited
-# SPDX-FileContributor: Clive Bream
-#
-# SPDX-License-Identifier: GPL-3.0-only
+<!--
+SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileContributor: Clive Bream
+
+SPDX-License-Identifier: GPL-3.0-only
 -->
 
 # Forwarding Logs to Splunk

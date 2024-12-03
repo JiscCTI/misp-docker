@@ -1,24 +1,32 @@
 <!--
 SPDX-FileCopyrightText: 2024 Jisc Services Limited
 SPDX-FileContributor: James Ellor
+SPDX-FileContributor: Joe Pitt
 
 SPDX-License-Identifier: GPL-3.0-only
 -->
 
 # Configuring MISP
 
-Before configuring MISP, it is recommended to view the steps necessary in deploying the Docker containers that best suit your deployment methods using either the [Local Deployment Page](../deploy/local.md) or the [Cloud Deployment Page](../deploy/cloud.md)  
+Before configuring MISP, it is recommended to view the steps necessary in deploying the Docker
+containers that best suit your deployment methods using either the
+[Local Deployment Page](../deploy/local.md) or the [Cloud Deployment Page](../deploy/cloud.md).
 
-### Environment Variables
+This page assumed a local deployment, you will need to adapt it to suit your chosen cloud provider's
+systems for a cloud deployment.
 
-Create a file within the directory your MISP instance sits in, the file should be called `.env`. Now add in all options that you would like to override based on the default values in the below table.
+## Environment Variables
 
-The format of the file should be as follows:
-`OPTION_NAME=desired_override_value`
+Create a file within the directory your MISP instance sits in, the file should be called `.env`. Now
+add in all options that you would like to override based on the default values in the below table.
 
-***Note*** In the table below there are multiple settings formatted in **bold**, it is highly recommended that these values are overridden as a bare minimum.
+The format of the file should be as follows: `OPTION_NAME=desired_override_value`.
 
-***Note*** Any passwords used ***MUST NOT*** contain the backslash (`\`) character or the plus (`+`) symbol otherwise the container will not start correctly.
+***Note*** In the table below there are multiple settings formatted in **bold**, it is highly
+recommended that these values are overridden as a bare minimum.
+
+***Note*** Any passwords used ***MUST NOT*** contain the backslash (`\`) or plus (`+`) characters
+otherwise the container may not start correctly.
 
 | Option Name | Description | Default Value |
 | ----------- | ----------- | ------------- |
@@ -52,24 +60,62 @@ The format of the file should be as follows:
 | WORKERS_HOSTNAME | The hostname of the MISP Workers container. | `misp_workers` |
 | **WORKERS_PASSWORD** | The password MISP will use to connect to the MISP Workers container's Supervisor interface. | `misp` |
 
-### Importing your TLS Certificate
+## Importing TLS Certificate
 
-By default, the container will generate a self-signed certificate for the specified FQDN, however if/when you have a signed certificate ready, please follow the below steps:
+By default, the container will generate a self-signed certificate for the specified FQDN, however
+if/when you have a signed certificate ready, please follow the below steps:
 
-1. Acquire a publicly trusted certificate for the MISP instance. Some root CAs will provide you with a "certificate with chain" file, if so, download this as the full certificate chain (excluding the root CA) is needed.
-    - If the "certificate with chain" file is not available from your root CA, please concatenate all `.crt` files that form the chain, into a `.chain` file. Please also concatenate the contents of [https://ssl-config.mozilla.org/ffdhe2048.txt](https://ssl-config.mozilla.org/ffdhe2048.txt) into the `.chain` file as well. This ensures OpenSSL does not use insecure Ephemeral Diffie-Hellman (DHE) keys while establishing TLS sessions with clients using DHE for key exchange, per the [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/). 
-2. Place the resulting `.chain` file from step 1 into `./persistent/{instanceName}/tls/misp.chain`
-3. Place the **unencrypted** private key into `./persistent/{instanceName}/tls/misp.key`
+1. Acquire a publicly trusted certificate for the MISP instance.
+    - Some CAs will provide you with a "certificate with chain" file, if so, download this.
+    - If the "certificate with chain" file is not available from your CA, concatenate each
+        `.crt` files that form the chain, into one file putting your certificate first, then each
+        intermediate certificate in order.
+2. Concatenate the contents of
+    [https://ssl-config.mozilla.org/ffdhe2048.txt](https://ssl-config.mozilla.org/ffdhe2048.txt)
+    to the end of the `.crt` file as well. This ensures OpenSSL does not use insecure Ephemeral
+    Diffie-Hellman (DHE) keys while establishing TLS sessions with clients using DHE for key
+    exchange, per the [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/). 
+2. Place the `.crt` file into `./persistent/misp/tls/misp.crt`.
+3. Place the **unencrypted** private key into `./persistent/misp/tls/misp.key`.
 
-During startup, the container will confirm that the provided `misp.chain` and `misp.key` files match. ***Note*** If the files **do not** match, then the container will revert to using a self-signed certificate.
+`./persistent/misp/tls/misp.crt` should look like ths:
 
-***Note*** When adding a TLS certificate after MISP has been started, you will need to restart the `misp-web` container for the new certificate to be applied.
+```
+-----BEGIN CERTIFICATE-----
+MISP server certificate - signed by intermediate 1
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+intermediate 1 certificate - signed by intermediate 2
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+Intermediate 2 certificate - signed by trusted root
+-----END CERTIFICATE-----
+-----BEGIN DH PARAMETERS-----
+MIIBCAKCAQEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz
++8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a
+87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7
+YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi
+7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD
+ssbzSibBsu/6iGtCOGEoXJf//////////wIBAg==
+-----END DH PARAMETERS-----
+```
 
-### Importing GnuPG/PGP Keys
+During startup, the container will confirm that the provided `misp.crt` and `misp.key` files match.
+***Note*** If the files **do not** match, then the container will revert to using a self-signed
+certificate.
 
-By default, the container will generate a GPG key for `{MISP_EMAIL_NAME} <{MISP_EMAIL_ADDRESS}> ({FQDN})`, however if you have an existing key that you would like to use, please follow the steps below:
+***Note*** When adding a TLS certificate after MISP has been started, you will need to restart the
+`misp-web` container for the new certificate to be applied.
 
-1. Export the key into an ASCII-armored (.asc) file.
-2. Copy the file to `./persistent/{instanceName}/gpg/import.asc`.
+## Importing GnuPG/PGP Keys
 
-During startup, the container will confirm that the provided `import.asc` can be unlocked with GPG_PASSPHRASE and import it. If the container is not able to confirm this, it will revert to creating a brand new key.
+By default, the container will generate a GPG key for
+`{MISP_EMAIL_NAME} <{MISP_EMAIL_ADDRESS}> ({FQDN})`, however if you have an existing key that you
+would like to use, follow the steps below:
+
+1. Export the key into an ASCII-armoured (.asc) file.
+2. Copy the file to `./persistent/misp/gpg/import.asc`.
+
+During startup, the container will confirm that the provided `import.asc` can be unlocked with
+GPG_PASSPHRASE and import it. If the container is not able to confirm this, it will revert to
+creating a brand new key.

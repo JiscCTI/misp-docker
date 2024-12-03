@@ -1,30 +1,32 @@
 <!--
 SPDX-FileCopyrightText: 2024 Jisc Services Limited
 SPDX-FileContributor: Clive Bream
+SPDX-FileContributor: Joe Pitt
 
 SPDX-License-Identifier: GPL-3.0-only
 -->
 
 # Forwarding Logs to Splunk
 
-### [jisccti/misp-splunk-forwarder](https://hub.docker.com/r/jisccti/misp-splunk-forwarder)
+The [misp-splunk-forwarder](https://hub.docker.com/r/jisccti/misp-splunk-forwarder) component
+monitors the apache and MISP logs and forwards them to your Splunk instance, enabling you to index
+and consolidate that information using Splunk.
 
-The misp-splunk-forwarder component collects MISP data and sends it to your external Splunk instance, enabling you to index and consolidate that information using Splunk. 
+**NOTE:** By default, following the below steps, TLS verification is disabled as Splunk defaults to
+a self-signed certificate. In production environments, the Splunk HEC listener should be configured
+to use a trusted certificate, then `splunk-insecureskipverify` in Configure Docker Logging should be
+set to `"false"` and `SPLUNK_HEC_VERIFY` in `.env` should be set to `true`.
 
-This container is designed to be an add-on to [jisccti/misp-web](https://hub.docker.com/r/jisccti/misp-web).
-
-**NOTE:** By default, following the below steps, TLS verification is disabled as Splunk defaults to a self-signed certificate. In production environments, the Splunk HEC listener should be configured to use a trusted certificate, then `splunk-insecureskipverify` in the Docker configuration should be set to `"false"` and `SPLUNK_HEC_VERIFY` in `.env` should be set to `true`.
-
-#### Usage
-
-##### 1 - Configure Docker Logging
+## Configure Docker Logging
 
 Configure Docker to forward logs to the HTTP Event Collector, by either:
 
 - Configuring the Docker Engine's default log profile in `/etc/docker/daemon.json`, or
 - Configuring logging for each service in `docker-compose.yml`.
 
-**Option 1 - Docker Engine (/etc/docker/daemon.json)**
+### Docker Engine Default
+
+Add the following into /etc/docker/daemon.json.
 
 ```json
 {
@@ -42,7 +44,11 @@ Configure Docker to forward logs to the HTTP Event Collector, by either:
 }
 ```
 
-**Option 2 - Docker Compose Services (docker-compose.yml)**
+Restart the Docker Engine with `systemctl restart docker`.
+
+### Per Service Configuration
+
+for each service in `docker-compose.yml` add these lines:
 
 ```yaml
     logging:
@@ -58,19 +64,22 @@ Configure Docker to forward logs to the HTTP Event Collector, by either:
         env: FQDN,HTTPS_PORT
 ```
 
-##### 2 - Configure Environment Variables
+## Configure Environment Variables
 
-Add the required environment variables to your `.env` file. It is strongly recommended you override all of these settings.
+Add the required environment variables to your `.env` file. It is strongly recommended you override
+all of these settings.
 
-| Option Name       | Description                                                  | Default Value                          |
-| :---------------- | :----------------------------------------------------------- | :------------------------------------- |
-| SPLUNK_HEC_KEY    | The same HTTP Event Collector key to use.                    | `00000000-1111-2222-3333-444444444444` |
-| SPLUNK_HEC_URI    | The same HTTP Event Collector URI to use.                    | `https://splunk.example.com:8088`      |
-| SPLUNK_HEC_VERIFY | Case-sensitive `true` or `false` for whether the HTTPS certificate should be verified for the HTTP Event Collector. | `false`                                |
-| SPLUNK_INDEX      | The index logs should be written to.                         | `default`                              |
-| SPLUNK_PASSWORD   | A password to use when creating the admin account on the Splunk Universal Forwarder. | `ChangeMeChangeMeChangeMe`             |
+| Option Name | Description | Default Value |
+|-------------|-------------|---------------|
+| SPLUNK_HEC_KEY | The HTTP Event Collector key to use. | `00000000-1111-2222-3333-444444444444` |
+| SPLUNK_HEC_URI | The HTTP Event Collector URI to use. | `https://splunk.example.com:8088` |
+| SPLUNK_HEC_VERIFY | Case-sensitive `true` or `false` for whether the HTTPS certificate should be verified for the HTTP Event Collector. | `false` |
+| SPLUNK_INDEX | The index logs should be written to. | `default` |
+| SPLUNK_PASSWORD | A password to use when creating the admin account on the Splunk Universal Forwarder. | `ChangeMeChangeMeChangeMe` |
 
-##### 3 - Add the `splunk_forwarder` services to `docker-compose.yml`
+## Add Splunk Forwarder 
+
+At the bottom of `docker-compose.yml`, add:
 
 ```yaml
   splunk-forwarder:
@@ -97,9 +106,11 @@ Add the required environment variables to your `.env` file. It is strongly recom
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/opt/misp_docker/:ro
 ```
 
-##### 4 - Start MISP as normal
+## Start Splunk Forwarder
 
-```
+Once the above steps are complete you can start MISP as normal. If MISP is already running, this
+command should add the Splunk Forwarder without impacting the already running containers.
+
+```sh
 docker compose up -d
 ```
-

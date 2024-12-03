@@ -18,9 +18,14 @@ Single Sign On (SSO) support can be found on the pages below:
 - OpenID Connect (OIDC) - Please see the [OIDC Page](../configuration/oidc.md).
 - Shibboleth / SAML 2.0 - Please see the [Shibboleth Page](../configuration/shibb.md).
 
+## Installing Docker
+
+Firstly, you will need to install Docker, to do this please visit the official
+[Docker installation instructions](https://docs.docker.com/engine/install/).
+
 ## Docker Compose Configuration
 
-Firstly, create a new directory to host your MISP instance and download the latest
+Secondly, create a new directory to host your MISP instance and download the latest
 [docker-compose.yml](https://github.com/JiscCTI/misp-docker/blob/main/docker-compose.yml) file from
 the Jisc CTI GitHub.
 

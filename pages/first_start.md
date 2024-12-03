@@ -29,7 +29,7 @@ may take a few minutes to complete, you can wait for the log file to be created 
 if this does not occur, check `persistent/misp/data/tmp/logs/misp_maintenance_runner.log`.
 The log entry `[WARNING] MISP isn't up at ...` should stop occurring once the above message has been
 logged, if it does not, `FQDN` and / or `HTTPS_PORT` may be incorrect, `FQDN` must have a valid DNS
-entry pointed to the MISP instance, cross container communication between works and web is also
+entry pointed to the MISP instance, cross container communication between workers and web is also
 required.
 
 ## Access MISP

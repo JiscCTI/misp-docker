@@ -9,7 +9,7 @@ SPDX-License-Identifier: GPL-3.0-only
 
 Most logs for the solution are held in `persistent/misp/data/tmp/logs`, if using Shibboleth, the
 Service Provider logs are written to `persistent/misp/shibb/logs`. It is recommended these are
-ingested into a SIEM  and monitored for errors.
+ingested into a SIEM and monitored for errors.
 
 The logs in `persistent/misp/data/tmp/logs/` are:
 

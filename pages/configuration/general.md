@@ -12,7 +12,7 @@ Before configuring MISP, it is recommended to view the steps necessary in deploy
 containers that best suit your deployment methods using either the
 [Local Deployment Page](../deploy/local.md) or the [Cloud Deployment Page](../deploy/cloud.md).
 
-This page assumed a local deployment, you will need to adapt it to suit your chosen cloud provider's
+This page assumes a local deployment, you will need to adapt it to suit your chosen cloud provider's
 systems for a cloud deployment.
 
 ## Environment Variables

@@ -20,7 +20,7 @@ This can be done with the command `docker compose down`
 
 ## Backup MISP
 
-This step will vary depending on your local back solutions, for the same of example we will create a
+This step will vary depending on your local back solutions, for the sake of example we will create a
 simple .tar.gz archive in a backup folder.
 
 ```sh

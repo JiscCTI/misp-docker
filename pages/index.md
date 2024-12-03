@@ -14,12 +14,22 @@ SPDX-License-Identifier: GPL-3.0-only
 [![MISP-Modules release](https://img.shields.io/github/v/tag/MISP/misp-modules?logo=github&label=MISP-Modules%20(source))](https://github.com/MISP/misp-modules)
 [![misp-modules](https://img.shields.io/docker/v/jisccti/misp-modules?sort=semver&logo=docker&label=misp-modules)![misp-modules size](https://img.shields.io/docker/image-size/jisccti/misp-modules/latest?label=%20)](https://hub.docker.com/r/jisccti/misp-modules)
 
-This guide will endeavour to walk through each of the steps required to deploy a customised and fully operational MISP instance within Docker. It will also cover reasonings behind certain aspects of the build and why specific choices were made.
+This guide will endeavour to walk through each of the steps required to deploy a customised and
+fully operational MISP instance within Docker. It will also cover reasoning behind certain aspects
+of the build and why specific choices were made.
 
-***Note*** It is strongly advised that MISP is deployed in a dev environment until you are sure of the use cases your organisation require MISP for, as it is extremely difficult to remove data from MISP once it has been added. Therefore dev instances are a good idea before deploying into a production environment.
+***Note*** It is strongly advised that MISP is deployed in a dev environment until you are sure of
+the use cases your organisation require MISP for, as it is extremely difficult to remove data from
+MISP once it has been added. Therefore dev instances are a good idea before deploying into a
+production environment.
 
-# What is MISP?
+## What is MISP?
 
-From the official MISP GitHub; MISP is an open source software solution for collecting, storing, distributing and sharing cyber security indicators and threats about cyber security incidents analysis and malware analysis. MISP is designed by and for incident analysts, security and ICT professionals or malware reversers to support their day-to-day operations to share structured information efficiently.
+From the official MISP GitHub; MISP is an open source software solution for collecting, storing,
+distributing and sharing cyber security indicators and threats about cyber security incidents
+analysis and malware analysis. MISP is designed by and for incident analysts, security and ICT
+professionals or malware reversers to support their day-to-day operations to share structured
+information efficiently.
 
-Essentially, MISP is a tool used to share intelligence between people, whether that be people within the same company, or between different companies or other entities, like Sharing/Trust Groups.
+Essentially, MISP is a tool used to share intelligence between people, whether that be people within
+the same company, or between different companies or other entities, like Sharing/Trust Groups.

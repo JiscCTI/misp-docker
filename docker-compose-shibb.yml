@@ -32,9 +32,14 @@ services:
     depends_on:
       clamav:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
+      - REDIS_BACKEND=${REDIS_HOST:-misp_redis}
+      - REDIS_DATABASE=${REDIS_MODULES_DB:-1}
+      - REDIS_PW=${REDIS_PASSWORD:-misp}
     hostname: ${MODULES_HOSTNAME:-misp_modules}
     image: jisccti/misp-modules:latest
     restart: unless-stopped
@@ -76,7 +81,7 @@ services:
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
       - REDIS_MISP_DB=${REDIS_MISP_DB:-2}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-misp}
-      - REDIS_WORKER_DB=${REDIS_MISP_DB:-3}
+      - REDIS_WORKER_DB=${REDIS_WORKER_DB:-3}
       - REQUIRE_TOTP=${REQUIRE_TOTP:-true}
       - SHIBB_ADMIN_ROLE=${SHIBB_ADMIN_ROLE:-misp-admin}
       - SHIBB_BLOCK_ORG_CHANGE=${SHIBB_BLOCK_ORG_CHANGE:-false}

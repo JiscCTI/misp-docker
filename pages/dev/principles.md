@@ -28,3 +28,9 @@ values. Each environment variable should be validated and used to reconfigure MI
 Optional functionality should be supported as much as possible, without impeding on core
 functionality, e.g. install all dependencies but not setting default options which would require an
 optional service or component which not all users will have free access to.
+
+## Build Dependencies
+
+Our images have been built and tested against Docker Engine v27, however they should build on any
+Linux-based Docker Engine which supports multi-stage images. The built images should run on any
+Linux-based Docker Engine.

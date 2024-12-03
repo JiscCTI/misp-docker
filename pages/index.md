@@ -33,3 +33,9 @@ information efficiently.
 
 Essentially, MISP is a tool used to share intelligence between people, whether that be people within
 the same company, or between different companies or other entities, like Sharing/Trust Groups.
+
+## Service Relationships
+
+The below diagram shows how the services within this solution communicate.
+
+![Service Communications](img/service-communications.png)

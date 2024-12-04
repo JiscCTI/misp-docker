@@ -385,10 +385,12 @@ on_start() {
 
     if [ "$AUTH_METHOD" == oidc ]; then
         echo "Enabling OIDC Authentication"
+        $CAKE Admin setSetting "Security.require_password_confirmation" false
         cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
         php /opt/scripts/auth_oidc.php
     elif [ "$AUTH_METHOD" == shibb ]; then
         echo "Enabling Shibboleth Authentication"
+        $CAKE Admin setSetting "Security.require_password_confirmation" false
         cp /etc/apache2/sites-available/apache.shibb.conf /etc/apache2/sites-enabled/000-default.conf
         php /opt/scripts/auth_shibb.php
     else
@@ -396,6 +398,7 @@ on_start() {
             echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp', 'oidc' or 'shibb'"
         fi
         echo "Enabling MISP Native Authentication"
+        $CAKE Admin setSetting "Security.require_password_confirmation" true
         cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
         php /opt/scripts/auth_misp.php
     fi

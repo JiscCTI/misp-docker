@@ -2,7 +2,7 @@
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
-    
+
 FROM rockylinux:9.3
 ARG SHIBB_VERSION=0.0.0
 ENV FQDN=misp.local HTTPS_PORT=443 \

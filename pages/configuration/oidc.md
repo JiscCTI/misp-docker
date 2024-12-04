@@ -1,6 +1,7 @@
 <!--
 SPDX-FileCopyrightText: 2023 Science and Technology Facilities Council (STFC)
 SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileContributor: Iain Brown (Jisc Services Limited)
 SPDX-FileContributor: James Acris (STFC)
 SPDX-FileContributor: Joe Pitt (Jisc Services Limited)
 
@@ -8,17 +9,17 @@ SPDX-License-Identifier: GPL-3.0-only
 -->
 # OpenID Connect (OIDC) Authentication
 
-MISP can use OpenID Connect (OIDC) to authenticate users, below are instruction on setting this up.
+MISP can use OpenID Connect (OIDC) to authenticate users. Instruction on setting this up are 
+detailed below.
 
 ## Configure the Identity Provider (IdP)
 
-To setup MISP you need to have created MISP as a client in your OIDC Identity Provider (IdP).
+To setup MISP you need to have created MISP as a client in your OIDC Identity Provider (IdP). This 
+step is dependant on which IdP you are using and local policies; an example for Keycloak is
+provided at the bottom of this page.
 
 By default, MISP will use JSON Web Tokens (JWTs) signed with the Client Secret as the Client
 Authenticator with a Challenge Mode of S256.
-
-This step is dependant on which IdP you are using and local policies, an example for Keycloak is
-provided at the bottom of this page.
 
 ## Set Environment Variables
 
@@ -28,7 +29,7 @@ highly recommended.
 
 | Option Name | Description | Default Value |
 | ----------- | ----------- | ------------- |
-| **AUTH_METHOD** | The authentication engine to use, must be changed to `oidc`. | `misp` |
+| **AUTH_METHOD** | The authentication engine to use. **This must be changed to `oidc`.** | `misp` |
 | OIDC_ADMIN_ROLE | The OIDC group / role to be granted the MISP admin role. | `misp-admin` |
 | OIDC_AUTH_METHOD | The Client Authenticator mode to use for OIDC authentication, such as `client_secret_basic` or `client_secret_jwt`. | `client_secret_jwt` |
 | OIDC_CLIENT_ID | The Client ID used to identify MISP in the Identity Provider. | `misp` |
@@ -44,7 +45,7 @@ highly recommended.
 
 ## Start MISP
 
-Start MISP as normal using `docker compose up -d`.
+Start MISP as normal, using `docker compose up -d`.
 
 ## Access MISP
 

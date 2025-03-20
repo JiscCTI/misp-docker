@@ -83,3 +83,8 @@ recommended but any file will be copied into place.
 `MISP.terms_file` needs to be set to the filename for MISP to use the file, additionally for HTML
 content it is recommended to set `MISP.terms_download` to `false`, for all other file types it is
 recommended to set `MISP.terms_download` to `true`.
+
+## Custom Maintenance Tasks
+
+For details on adding additional background tasks to be run by the `misp-workers` container, see the
+[Maintenance Tasks page](../management/maint_tasks.md).

@@ -74,3 +74,12 @@ taxonomy folder **must** contain at least `machinetag.json` or it will not be co
 ***NOTE:*** MISP will only load the taxonomy into the database if either (i) the namespace doesn't
 already exist in the database or (ii) the version number specified in `machinetag.json` is greater
 than the version number already loaded into the database.
+
+## Custom Terms Files
+
+To install a Terms & Conditions file, place it in `./terms/`, a `.html` or `.pdf` file is
+recommended but any file will be copied into place.
+
+`MISP.terms_file` needs to be set to the filename for MISP to use the file, additionally for HTML
+content it is recommended to set `MISP.terms_download` to `false`, for all other file types it is
+recommended to set `MISP.terms_download` to `true`.

@@ -472,6 +472,17 @@ on_start() {
         fi
     fi
 
+    if [ -d /opt/misp_custom/terms ]; then
+        if [ -n "$(ls /opt/misp_custom/terms/)" ]; then
+            for terms_file in /opt/misp_custom/terms/*; do
+                if [ -f "${terms_file}" ]; then
+                    echo "Custom terms file ${terms_file} found, copying..."
+                    cp -f terms_file /var/www/MISPData/files/terms/
+                fi
+            done
+        fi
+    fi
+
     if [ -d /opt/misp_custom/on_start ]; then
         # shellcheck disable=SC2010
         if ls /opt/misp_custom/on_start/ | grep -q "\.sh"; then

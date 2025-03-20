@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2023 Jisc Services Limited
+SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
 SPDX-FileContributor: Joe Pitt
 
 SPDX-License-Identifier: GPL-3.0-only
@@ -53,6 +53,10 @@ Contains all MISP data that needs to persist through container recreation.
 ### `/var/www/MISPGnuPG`
 
 GnuPG home directory for MISP, if no key for MISP's email address is found, one is created.
+
+### `/opt/misp_custom`
+
+For passing in instance specific customisations.
 
 ## Acknowledgements
 

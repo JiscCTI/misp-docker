@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
 # SPDX-FileContributor: James Acris
 # SPDX-FileContributor: James Ellor
 # SPDX-FileContributor: Joe Pitt
@@ -246,8 +246,20 @@ initial_config() {
     echo "Post upgrade configuration complete."
 
     if [ -f /var/www/MISPData/custom-config.sh ]; then
-        echo "Custom config options script found, executing..."
+        echo "[Deprecated] Custom config options script found, executing..."
+        echo "Deprecation Warning: use /opt/misp_custom/init/*.sh instead"
         bash /var/www/MISPData/custom-config.sh
+    fi
+    if [ -d /opt/misp_custom/init ]; then
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/init/ | grep -q "\.sh"; then
+            for custom_init_script in /opt/misp_custom/init/*.sh; do
+                echo "Custom initial setup script ${custom_init_script} found, executing..."
+                bash "$custom_init_script"
+            done
+        else
+            echo "Custom initial setup directory found - but no *.sh scripts to run"
+        fi
     fi
 
     # Set MISP Live

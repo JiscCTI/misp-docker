@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -17,7 +17,7 @@ LABEL org.opencontainers.image.title="misp-workers" \
     org.opencontainers.image.base.name="hub.docker.com/_/php:8.3-cli"
 ENV CAKE="sudo -H -u www-data /var/www/MISP/app/Console/cake"
 EXPOSE 9001
-VOLUME "/var/www/MISPData" "/var/www/MISPGnuPG"
+VOLUME "/var/www/MISPData" "/var/www/MISPGnuPG" "/opt/misp_custom"
 
 # Setup MISP Workers
 ARG DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical

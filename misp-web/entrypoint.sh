@@ -414,6 +414,49 @@ on_start() {
 
     echo "Settings updated based on environment variables."
 
+    echo "Processing /opt/misp_custom customisations..."
+
+    if [ -d /opt/misp_custom/images ]; then
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/images/ | grep -q "\.jpg"; then
+            for image in /opt/misp_custom/images/*.jpg; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/images/
+            done
+        fi
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/images/ | grep -q "\.png"; then
+            for image in /opt/misp_custom/images/*.png; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/images/
+            done
+        fi
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/images/ | grep -q "\.svg"; then
+            for image in /opt/misp_custom/images/*.svg; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/images/
+            done
+        fi
+    fi
+
+    if [ -d /opt/misp_custom/org_icons ]; then
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/org_icons/ | grep -q "\.png"; then
+            for image in /opt/misp_custom/org_icons/*.png; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/orgs/
+            done
+        fi
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/org_icons/ | grep -q "\.svg"; then
+            for image in /opt/misp_custom/org_icons/*.svg; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/orgs/
+            done
+        fi
+    fi
+
     if [ -d /opt/misp_custom/on_start ]; then
         # shellcheck disable=SC2010
         if ls /opt/misp_custom/on_start/ | grep -q "\.sh"; then
@@ -425,6 +468,8 @@ on_start() {
             echo "Custom startup script directory found - but no *.sh scripts to run"
         fi
     fi
+
+    echo "Done processing /opt/misp_custom customisations."
 }
 
 # Check for startup lock

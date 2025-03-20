@@ -20,7 +20,10 @@ which will be run at the end of the standard initial configuration process.
 Place these scripts in `./init/`, ensuring they have a `.sh` extension - all other files in this
 directory will be ignored.
 
-The environment variable `$CAKE` will be available to to run MISP's CLI tool (CakePHP).
+The environment variable `$CAKE` will be available to to run MISP's CLI tool (CakePHP). If a setting
+change references a file that will be copied in by a later section on this page, such as an image or
+terms file, you make needed to include the `--force` flag to ensure the setting is changed even
+though the file is not currently present.
 
 ### Example Custom Configuration Script
 
@@ -28,7 +31,7 @@ The environment variable `$CAKE` will be available to to run MISP's CLI tool (Ca
 #!/bin/bash
 
 # Adding a terms file
-$CAKE Admin setSetting "MISP.terms_file" "terms.htm"
+$CAKE Admin setSetting "MISP.terms_file" "terms.htm" --force
 $CAKE Admin setSetting "MISP.terms_download" false
 ```
 
@@ -42,17 +45,26 @@ directory will be ignored.
 
 The environment variable `$CAKE` will be available to to run MISP's CLI tool (CakePHP).
 
+## Custom Images
 
-## Adding Custom Image Files
+If you require any custom images to be used on your MISP instance, you can provide one or more files
+in one of the two following locations.
 
-If you require any custom image files to be used on your MISP instance, follow the steps below which
-meet your requirements:
+### General Purpose Images
 
-- For general images, such as the logo on the logon screen, place the image(s) in
-    `./persistent/misp/data/images/`.
-- For images to be used for specifying organisations, place the image(s) in
-    `persistent/misp/data/files/img/orgs/`. E.g. `1.png`, `1.svg`, `{ORG_NAME}.png`, or
-    `{ORG_NAME}.svg` will be used for the default organisation if present.
+For general images, such as the logo on the logon screen, place the image(s) in: `./images/`,
+ensuring they have a `.jpg`, `.png` or `.svg` extension - all other files in this directory will be
+ignored.
+
+### Organisation Logos
+
+For images to be used as organisation logos, place the image(s) in `./org_icons/`, ensuring they
+have a `.png` or `.svg` extension - all other files in this directory will be ignored.
+
+These files must be named as either the display name or numeric identifier of the organisation, i.e.
+`1.png` or `1.svg` will apply to the default organisation, `Jisc.png` or `Jisc.svg` will be used for
+an organisation named "Jisc" in MISP.
+
 
 ***Note*** Any other custom files, such as tagging taxonomies, must be added **after** the first
 run or initial setup will not complete correctly. If you would like to add these files in before the

@@ -272,14 +272,33 @@ initial_config() {
 
 check_gnupg() {
     MISP_EMAIL_ADDRESS="${MISP_EMAIL_ADDRESS:-misp@misp.local}"
+    mkdir -p /opt/misp_custom/gpg/
+    chown -R www-data: /opt/misp_custom/gpg/
+    chmod 700 /opt/misp_custom/gpg/
     chown -R www-data: /var/www/MISPGnuPG
     chmod 700 /var/www/MISPGnuPG
     if [ -r /var/www/MISPGnuPG/import.asc ]; then
         set +e
-        echo "/var/www/MISPGnuPG/import.asc found, importing..."
+        echo "[Deprecated] /var/www/MISPGnuPG/import.asc found, importing..."
+        echo "Deprecation Warning: use /opt/misp_custom/gpg/import.asc instead"
         su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /var/www/MISPGnuPG/import.asc"
         echo "Setting trust level for imported GnuPG key..."
         su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /var/www/MISPGnuPG/import.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
+        set -e
+    fi
+    if [ -r /opt/misp_custom/gpg/import.asc ]; then
+        set +e
+        echo "/opt/misp_custom/gpg/import.asc found, importing..."
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /opt/misp_custom/gpg/import.asc"
+        echo "Setting trust level for imported GnuPG key..."
+        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /opt/misp_custom/gpg/import.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
+        set -e
+    elif [ -r /opt/misp_custom/gpg/export.asc ]; then
+        set +e
+        echo "/opt/misp_custom/gpg/export.asc found, importing..."
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /opt/misp_custom/gpg/export.asc"
+        echo "Setting trust level for imported GnuPG key..."
+        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /opt/misp_custom/gpg/export.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
         set -e
     fi
     echo "Checking for usable GnuPG Key..."
@@ -306,8 +325,8 @@ check_gnupg() {
         echo "GnuPG key found, exporting to webroot..."
         su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS>/var/www/MISP/app/webroot/gpg.asc"
     fi
-    echo "Exporting encrypted GnuPG privtate key to ASCII File"
-    su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode=loopback --yes --export-secret-key --armor $MISP_EMAIL_ADDRESS>/var/www/MISPGnuPG/import.asc"
+    echo "Exporting encrypted GnuPG private key to ASCII File"
+    su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode=loopback --yes --export-secret-key --armor $MISP_EMAIL_ADDRESS>/opt/misp_custom/gpg/export.asc"
     chown -R www-data: /var/www/MISPGnuPG
     chmod 700 /var/www/MISPGnuPG
 }

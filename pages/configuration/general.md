@@ -142,12 +142,15 @@ By default, the container will generate a GPG key for
 `{MISP_EMAIL_NAME} <{MISP_EMAIL_ADDRESS}> ({FQDN})`, however if you have an existing key that you
 would like to use, follow the steps below:
 
-1. Export the key into an ASCII-armoured (.asc) file.
-2. Copy the file to `./persistent/misp/gpg/import.asc`.
+1. Export the **private** key into an ASCII-armoured (.asc) file.
+2. Copy the file to `./gpg/import.asc` in the `misp_custom` volume.
 
 During startup, the container will confirm that the provided `import.asc` can be unlocked with
-GPG_PASSPHRASE and import it. If the container is not able to confirm this, it will revert to
-creating a brand new key.
+`GPG_PASSPHRASE` and import it. If the container is not able to confirm this, it will revert to
+creating a new key.
+
+The Private Key being used by MISP will be written to `./gpg/export.asc` in the `misp_custom` volume
+on each start of `misp-web` protected by `GPG_PASSPHRASE`.
 
 ## Single Sign On
 

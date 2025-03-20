@@ -50,6 +50,7 @@ otherwise the container may not start correctly.
 | REDIS_MISP_DB | The database number to use for MISP within Redis. | `2` |
 | **REDIS_PASSWORD** | The password MISP will use to connect to Redis. | `misp` |
 | REDIS_MODULES_DB | The database number to use for the MISP Modules within Redis. | `1` |
+| REDIS_TLS | Whether to use TLS to communicate with Redis. | `false` |
 | REDIS_WORKER_DB | The database number to use for the MISP Workers within Redis. | `3` |
 | REQUIRE_TOTP | Toggle if Time-based One Time Passwords are required. | `true` |
 | **SMTP_HOSTNAME** | The FQDN of the SMTP service. | `localhost` |

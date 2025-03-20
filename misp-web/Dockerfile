@@ -139,4 +139,5 @@ RUN a2dismod status &&\
 WORKDIR /var/www/MISP/
 ENTRYPOINT ["sh", "-c", "/wait-for-it.sh -h ${MYSQL_HOSTNAME:-misp_db} -p 3306 -t 0 -- /entrypoint.sh"]
 HEALTHCHECK --start-period=10m --timeout=3s CMD ["sh", "-c", "curl -fk https://127.0.0.1/users/login || exit 1"]
-VOLUME "/etc/ssl/private/" "/var/www/MISPData" "/var/www/MISPGnuPG" "/opt/misp_custom"
+VOLUME "/etc/letsencrypt/live/MISP" "/etc/ssl/private/" "/var/www/MISPData" "/var/www/MISPGnuPG" \
+    "/opt/misp_custom"

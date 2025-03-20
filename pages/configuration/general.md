@@ -63,23 +63,62 @@ hexadecimal password.
 
 ## Importing TLS Certificate
 
-By default, the container will generate a self-signed certificate for the specified FQDN, however
-if/when you have a signed certificate ready, please follow the below steps:
+By default, the container will generate a self-signed certificate for the specified FQDN, however it
+is strongly recommended that you provide a signed certificate using either ACME or manually.
 
-1. Acquire a publicly trusted certificate for the MISP instance.
-    - Some CAs will provide you with a "certificate with chain" file, if so, download this.
-    - If the "certificate with chain" file is not available from your CA, concatenate each
-        `.crt` files that form the chain, into one file putting your certificate first, then each
-        intermediate certificate in order.
-2. Concatenate the contents of
-    [https://ssl-config.mozilla.org/ffdhe2048.txt](https://ssl-config.mozilla.org/ffdhe2048.txt)
-    to the end of the `.crt` file as well. This ensures OpenSSL does not use insecure Ephemeral
-    Diffie-Hellman (DHE) keys while establishing TLS sessions with clients using DHE for key
-    exchange, per the [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/). 
-2. Place the `.crt` file into `./persistent/misp/tls/misp.crt`.
-3. Place the **unencrypted** private key into `./persistent/misp/tls/misp.key`.
+During startup, the container will confirm that the provided certificate and private key match. If
+not, then the container will revert to using a self-signed certificate.
 
-`./persistent/misp/tls/misp.crt` should look like ths:
+### Automatic Certificate Issuance via ACME
+
+The Automatic Certificate Management Environment (ACME) protocol can be used to automate the
+issuance and renewal of MISP's TLS certificate.
+
+These instructions assume Let's Encrypt as the Certification Authority (CA) for simplicity however
+any other CA which offers ACME can be also be used, see their documentation for the correct values
+of additional arguments like `--server`, `--eab-kid` and `--eab-hmac-key`.
+
+These instructions assume the use of the HTTP-01 challenge type, see the Certbot documentation and
+your chosen CA's documentation for how to use other challenge types such as DNS-01.
+
+1. Read and accept the [Let's Encrypt Terms of Service](https://community.letsencrypt.org/tos) (or
+    your alternate ACME-enabled CA's equivalent agreement).
+1. Installed Certbot on the host machine per the
+    [Certbot documentation](https://certbot.eff.org/instructions).
+1. Uncomment the `/etc/letsencrypt/live/MISP` volume of `misp-web` in `docker-compose.yml`.
+1. Start MISP as usual and wait for until MISP is up and running.
+1. Use the following command to request the certificate, setting `--email`, `--webroot-path` and
+    `--domain` to appropriate values for your environment and adding any additional options for your
+    chosen CA.
+
+```sh
+certbot certonly --non-interactive --agree-tos --email certmaster@org.ac.uk \
+    --webroot --webroot-path /opt/misp/persistent/misp/acme \
+    --cert-name MISP --domain misp.org.ac.uk \
+    --deploy-hook '/usr/bin/docker container restart $(docker ps --filter ancestor=jisccti/misp-web:latest -aq)'
+```
+
+The `--deploy-hook` option tells Certbot how to deploy the certificate, in this case to restart all
+containers running the `jisccti/misp-web:latest` image.
+
+If Certbot is set up correctly, then it will automatically renew the certificate and restart
+`misp-web` in advance of certificate expiry.
+
+### Manual Certificate Installation
+
+If you are unable to use ACME, you can manually obtain and install a TLS certificate. This page will
+not cover obtaining a certificate as this varies between Certification Authorities (CAs).
+
+Once your certificate has been issued, you will need two files:
+
+1. Public Certificate - save as `./tls/misp.crt` in the `misp_custom` volume:
+    * Some CAs will provide you with a "certificate with chain" file, if so, download this.
+    * If the "certificate with chain" file is not available from your CA, concatenate each of the
+        `.crt` files that form the chain of trust, into one file putting your certificate first, 
+        then each intermediate certificate in order up to but excluding the CA's root certificate.
+1. **Unencrypted** private key - save as `./tls/misp.key` in the `misp_custom` volume.
+
+`./tls/misp.crt` should resemble:
 
 ```
 -----BEGIN CERTIFICATE-----
@@ -91,22 +130,11 @@ intermediate 1 certificate - signed by intermediate 2
 -----BEGIN CERTIFICATE-----
 Intermediate 2 certificate - signed by trusted root
 -----END CERTIFICATE-----
------BEGIN DH PARAMETERS-----
-MIIBCAKCAQEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz
-+8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a
-87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7
-YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi
-7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD
-ssbzSibBsu/6iGtCOGEoXJf//////////wIBAg==
------END DH PARAMETERS-----
 ```
 
-During startup, the container will confirm that the provided `misp.crt` and `misp.key` files match.
-***Note*** If the files **do not** match, then the container will revert to using a self-signed
-certificate.
+Once the two files are in place (re)start MISP using `docker compose up -d --force-recreate`.
 
-***Note*** When adding a TLS certificate after MISP has been started, you will need to restart the
-`misp-web` container for the new certificate to be applied.
+For renewals, repeat the above process.
 
 ## Importing GnuPG/PGP Keys
 

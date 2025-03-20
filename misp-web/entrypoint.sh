@@ -319,12 +319,46 @@ generate_self_signed_certificate() {
 }
 
 check_tls_certificate() {
+    if [ -r /etc/letsencrypt/live/MISP/fullchain.pem ]; then
+        if [ -r /etc/letsencrypt/live/MISP/privkey.pem ]; then
+            PUBLIC=$(openssl x509 -noout -pubkey -in /etc/letsencrypt/live/MISP/fullchain.pem | openssl sha256 | awk '{print $2}')
+            PRIVATE=$(openssl pkey -pubout -in /etc/letsencrypt/live/MISP/privkey.pem | openssl sha256 | awk '{print $2}')
+            if [[ "$PUBLIC" == "$PRIVATE" ]]; then
+                echo "Found certificate to import in /opt/misp_custom/acme"
+                cp -f /etc/letsencrypt/live/MISP/fullchain.pem /etc/ssl/private/misp.crt
+                cp -f /etc/letsencrypt/live/MISP/privkey.pem /etc/ssl/private/misp.key
+            else
+                echo "Found certificate in /opt/misp_custom/acme, but private key does not match"
+            fi
+        else
+            echo "Found certificate in /opt/misp_custom/acme, but private key missing"
+        fi
+    elif [ -r /opt/misp_custom/tls/misp.crt ]; then
+        if [ -r /opt/misp_custom/tls/misp.key ]; then
+            PUBLIC=$(openssl x509 -noout -pubkey -in /opt/misp_custom/tls/misp.crt | openssl sha256 | awk '{print $2}')
+            PRIVATE=$(openssl pkey -pubout -in /opt/misp_custom/tls/misp.key | openssl sha256 | awk '{print $2}')
+            if [[ "$PUBLIC" == "$PRIVATE" ]]; then
+                echo "Found certificate to import in /opt/misp_custom/tls"
+                cp -f /opt/misp_custom/tls/misp.crt /etc/ssl/private/misp.crt
+                cp -f /opt/misp_custom/tls/misp.key /etc/ssl/private/misp.key
+            else
+                echo "Found certificate in /opt/misp_custom/tls, but private key does not match"
+            fi
+        else
+            echo "Found certificate in /opt/misp_custom/tls, but private key missing"
+        fi
+    fi
+
     if [ -r /etc/ssl/private/misp.crt ]; then
         if [ -r /etc/ssl/private/misp.key ]; then
             PUBLIC=$(openssl x509 -noout -pubkey -in /etc/ssl/private/misp.crt | openssl sha256 | awk '{print $2}')
             PRIVATE=$(openssl pkey -pubout -in /etc/ssl/private/misp.key | openssl sha256 | awk '{print $2}')
             if [[ "$PUBLIC" == "$PRIVATE" ]]; then
                 echo "TLS key validated successfully"
+                if ! grep -q "-----BEGIN DH PARAMETERS-----" /etc/ssl/private/misp.crt; then
+                    echo "Appending Mozilla recommended Ephemeral Diffie-Hellman (DHE) parameters to certificate"
+                    curl https://ssl-config.mozilla.org/ffdhe2048.txt >>/etc/ssl/private/misp.crt
+                fi
             else
                 echo "Key /etc/ssl/private/misp.key does not match certificate /etc/ssl/private/misp.crt"
                 echo "Generating temporary certificate..."

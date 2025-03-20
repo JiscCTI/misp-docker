@@ -23,7 +23,8 @@ directory will be ignored.
 The environment variable `$CAKE` will be available to to run MISP's CLI tool (CakePHP). If a setting
 change references a file that will be copied in by a later section on this page, such as an image or
 terms file, you make needed to include the `--force` flag to ensure the setting is changed even
-though the file is not currently present.
+though the file is not currently present, on consider using On Startup Actions below to change the
+setting after the file has been copied into place.
 
 ### Example Custom Configuration Script
 
@@ -65,15 +66,11 @@ These files must be named as either the display name or numeric identifier of th
 `1.png` or `1.svg` will apply to the default organisation, `Jisc.png` or `Jisc.svg` will be used for
 an organisation named "Jisc" in MISP.
 
+## Custom Tagging Taxonomies
 
-***Note*** Any other custom files, such as tagging taxonomies, must be added **after** the first
-run or initial setup will not complete correctly. If you would like to add these files in before the
-first run, they should be added into `./persistent/misp/data/import` to be moved into place by the
-Custom Configuration step (below) - which runs at the end of the initial setup process.
+To install additional tagging taxonomies, create a folder for each under `./taxonomies/`, each
+taxonomy folder **must** contain at least `machinetag.json` or it will not be copied into place.
 
-## Adding Custom Content
-
-If you need to add in taxonomies or other custom content into your MISP instance, these can be
-placed in their respective sub-directories of `./persistent/misp/data/files/` and loaded into the
-database using the buttons within the web UI, or they will be loaded daily by one of the 
-[Automated Maintenance](../management/maint_tasks.md) task that are created by default.
+***NOTE:*** MISP will only load the taxonomy into the database if either (i) the namespace doesn't
+already exist in the database or (ii) the version number specified in `machinetag.json` is greater
+than the version number already loaded into the database.

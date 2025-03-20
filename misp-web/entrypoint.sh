@@ -457,6 +457,21 @@ on_start() {
         fi
     fi
 
+    if [ -d /opt/misp_custom/taxonomies ]; then
+        if [ -n "$(ls /opt/misp_custom/taxonomies/)" ]; then
+            for taxonomy in /opt/misp_custom/taxonomies/*; do
+                if [ -d "$taxonomy" ]; then
+                    if [ -f "${taxonomy}/machinetag.json" ]; then
+                        echo "Custom taxonomy ${taxonomy} found, copying..."
+                        cp -r -f "$taxonomy" /var/www/MISPData/files/taxonomies/
+                    else
+                        echo "Custom taxonomy ${taxonomy} has no machinetag.json." 
+                    fi
+                fi
+            done
+        fi
+    fi
+
     if [ -d /opt/misp_custom/on_start ]; then
         # shellcheck disable=SC2010
         if ls /opt/misp_custom/on_start/ | grep -q "\.sh"; then

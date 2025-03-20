@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
 SPDX-FileContributor: James Ellor
 SPDX-FileContributor: Joe Pitt
 
@@ -8,25 +8,26 @@ SPDX-License-Identifier: GPL-3.0-only
 
 # Configuring MISP
 
-Before configuring MISP, it is recommended to view the steps necessary in deploying the Docker
-containers that best suit your deployment methods using either the
-[Local Deployment Page](../deploy/local.md) or the [Cloud Deployment Page](../deploy/cloud.md).
-
-This page assumes a local deployment, you will need to adapt it to suit your chosen cloud provider's
-systems for a cloud deployment.
+This page assumes an [On-Premises Deployment](../deploy/local.md), if you are using a
+[Cloud Deployment](../deploy/cloud.md) you will need to complete the same steps using the tools made
+available by your cloud provider.
 
 ## Environment Variables
 
-Create a file within the directory your MISP instance sits in, the file should be called `.env`. Now
-add in all options that you would like to override based on the default values in the below table.
+Create the file `/opt/misp/.env` adding all the options that you need to override from their default
+values in the below table.
 
-The format of the file should be as follows: `OPTION_NAME=desired_override_value`.
+The format of the file is one variable per line: `OPTION_NAME=desired_override_value`.
 
 ***Note*** In the table below there are multiple settings formatted in **bold**, it is highly
 recommended that these values are overridden as a bare minimum.
 
 ***Note*** Any passwords used ***MUST NOT*** contain the backslash (`\`) or plus (`+`) characters
 otherwise the container may not start correctly.
+
+***NOTE*** Ensure all passwords are strong and unique, it is recommended you use a cryptographically
+secure password generator. One option is to run `openssl rand -hex 32` to generate a 64-character
+hexadecimal password.
 
 | Option Name | Description | Default Value |
 | ----------- | ----------- | ------------- |
@@ -119,3 +120,26 @@ would like to use, follow the steps below:
 During startup, the container will confirm that the provided `import.asc` can be unlocked with
 GPG_PASSPHRASE and import it. If the container is not able to confirm this, it will revert to
 creating a brand new key.
+
+## Single Sign On
+
+Details about configuring Single Sign On (SSO) can be found on the pages below:
+
+- Microsoft Entra ID (formerly Azure Active Directory, or AAD) 
+    - This integration is awaiting upstream fixes, however SSO with Entra ID may be possible using
+        OIDC.
+- [OpenID Connect (OIDC)](../configuration/oidc.md)
+- [Shibboleth / SAML 2.0](../configuration/shibb.md).
+
+## Log Forwarding to Splunk
+
+See the [Splunk page](../splunk.md) for details on forwarding MISP's logs to Splunk.
+
+## Customisation
+
+Further customisation of MISP is possible by following the instructions on the
+[Customisation page](../configuration/custom.md).
+
+## First Start
+
+You should now be ready for the [First Start](../first_start.md) of MISP.

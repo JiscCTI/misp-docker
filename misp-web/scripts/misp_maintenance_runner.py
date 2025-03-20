@@ -141,27 +141,17 @@ while True:
         LOGGER.info("Starting maintenance job scheduler")
 
     try:
-        baseUrl = config.get("DEFAULT", "baseUrl")
-        test = urlparse(baseUrl)
-        # As urlparse splits a URL without validation, do manual validation of the result.
-        if test.scheme not in ["http", "https"] or not is_valid_domain(
-            test.hostname, allow_ip=True
-        ):
+        if not is_valid_domain(environ["FQDN"], allow_ip=True):
             raise ValueError()
-    except (KeyError, ValueError) as e:
-        LOGGER.error(
-            "Configured Base URL is invalid, reverting to https://%s:%s without TLS verification",
-            environ["FQDN"],
-            environ["HTTPS_PORT"],
-        )
-        config.set(
-            "DEFAULT",
-            "baseUrl",
-            f"https://{environ['FQDN']}:{environ['HTTPS_PORT']}",
-        )
-        config.set("DEFAULT", "verifyTls", "False")
+        base_url = f"https://{environ['FQDN']}:{environ['HTTPS_PORT']}"
+        if base_url.endswith(":443"):
+            base_url = base_url.replace(":443", "")
+        config.set("DEFAULT", "baseUrl", base_url)
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             config.write(f)
+    except (KeyError, ValueError) as e:
+        LOGGER.critical("Configured FQDN is invalid, cannot start maintenance tasks")
+        raise e
 
     try:
         authKey = config.get("DEFAULT", "authKey")

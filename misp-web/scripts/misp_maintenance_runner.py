@@ -2,7 +2,7 @@
 
 """Wrapper to to run MISP maintenance jobs"""
 
-# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -31,12 +31,12 @@ except ImportError as e:
 from log import create_logger
 
 __author__ = "Joe Pitt"
-__copyright__ = "Copyright 2023-2024, Jisc Services Limited"
+__copyright__ = "Copyright 2023-2025, Jisc Services Limited"
 __email__ = "Joe.Pitt@jisc.ac.uk"
 __license__ = "GPL-3.0-only"
 __maintainer__ = "Joe Pitt"
 __status__ = "Production"
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 
 AUTH_KEY_REGEX = regex(r"^[0-9A-Za-z]{40}$")
 # Regular expression by Tim Groeneveld, Nov 18, 2014, https://stackoverflow.com/a/26987741
@@ -89,8 +89,7 @@ def is_valid_domain(domain: str, allow_ip: bool = False) -> bool:
 
 
 CONFIG_FILE = "/var/www/MISPData/misp_maintenance_jobs.ini"
-if not isfile(CONFIG_FILE):
-    copy("/opt/scripts/misp_maintenance_jobs.ini", CONFIG_FILE)
+CUSTOM_CONFIG_FILE = "/opt/misp_custom/jobs/misp_maintenance_jobs.ini"
 
 config = ConfigParser()
 LOGGER = None
@@ -107,6 +106,8 @@ while True:
     now = time()
     if LOGGER is not None:
         LOGGER.debug("Re-reading config file")
+    if not isfile(CONFIG_FILE):
+        copy("/opt/scripts/misp_maintenance_jobs.ini", CONFIG_FILE)
     # count of successfully parsed configuration files
     if len(config.read(CONFIG_FILE)) == 0:
         if LOGGER is not None:
@@ -120,6 +121,15 @@ while True:
         # wait five minutes then retry
         sleep(300)
         continue
+
+    if isfile(CUSTOM_CONFIG_FILE):
+        if len(config.read(CUSTOM_CONFIG_FILE)) == 0:
+            if LOGGER is not None:
+                LOGGER.error(
+                    "Custom config file is corrupt cannot continue, ignoring it"
+                )
+            else:
+                print("Custom config file is corrupt cannot continue, ignoring it")
 
     if LOGGER is None:
         LOGGER = create_logger(

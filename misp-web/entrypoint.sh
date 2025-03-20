@@ -413,6 +413,18 @@ on_start() {
     fi
 
     echo "Settings updated based on environment variables."
+
+    if [ -d /opt/misp_custom/on_start ]; then
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/on_start/ | grep -q "\.sh"; then
+            for startup_script in /opt/misp_custom/on_start/*.sh; do
+                echo "Custom startup script ${startup_script} found, executing..."
+                bash "$startup_script"
+            done
+        else
+            echo "Custom startup script directory found - but no *.sh scripts to run"
+        fi
+    fi
 }
 
 # Check for startup lock

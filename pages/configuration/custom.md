@@ -20,8 +20,7 @@ which will be run at the end of the standard initial configuration process.
 Place these scripts in `./init/`, ensuring they have a `.sh` extension - all other files in this
 directory will be ignored.
 
-The environment variable `$CAKE` is set within `misp-web` and `misp-workers` to to run MISP's CLI
-tool (CakePHP).
+The environment variable `$CAKE` will be available to to run MISP's CLI tool (CakePHP).
 
 ### Example Custom Configuration Script
 
@@ -33,6 +32,15 @@ $CAKE Admin setSetting "MISP.terms_file" "terms.htm"
 $CAKE Admin setSetting "MISP.terms_download" false
 ```
 
+## On Startup Actions
+
+If there are actions that need to be performed on every startup of the `misp-web` container, you can
+provide one or more bash scripts to perform these steps.
+
+Place these scripts in `./on_start/`, ensuring they have a `.sh` extension - all other files in this
+directory will be ignored.
+
+The environment variable `$CAKE` will be available to to run MISP's CLI tool (CakePHP).
 
 
 ## Adding Custom Image Files

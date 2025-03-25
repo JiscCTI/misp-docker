@@ -336,6 +336,7 @@ generate_self_signed_certificate() {
     openssl req -x509 -newkey rsa:4096 -subj "/CN=$(hostname)" \
         -keyout /etc/ssl/private/misp.key -out /etc/ssl/private/misp.crt -sha256 -days 365 -nodes >/dev/null 2>&1
     cat /etc/ssl/private/misp.crt /etc/ssl/private/misp.key >/etc/ssl/private/haproxy.pem
+    curl https://ssl-config.mozilla.org/ffdhe2048.txt >>/etc/ssl/private/misp.crt
 }
 
 check_tls_certificate() {

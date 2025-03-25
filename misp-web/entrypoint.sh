@@ -530,7 +530,7 @@ on_start() {
             for terms_file in /opt/misp_custom/terms/*; do
                 if [ -f "${terms_file}" ]; then
                     echo "Custom terms file ${terms_file} found, copying..."
-                    cp -f terms_file /var/www/MISPData/files/terms/
+                    cp -f "${terms_file}" /var/www/MISPData/files/terms/
                 fi
             done
         fi

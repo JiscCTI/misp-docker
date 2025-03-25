@@ -374,7 +374,7 @@ check_tls_certificate() {
             PRIVATE=$(openssl pkey -pubout -in /etc/ssl/private/misp.key | openssl sha256 | awk '{print $2}')
             if [[ "$PUBLIC" == "$PRIVATE" ]]; then
                 echo "TLS key validated successfully"
-                if ! grep -q "-----BEGIN DH PARAMETERS-----" /etc/ssl/private/misp.crt; then
+                if ! grep -q -- "-----BEGIN DH PARAMETERS-----" /etc/ssl/private/misp.crt; then
                     echo "Appending Mozilla recommended Ephemeral Diffie-Hellman (DHE) parameters to certificate"
                     curl https://ssl-config.mozilla.org/ffdhe2048.txt >>/etc/ssl/private/misp.crt
                 fi

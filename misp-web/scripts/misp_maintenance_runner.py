@@ -17,7 +17,6 @@ from shutil import copy
 from socket import gethostname
 from subprocess import DEVNULL, Popen
 from time import sleep, time
-from urllib.parse import urlparse
 
 from urllib3 import disable_warnings
 from urllib3.exceptions import InsecureRequestWarning

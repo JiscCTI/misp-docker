@@ -41,7 +41,6 @@ container, please see the below steps as a guide:
     * `command` must be the absolute paths to the executable and where required scripts.
     * `enabled` can be set to `false` to temporarily disable a job without deleting it.
     * `interval` sets how often the automation should be triggered, in minutes.
-    * `lastRun` is set by the scheduling system and should be set to 0 on creation.
     * Setting `needsAuthKey` to `True` will prevent the automation from running until a valid Auth
         Key has been automatically set in `/var/www/MISPData/misp_maintenance_jobs.ini` by the
         initial setup.
@@ -53,6 +52,29 @@ Here is an example entry in `/opt/misp_custom/jobs/misp_maintenance_jobs.ini`
 command = /opt/misp_custom/jobs/my_script/.venv/bin/python /opt/misp_custom/jobs/my_script/run.py
 enabled = true
 interval = 15
-lastRun = 0
 needsAuthKey = true
+```
+
+## Disabling Custom Tasks
+
+Once a custom task is created, it will be populated into the main `misp_maintenance_jobs.ini`,
+therefore if you need to disable or remove a task, you need leave it in your custom
+`misp_maintenance_jobs.ini` but set `enabled` to `false`, for ease of maintenance, you can remove
+all other options.
+
+### Example: Temporarily Disabled 
+
+```ini
+[my_script]
+command = /opt/misp_custom/jobs/my_script/.venv/bin/python /opt/misp_custom/jobs/my_script/run.py
+enabled = false
+interval = 15
+needsAuthKey = true
+```
+
+### Example: Permanently Disabled
+
+```ini
+[my_script]
+enabled = false
 ```

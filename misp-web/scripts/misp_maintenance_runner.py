@@ -209,7 +209,7 @@ while True:
                 # configuration interval is in minutes, script interval is in seconds
                 interval = config.getint(job, "interval") * 60
                 # stored as UNIX Epoch time
-                last_run = config.getint(job, "lastRun")
+                last_run = config.getint(job, "lastRun", fallback=0)
                 # if time since last run is greater or equal to interval
                 if now - last_run >= interval:
                     if (

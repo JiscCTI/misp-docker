@@ -474,21 +474,21 @@ on_start() {
         if ls /opt/misp_custom/images/ | grep -q "\.jpg"; then
             for image in /opt/misp_custom/images/*.jpg; do
                 echo "Custom image ${image} found, copying..."
-                cp "$image" /var/www/MISPData/images/
+                cp "$image" /var/www/MISPData/files/img/custom/
             done
         fi
         # shellcheck disable=SC2010
         if ls /opt/misp_custom/images/ | grep -q "\.png"; then
             for image in /opt/misp_custom/images/*.png; do
                 echo "Custom image ${image} found, copying..."
-                cp "$image" /var/www/MISPData/images/
+                cp "$image" /var/www/MISPData/files/img/custom/
             done
         fi
         # shellcheck disable=SC2010
         if ls /opt/misp_custom/images/ | grep -q "\.svg"; then
             for image in /opt/misp_custom/images/*.svg; do
                 echo "Custom image ${image} found, copying..."
-                cp "$image" /var/www/MISPData/images/
+                cp "$image" /var/www/MISPData/files/img/custom/
             done
         fi
     fi

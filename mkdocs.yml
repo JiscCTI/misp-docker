@@ -41,6 +41,3 @@ nav:
     - GitHub Actions: dev/gh-actions.md
 theme: 
   name: material
-  hljs_languages:
-    - apache
-    - dockerfile

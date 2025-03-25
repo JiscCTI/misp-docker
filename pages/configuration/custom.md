@@ -71,6 +71,15 @@ an organisation named "Jisc" in MISP.
 To install additional tagging taxonomies, create a folder for each under `./taxonomies/`, each
 taxonomy folder **must** contain at least `machinetag.json` or it will not be copied into place.
 
+Newly installed taxonomies will **not** be enabled by default, this must be done manually using the
+MISP UI as follows:
+
+1. Go to **Event Actions** / **List Taxonomies**,
+1. Find the taxonomy in the list,
+1. Click the corresponding Enable button (play icon) and confirm the action,
+1. Click "enable all" and confirm the action, and
+1. Optionally, toggle Required and Highlight to meet your local event standards.
+
 ***NOTE:*** MISP will only load the taxonomy into the database if either (i) the namespace doesn't
 already exist in the database or (ii) the version number specified in `machinetag.json` is greater
 than the version number already loaded into the database.

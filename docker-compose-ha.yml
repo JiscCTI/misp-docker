@@ -91,6 +91,7 @@ services:
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
       - REDIS_MISP_DB=${REDIS_MISP_DB:-2}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-misp}
+      - REDIS_TLS=${REDIS_TLS:-false}
       - REDIS_WORKER_DB=${REDIS_WORKER_DB:-3}
       - REQUIRE_TOTP=${REQUIRE_TOTP:-true}
       - SHIBB_ADMIN_ROLE=${SHIBB_ADMIN_ROLE:-misp-admin}

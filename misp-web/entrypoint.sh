@@ -344,14 +344,14 @@ check_tls_certificate() {
             PUBLIC=$(openssl x509 -noout -pubkey -in /etc/letsencrypt/live/MISP/fullchain.pem | openssl sha256 | awk '{print $2}')
             PRIVATE=$(openssl pkey -pubout -in /etc/letsencrypt/live/MISP/privkey.pem | openssl sha256 | awk '{print $2}')
             if [[ "$PUBLIC" == "$PRIVATE" ]]; then
-                echo "Found certificate to import in /opt/misp_custom/acme"
+                echo "Found certificate to import in /etc/letsencrypt/live/MISP"
                 cp -f /etc/letsencrypt/live/MISP/fullchain.pem /etc/ssl/private/misp.crt
                 cp -f /etc/letsencrypt/live/MISP/privkey.pem /etc/ssl/private/misp.key
             else
-                echo "Found certificate in /opt/misp_custom/acme, but private key does not match"
+                echo "Found certificate in /etc/letsencrypt/live/MISP, but private key does not match"
             fi
         else
-            echo "Found certificate in /opt/misp_custom/acme, but private key missing"
+            echo "Found certificate in /etc/letsencrypt/live/MISP, but private key missing"
         fi
     elif [ -r /opt/misp_custom/tls/misp.crt ]; then
         if [ -r /opt/misp_custom/tls/misp.key ]; then

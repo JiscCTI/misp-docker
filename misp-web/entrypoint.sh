@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
 # SPDX-FileContributor: James Acris
 # SPDX-FileContributor: James Ellor
 # SPDX-FileContributor: Joe Pitt
@@ -58,7 +58,8 @@ setup_smtp() {
 restore_persistence() {
     echo "Restoring persistent file storage..."
     cd /var/www/ || exit 1
-    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files MISPData/images MISPData/tmp
+    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files \
+        MISPData/images MISPData/tmp MISPData/acme/.well-known/acme-challenge
 
     if [ ! -L MISP/app/Config ]; then
         echo "Persisting config..."
@@ -260,8 +261,20 @@ initial_config() {
     echo "Post upgrade configuration complete."
 
     if [ -f /var/www/MISPData/custom-config.sh ]; then
-        echo "Custom config options script found, executing..."
+        echo "[Deprecated] Custom config options script found, executing..."
+        echo "Deprecation Warning: use /opt/misp_custom/init/*.sh instead"
         bash /var/www/MISPData/custom-config.sh
+    fi
+    if [ -d /opt/misp_custom/init ]; then
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/init/ | grep -q "\.sh"; then
+            for custom_init_script in /opt/misp_custom/init/*.sh; do
+                echo "Custom initial setup script ${custom_init_script} found, executing..."
+                bash "$custom_init_script"
+            done
+        else
+            echo "Custom initial setup directory found - but no *.sh scripts to run"
+        fi
     fi
 
     # Set MISP Live
@@ -274,14 +287,33 @@ initial_config() {
 
 check_gnupg() {
     MISP_EMAIL_ADDRESS="${MISP_EMAIL_ADDRESS:-misp@misp.local}"
+    mkdir -p /opt/misp_custom/gpg/
+    chown -R www-data: /opt/misp_custom/gpg/
+    chmod 700 /opt/misp_custom/gpg/
     chown -R www-data: /var/www/MISPGnuPG
     chmod 700 /var/www/MISPGnuPG
     if [ -r /var/www/MISPGnuPG/import.asc ]; then
         set +e
-        echo "/var/www/MISPGnuPG/import.asc found, importing..."
+        echo "[Deprecated] /var/www/MISPGnuPG/import.asc found, importing..."
+        echo "Deprecation Warning: use /opt/misp_custom/gpg/import.asc instead"
         su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /var/www/MISPGnuPG/import.asc"
         echo "Setting trust level for imported GnuPG key..."
         su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /var/www/MISPGnuPG/import.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
+        set -e
+    fi
+    if [ -r /opt/misp_custom/gpg/import.asc ]; then
+        set +e
+        echo "/opt/misp_custom/gpg/import.asc found, importing..."
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /opt/misp_custom/gpg/import.asc"
+        echo "Setting trust level for imported GnuPG key..."
+        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /opt/misp_custom/gpg/import.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
+        set -e
+    elif [ -r /opt/misp_custom/gpg/export.asc ]; then
+        set +e
+        echo "/opt/misp_custom/gpg/export.asc found, importing..."
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /opt/misp_custom/gpg/export.asc"
+        echo "Setting trust level for imported GnuPG key..."
+        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /opt/misp_custom/gpg/export.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
         set -e
     fi
     echo "Checking for usable GnuPG Key..."
@@ -308,8 +340,8 @@ check_gnupg() {
         echo "GnuPG key found, exporting to webroot..."
         su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS>/var/www/MISP/app/webroot/gpg.asc"
     fi
-    echo "Exporting encrypted GnuPG privtate key to ASCII File"
-    su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode=loopback --yes --export-secret-key --armor $MISP_EMAIL_ADDRESS>/var/www/MISPGnuPG/import.asc"
+    echo "Exporting encrypted GnuPG private key to ASCII File"
+    su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode=loopback --yes --export-secret-key --armor $MISP_EMAIL_ADDRESS>/opt/misp_custom/gpg/export.asc"
     chown -R www-data: /var/www/MISPGnuPG
     chmod 700 /var/www/MISPGnuPG
 }
@@ -318,15 +350,50 @@ generate_self_signed_certificate() {
     openssl req -x509 -newkey rsa:4096 -subj "/CN=$(hostname)" \
         -keyout /etc/ssl/private/misp.key -out /etc/ssl/private/misp.crt -sha256 -days 365 -nodes >/dev/null 2>&1
     cat /etc/ssl/private/misp.crt /etc/ssl/private/misp.key >/etc/ssl/private/haproxy.pem
+    curl https://ssl-config.mozilla.org/ffdhe2048.txt >>/etc/ssl/private/misp.crt
 }
 
 check_tls_certificate() {
+    if [ -r /etc/letsencrypt/live/MISP/fullchain.pem ]; then
+        if [ -r /etc/letsencrypt/live/MISP/privkey.pem ]; then
+            PUBLIC=$(openssl x509 -noout -pubkey -in /etc/letsencrypt/live/MISP/fullchain.pem | openssl sha256 | awk '{print $2}')
+            PRIVATE=$(openssl pkey -pubout -in /etc/letsencrypt/live/MISP/privkey.pem | openssl sha256 | awk '{print $2}')
+            if [[ "$PUBLIC" == "$PRIVATE" ]]; then
+                echo "Found certificate to import in /etc/letsencrypt/live/MISP"
+                cp -f /etc/letsencrypt/live/MISP/fullchain.pem /etc/ssl/private/misp.crt
+                cp -f /etc/letsencrypt/live/MISP/privkey.pem /etc/ssl/private/misp.key
+            else
+                echo "Found certificate in /etc/letsencrypt/live/MISP, but private key does not match"
+            fi
+        else
+            echo "Found certificate in /etc/letsencrypt/live/MISP, but private key missing"
+        fi
+    elif [ -r /opt/misp_custom/tls/misp.crt ]; then
+        if [ -r /opt/misp_custom/tls/misp.key ]; then
+            PUBLIC=$(openssl x509 -noout -pubkey -in /opt/misp_custom/tls/misp.crt | openssl sha256 | awk '{print $2}')
+            PRIVATE=$(openssl pkey -pubout -in /opt/misp_custom/tls/misp.key | openssl sha256 | awk '{print $2}')
+            if [[ "$PUBLIC" == "$PRIVATE" ]]; then
+                echo "Found certificate to import in /opt/misp_custom/tls"
+                cp -f /opt/misp_custom/tls/misp.crt /etc/ssl/private/misp.crt
+                cp -f /opt/misp_custom/tls/misp.key /etc/ssl/private/misp.key
+            else
+                echo "Found certificate in /opt/misp_custom/tls, but private key does not match"
+            fi
+        else
+            echo "Found certificate in /opt/misp_custom/tls, but private key missing"
+        fi
+    fi
+
     if [ -r /etc/ssl/private/misp.crt ]; then
         if [ -r /etc/ssl/private/misp.key ]; then
             PUBLIC=$(openssl x509 -noout -pubkey -in /etc/ssl/private/misp.crt | openssl sha256 | awk '{print $2}')
             PRIVATE=$(openssl pkey -pubout -in /etc/ssl/private/misp.key | openssl sha256 | awk '{print $2}')
             if [[ "$PUBLIC" == "$PRIVATE" ]]; then
                 echo "TLS key validated successfully"
+                if ! grep -q -- "-----BEGIN DH PARAMETERS-----" /etc/ssl/private/misp.crt; then
+                    echo "Appending Mozilla recommended Ephemeral Diffie-Hellman (DHE) parameters to certificate"
+                    curl https://ssl-config.mozilla.org/ffdhe2048.txt >>/etc/ssl/private/misp.crt
+                fi
             else
                 echo "Key /etc/ssl/private/misp.key does not match certificate /etc/ssl/private/misp.crt"
                 echo "Generating temporary certificate..."
@@ -428,6 +495,89 @@ on_start() {
     fi
 
     echo "Settings updated based on environment variables."
+
+    echo "Processing /opt/misp_custom customisations..."
+
+    if [ -d /opt/misp_custom/images ]; then
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/images/ | grep -q "\.jpg"; then
+            for image in /opt/misp_custom/images/*.jpg; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/custom/
+            done
+        fi
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/images/ | grep -q "\.png"; then
+            for image in /opt/misp_custom/images/*.png; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/custom/
+            done
+        fi
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/images/ | grep -q "\.svg"; then
+            for image in /opt/misp_custom/images/*.svg; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/custom/
+            done
+        fi
+    fi
+
+    if [ -d /opt/misp_custom/org_icons ]; then
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/org_icons/ | grep -q "\.png"; then
+            for image in /opt/misp_custom/org_icons/*.png; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/orgs/
+            done
+        fi
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/org_icons/ | grep -q "\.svg"; then
+            for image in /opt/misp_custom/org_icons/*.svg; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/orgs/
+            done
+        fi
+    fi
+
+    if [ -d /opt/misp_custom/taxonomies ]; then
+        if [ -n "$(ls /opt/misp_custom/taxonomies/)" ]; then
+            for taxonomy in /opt/misp_custom/taxonomies/*; do
+                if [ -d "$taxonomy" ]; then
+                    if [ -f "${taxonomy}/machinetag.json" ]; then
+                        echo "Custom taxonomy ${taxonomy} found, copying..."
+                        cp -r -f "$taxonomy" /var/www/MISPData/files/taxonomies/
+                    else
+                        echo "Custom taxonomy ${taxonomy} has no machinetag.json." 
+                    fi
+                fi
+            done
+        fi
+    fi
+
+    if [ -d /opt/misp_custom/terms ]; then
+        if [ -n "$(ls /opt/misp_custom/terms/)" ]; then
+            for terms_file in /opt/misp_custom/terms/*; do
+                if [ -f "${terms_file}" ]; then
+                    echo "Custom terms file ${terms_file} found, copying..."
+                    cp -f "${terms_file}" /var/www/MISPData/files/terms/
+                fi
+            done
+        fi
+    fi
+
+    if [ -d /opt/misp_custom/on_start ]; then
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/on_start/ | grep -q "\.sh"; then
+            for startup_script in /opt/misp_custom/on_start/*.sh; do
+                echo "Custom startup script ${startup_script} found, executing..."
+                bash "$startup_script"
+            done
+        else
+            echo "Custom startup script directory found - but no *.sh scripts to run"
+        fi
+    fi
+
+    echo "Done processing /opt/misp_custom customisations."
 }
 
 # Check for startup lock

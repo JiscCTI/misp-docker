@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
 SPDX-FileContributor: Joe Pitt
 
 SPDX-License-Identifier: GPL-3.0-only
@@ -9,7 +9,8 @@ SPDX-License-Identifier: GPL-3.0-only
 
 Most logs for the solution are held in `persistent/misp/data/tmp/logs`, if using Shibboleth, the
 Service Provider logs are written to `persistent/misp/shibb/logs`. It is recommended these are
-ingested into a SIEM and monitored for errors.
+ingested into a SIEM and monitored for errors (see the [Splunk page](../splunk.md) for details on
+forwarding MISP's logs to Splunk).
 
 The logs in `persistent/misp/data/tmp/logs/` are:
 

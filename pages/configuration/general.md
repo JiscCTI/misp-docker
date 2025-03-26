@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
 SPDX-FileContributor: James Ellor
 SPDX-FileContributor: Joe Pitt
 
@@ -8,25 +8,26 @@ SPDX-License-Identifier: GPL-3.0-only
 
 # Configuring MISP
 
-Before configuring MISP, it is recommended to view the steps necessary in deploying the Docker
-containers that best suit your deployment methods using either the
-[Local Deployment Page](../deploy/local.md) or the [Cloud Deployment Page](../deploy/cloud.md).
-
-This page assumes a local deployment, you will need to adapt it to suit your chosen cloud provider's
-systems for a cloud deployment.
+This page assumes an [On-Premises Deployment](../deploy/local.md), if you are using a
+[Cloud Deployment](../deploy/cloud.md) you will need to complete the same steps using the tools made
+available by your cloud provider.
 
 ## Environment Variables
 
-Create a file within the directory your MISP instance sits in, the file should be called `.env`. Now
-add in all options that you would like to override based on the default values in the below table.
+Create the file `/opt/misp/.env` adding all the options that you need to override from their default
+values in the below table.
 
-The format of the file should be as follows: `OPTION_NAME=desired_override_value`.
+The format of the file is one variable per line: `OPTION_NAME=desired_override_value`.
 
 ***Note*** In the table below there are multiple settings formatted in **bold**, it is highly
 recommended that these values are overridden as a bare minimum.
 
 ***Note*** Any passwords used ***MUST NOT*** contain the backslash (`\`) or plus (`+`) characters
 otherwise the container may not start correctly.
+
+***NOTE*** Ensure all passwords are strong and unique, it is recommended you use a cryptographically
+secure password generator. One option is to run `openssl rand -hex 32` to generate a 64-character
+hexadecimal password.
 
 | Option Name | Description | Default Value |
 | ----------- | ----------- | ------------- |
@@ -63,23 +64,62 @@ otherwise the container may not start correctly.
 
 ## Importing TLS Certificate
 
-By default, the container will generate a self-signed certificate for the specified FQDN, however
-if/when you have a signed certificate ready, please follow the below steps:
+By default, the container will generate a self-signed certificate for the specified FQDN, however it
+is strongly recommended that you provide a signed certificate using either ACME or manually.
 
-1. Acquire a publicly trusted certificate for the MISP instance.
-    - Some CAs will provide you with a "certificate with chain" file, if so, download this.
-    - If the "certificate with chain" file is not available from your CA, concatenate each
-        `.crt` files that form the chain, into one file putting your certificate first, then each
-        intermediate certificate in order.
-2. Concatenate the contents of
-    [https://ssl-config.mozilla.org/ffdhe2048.txt](https://ssl-config.mozilla.org/ffdhe2048.txt)
-    to the end of the `.crt` file as well. This ensures OpenSSL does not use insecure Ephemeral
-    Diffie-Hellman (DHE) keys while establishing TLS sessions with clients using DHE for key
-    exchange, per the [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/). 
-2. Place the `.crt` file into `./persistent/misp/tls/misp.crt`.
-3. Place the **unencrypted** private key into `./persistent/misp/tls/misp.key`.
+During startup, the container will confirm that the provided certificate and private key match. If
+not, then the container will revert to using a self-signed certificate.
 
-`./persistent/misp/tls/misp.crt` should look like ths:
+### Automatic Certificate Issuance via ACME
+
+The Automatic Certificate Management Environment (ACME) protocol can be used to automate the
+issuance and renewal of MISP's TLS certificate.
+
+These instructions assume Let's Encrypt as the Certification Authority (CA) for simplicity however
+any other CA which offers ACME can be also be used, see their documentation for the correct values
+of additional arguments like `--server`, `--eab-kid` and `--eab-hmac-key`.
+
+These instructions assume the use of the HTTP-01 challenge type, see the Certbot documentation and
+your chosen CA's documentation for how to use other challenge types such as DNS-01.
+
+1. Read and accept the [Let's Encrypt Terms of Service](https://community.letsencrypt.org/tos) (or
+    your alternate ACME-enabled CA's equivalent agreement).
+1. Installed Certbot on the host machine per the
+    [Certbot documentation](https://certbot.eff.org/instructions).
+1. Uncomment the `/etc/letsencrypt/live/MISP` volume of `misp-web` in `docker-compose.yml`.
+1. Start MISP as usual and wait for until MISP is up and running.
+1. Use the following command to request the certificate, setting `--email`, `--webroot-path` and
+    `--domain` to appropriate values for your environment and adding any additional options for your
+    chosen CA.
+
+```sh
+certbot certonly --non-interactive --agree-tos --email certmaster@org.ac.uk \
+    --webroot --webroot-path /opt/misp/persistent/misp/acme \
+    --cert-name MISP --domain misp.org.ac.uk \
+    --deploy-hook '/usr/bin/docker container restart $(docker ps --filter ancestor=jisccti/misp-web:latest -aq)'
+```
+
+The `--deploy-hook` option tells Certbot how to deploy the certificate, in this case to restart all
+containers running the `jisccti/misp-web:latest` image.
+
+If Certbot is set up correctly, then it will automatically renew the certificate and restart
+`misp-web` in advance of certificate expiry.
+
+### Manual Certificate Installation
+
+If you are unable to use ACME, you can manually obtain and install a TLS certificate. This page will
+not cover obtaining a certificate as this varies between Certification Authorities (CAs).
+
+Once your certificate has been issued, you will need two files:
+
+1. Public Certificate - save as `./tls/misp.crt` in the `misp_custom` volume:
+    * Some CAs will provide you with a "certificate with chain" file, if so, download this.
+    * If the "certificate with chain" file is not available from your CA, concatenate each of the
+        `.crt` files that form the chain of trust, into one file putting your certificate first, 
+        then each intermediate certificate in order up to but excluding the CA's root certificate.
+1. **Unencrypted** private key - save as `./tls/misp.key` in the `misp_custom` volume.
+
+`./tls/misp.crt` should resemble:
 
 ```
 -----BEGIN CERTIFICATE-----
@@ -91,22 +131,11 @@ intermediate 1 certificate - signed by intermediate 2
 -----BEGIN CERTIFICATE-----
 Intermediate 2 certificate - signed by trusted root
 -----END CERTIFICATE-----
------BEGIN DH PARAMETERS-----
-MIIBCAKCAQEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz
-+8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a
-87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7
-YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi
-7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD
-ssbzSibBsu/6iGtCOGEoXJf//////////wIBAg==
------END DH PARAMETERS-----
 ```
 
-During startup, the container will confirm that the provided `misp.crt` and `misp.key` files match.
-***Note*** If the files **do not** match, then the container will revert to using a self-signed
-certificate.
+Once the two files are in place (re)start MISP using `docker compose up -d --force-recreate`.
 
-***Note*** When adding a TLS certificate after MISP has been started, you will need to restart the
-`misp-web` container for the new certificate to be applied.
+For renewals, repeat the above process.
 
 ## Importing GnuPG/PGP Keys
 
@@ -114,9 +143,35 @@ By default, the container will generate a GPG key for
 `{MISP_EMAIL_NAME} <{MISP_EMAIL_ADDRESS}> ({FQDN})`, however if you have an existing key that you
 would like to use, follow the steps below:
 
-1. Export the key into an ASCII-armoured (.asc) file.
-2. Copy the file to `./persistent/misp/gpg/import.asc`.
+1. Export the **private** key into an ASCII-armoured (.asc) file.
+2. Copy the file to `./gpg/import.asc` in the `misp_custom` volume.
 
 During startup, the container will confirm that the provided `import.asc` can be unlocked with
-GPG_PASSPHRASE and import it. If the container is not able to confirm this, it will revert to
-creating a brand new key.
+`GPG_PASSPHRASE` and import it. If the container is not able to confirm this, it will revert to
+creating a new key.
+
+The Private Key being used by MISP will be written to `./gpg/export.asc` in the `misp_custom` volume
+on each start of `misp-web` protected by `GPG_PASSPHRASE`.
+
+## Single Sign On
+
+Details about configuring Single Sign On (SSO) can be found on the pages below:
+
+- Microsoft Entra ID (formerly Azure Active Directory, or AAD) 
+    - This integration is awaiting upstream fixes, however SSO with Entra ID may be possible using
+        OIDC.
+- [OpenID Connect (OIDC)](../configuration/oidc.md)
+- [Shibboleth / SAML 2.0](../configuration/shibb.md).
+
+## Log Forwarding to Splunk
+
+See the [Splunk page](../splunk.md) for details on forwarding MISP's logs to Splunk.
+
+## Customisation
+
+Further customisation of MISP is possible by following the instructions on the
+[Customisation page](../configuration/custom.md).
+
+## First Start
+
+You should now be ready for the [First Start](../first_start.md) of MISP.

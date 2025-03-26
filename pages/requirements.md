@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
 SPDX-FileContributor: James Ellor
 SPDX-FileContributor: Joe Pitt
 
@@ -51,4 +51,7 @@ The created Docker images contain only the MISP components and depend on several
     used for the database storage of the MISP instance.
 - Redis server (v6 or v7). Tested against Docker image: `redis:7`. Redis is used for the in-memory
     caching of the MISP instance.
+    - Redis over TLS is supported.
+    - Redis over Mutual TLS (mTLS) is **NOT** supported.
 - An SMTP service. We have tested against Postfix.
+    - Only **authenticated** mail relays are supported.

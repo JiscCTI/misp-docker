@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -112,7 +112,6 @@ LABEL org.opencontainers.image.title="misp-web" org.opencontainers.image.version
     org.opencontainers.image.description="Open Source Threat Intelligence and Sharing Platform." \
     org.opencontainers.image.authors="Jisc <CTI.Analysts@jisc.ac.uk" \
     org.opencontainers.image.base.name="hub.docker.com/_/php:8.3-apache"
-VOLUME "/etc/ssl/private/" "/var/www/MISPData" "/var/www/MISPGnuPG"
 EXPOSE 80 443
 
 ENV CAKE="sudo -H -u www-data /var/www/MISP/app/Console/cake"
@@ -123,7 +122,9 @@ RUN apt-get -qy update &&\
     apt-get -qy install --no-install-recommends git gnupg iputils-ping libapache2-mod-shib\
         libfuzzy2 libgd3 libgpgme11 libpng16-16 librdkafka1 libzip4 mariadb-client python3\
         python3-venv ssdeep sudo uuid zip &&\
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* &&\
+    mkdir -p /opt/misp_custom &&\
+    chown -R www-data:www-data /opt/misp_custom
 
 COPY --from=php_build --chown=root:root /usr/local/lib/php/extensions/no-debug-non-zts-20230831/ /usr/local/lib/php/extensions/no-debug-non-zts-20230831/
 COPY --from=php_build --chown=root:root /usr/local/etc/php/ /usr/local/etc/php/
@@ -138,3 +139,5 @@ RUN a2dismod status &&\
 WORKDIR /var/www/MISP/
 ENTRYPOINT ["sh", "-c", "/wait-for-it.sh -h ${MYSQL_HOSTNAME:-misp_db} -p 3306 -t 0 -- /entrypoint.sh"]
 HEALTHCHECK --start-period=10m --timeout=3s CMD ["sh", "-c", "curl -fk https://127.0.0.1/users/login || exit 1"]
+VOLUME "/etc/letsencrypt/live/MISP" "/etc/ssl/private/" "/var/www/MISPData" "/var/www/MISPGnuPG" \
+    "/opt/misp_custom"

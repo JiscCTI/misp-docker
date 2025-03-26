@@ -2,7 +2,7 @@
 
 """Wrapper to to run MISP maintenance jobs"""
 
-# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -17,7 +17,6 @@ from shutil import copy
 from socket import gethostname
 from subprocess import DEVNULL, Popen
 from time import sleep, time
-from urllib.parse import urlparse
 
 from urllib3 import disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
@@ -31,12 +30,12 @@ except ImportError as e:
 from log import create_logger
 
 __author__ = "Joe Pitt"
-__copyright__ = "Copyright 2023-2024, Jisc Services Limited"
+__copyright__ = "Copyright 2023-2025, Jisc Services Limited"
 __email__ = "Joe.Pitt@jisc.ac.uk"
 __license__ = "GPL-3.0-only"
 __maintainer__ = "Joe Pitt"
 __status__ = "Production"
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 
 AUTH_KEY_REGEX = regex(r"^[0-9A-Za-z]{40}$")
 # Regular expression by Tim Groeneveld, Nov 18, 2014, https://stackoverflow.com/a/26987741
@@ -89,8 +88,7 @@ def is_valid_domain(domain: str, allow_ip: bool = False) -> bool:
 
 
 CONFIG_FILE = "/var/www/MISPData/misp_maintenance_jobs.ini"
-if not isfile(CONFIG_FILE):
-    copy("/opt/scripts/misp_maintenance_jobs.ini", CONFIG_FILE)
+CUSTOM_CONFIG_FILE = "/opt/misp_custom/jobs/misp_maintenance_jobs.ini"
 
 config = ConfigParser()
 LOGGER = None
@@ -107,6 +105,8 @@ while True:
     now = time()
     if LOGGER is not None:
         LOGGER.debug("Re-reading config file")
+    if not isfile(CONFIG_FILE):
+        copy("/opt/scripts/misp_maintenance_jobs.ini", CONFIG_FILE)
     # count of successfully parsed configuration files
     if len(config.read(CONFIG_FILE)) == 0:
         if LOGGER is not None:
@@ -121,6 +121,15 @@ while True:
         sleep(300)
         continue
 
+    if isfile(CUSTOM_CONFIG_FILE):
+        if len(config.read(CUSTOM_CONFIG_FILE)) == 0:
+            if LOGGER is not None:
+                LOGGER.error(
+                    "Custom config file is corrupt cannot continue, ignoring it"
+                )
+            else:
+                print("Custom config file is corrupt cannot continue, ignoring it")
+
     if LOGGER is None:
         LOGGER = create_logger(
             "misp_maintenance_runner",
@@ -131,27 +140,17 @@ while True:
         LOGGER.info("Starting maintenance job scheduler")
 
     try:
-        baseUrl = config.get("DEFAULT", "baseUrl")
-        test = urlparse(baseUrl)
-        # As urlparse splits a URL without validation, do manual validation of the result.
-        if test.scheme not in ["http", "https"] or not is_valid_domain(
-            test.hostname, allow_ip=True
-        ):
+        if not is_valid_domain(environ["FQDN"], allow_ip=True):
             raise ValueError()
-    except (KeyError, ValueError) as e:
-        LOGGER.error(
-            "Configured Base URL is invalid, reverting to https://%s:%s without TLS verification",
-            environ["FQDN"],
-            environ["HTTPS_PORT"],
-        )
-        config.set(
-            "DEFAULT",
-            "baseUrl",
-            f"https://{environ['FQDN']}:{environ['HTTPS_PORT']}",
-        )
-        config.set("DEFAULT", "verifyTls", "False")
+        base_url = f"https://{environ['FQDN']}:{environ['HTTPS_PORT']}"
+        if base_url.endswith(":443"):
+            base_url = base_url.replace(":443", "")
+        config.set("DEFAULT", "baseUrl", base_url)
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             config.write(f)
+    except (KeyError, ValueError) as e:
+        LOGGER.critical("Configured FQDN is invalid, cannot start maintenance tasks")
+        raise e
 
     try:
         authKey = config.get("DEFAULT", "authKey")
@@ -209,7 +208,7 @@ while True:
                 # configuration interval is in minutes, script interval is in seconds
                 interval = config.getint(job, "interval") * 60
                 # stored as UNIX Epoch time
-                last_run = config.getint(job, "lastRun")
+                last_run = config.getint(job, "lastRun", fallback=0)
                 # if time since last run is greater or equal to interval
                 if now - last_run >= interval:
                     if (

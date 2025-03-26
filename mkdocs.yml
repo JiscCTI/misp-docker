@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -15,16 +15,17 @@ copyright: 2024 Jisc Services Limited
 nav:
   - Introduction: index.md
   - Requirements: requirements.md
-  - Setup:
-    - Configuration: configuration/general.md
-    - Single Sign On (Optional):
+  - Deployment Options:
+    - On-Premises: deploy/local.md
+    - Cloud: deploy/cloud.md
+  - Configuration:
+    - General: configuration/general.md
+    - Single Sign On:
       - OpenID Connect (OIDC): configuration/oidc.md
-      - SAML2/Shibboleth: configuration/shibb.md
-    - Deployment:
-      - Local / Virtual Machine: deploy/local.md
-      - Cloud: deploy/cloud.md
-    - First Start: first_start.md
-    - Splunk Integration (Optional): splunk.md
+      - SAML2/Shibboleth: configuration/shibb.md  
+    - Splunk: splunk.md
+    - Customisation: configuration/custom.md 
+  - First Start: first_start.md
   - Management:
     - Backups: management/backups.md
     - Logging: management/logging.md
@@ -40,6 +41,3 @@ nav:
     - GitHub Actions: dev/gh-actions.md
 theme: 
   name: material
-  hljs_languages:
-    - apache
-    - dockerfile

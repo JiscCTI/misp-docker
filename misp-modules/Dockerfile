@@ -13,6 +13,7 @@ RUN apt-get update -yq &&\
         misp-modules==${MISP_VERSION}\
         ODTReader\
         pip\
+        publicsuffixlist \
         setuptools\
         trustar\
         git+https://github.com/abenassi/Google-Search-API\

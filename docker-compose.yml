@@ -43,6 +43,8 @@ services:
     hostname: ${MODULES_HOSTNAME:-misp_modules}
     image: jisccti/misp-modules:latest
     restart: unless-stopped
+    volumes:
+      - ./persistent/${COMPOSE_PROJECT_NAME}/modules_cache/:/mnt/cache
   redis:
     entrypoint: redis-server --loglevel warning --requirepass ${REDIS_PASSWORD:-misp}
     environment:

@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
 SPDX-FileContributor: Joe Pitt
 SPDX-FileContributor: James Ellor
 
@@ -31,4 +31,8 @@ The image exposes 6666/tcp - the modules web interface.
 
 ## Volumes
 
-The image has no volumes.
+The image uses the following volume:
+
+| Mount Point | Purpose |
+|-------------|---------|
+| /mnt/cache/ | Cache directories for `Fontconfig` and `matplotlib`. |

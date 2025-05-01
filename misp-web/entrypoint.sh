@@ -171,13 +171,19 @@ setup_db() {
     fi
 }
 
-initial_config() {
-    echo "Starting initial configuration..."
+setup_redis() {
+    /wait-for-it.sh -h "${REDIS_HOST:-misp_redis}" -p "${REDIS_PORT:-6379}" -t 0 -- true
 
     if [ "${REDIS_TLS}" == "false" ]; then
-        REDIS_URL="tcp:\/\/${REDIS_HOST}:6379"
+        REDIS_URL="tcp:\/\/${REDIS_HOST}:${REDIS_PORT:-6379}"
+        $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST" --force
+        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST" --force
+        $CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "$REDIS_HOST" --force
     else
-        REDIS_URL="tls:\/\/${REDIS_HOST}:6379"
+        REDIS_URL="tls:\/\/${REDIS_HOST}:${REDIS_PORT:-6379}"
+        $CAKE Admin setSetting "MISP.redis_host" "tls://$REDIS_HOST" --force
+        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "tls://$REDIS_HOST" --force
+        $CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "tls://$REDIS_HOST" --force
     fi
     sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini
     if [ -z "${REDIS_PASSWORD}" ]; then
@@ -188,6 +194,20 @@ initial_config() {
         sed -i "s/^\(session.save_path\).*/\1 = \"${REDIS_URL}?auth=${SED_REDIS_PASSWORD}\"/" /usr/local/etc/php/php.ini
     fi
 
+    $CAKE Admin setSetting "MISP.redis_port" "${REDIS_PORT:-6379}" --force
+    $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB" --force
+    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
+    echo 'Setting "MISP.redis_password" changed to "[REDACTED]"'
+    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_port" "${REDIS_PORT:-6379}" --force
+    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_database" "$REDIS_WORKER_DB" --force
+    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
+    echo 'Setting "SimpleBackgroundJobs.redis_password" changed to "[REDACTED]"'
+
+    $CAKE Admin setSetting "Plugin.ZeroMQ_redis_port" "${REDIS_PORT:-6379}" --force
+}
+
+initial_config() {
+    echo "Starting initial configuration..."
     cd /var/www/ || exit 1
     cp -a MISP/app/Config/bootstrap.default.php MISP/app/Config/bootstrap.php
     cp /opt/scripts/core.php MISP/app/Config/core.php
@@ -200,6 +220,7 @@ initial_config() {
     chmod -R 750 /var/www/MISP/app/Config/
 
     $CAKE Admin setSetting "MISP.server_settings_skip_backup_rotate" true
+    setup_redis
     echo "Generating encryption salt value..."
     $CAKE Admin setSetting "Security.salt" "$(openssl rand -base64 32)" >/dev/null 2>&1
     echo 'Setting "Security.salt" changed to "[REDACTED]"'
@@ -209,14 +230,6 @@ initial_config() {
     $CAKE Admin setSetting "MISP.baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.uuid" "$(uuid -v 4)"
-    if [ "${REDIS_TLS}" == "false" ]; then
-        $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST"
-    else
-        $CAKE Admin setSetting "MISP.redis_host" "tls://$REDIS_HOST"
-    fi
-    $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB"
-    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
-    echo 'Setting "MISP.redis_password" changed to "[REDACTED]"'
     $CAKE Admin setSetting "GnuPG.email" "$MISP_EMAIL_ADDRESS"
     $CAKE Admin setSetting "GnuPG.password" "$GPG_PASSPHRASE" >/dev/null 2>&1
     echo 'Setting "GnuPG.password" changed to "[REDACTED]"'
@@ -227,14 +240,6 @@ initial_config() {
     $CAKE Admin setSetting "Plugin.Import_services_url" "http://$MODULES_HOSTNAME"
     $CAKE Admin setSetting "Plugin.Export_services_url" "http://$MODULES_HOSTNAME"
     $CAKE Admin setSetting "Plugin.Action_services_url" "http://$MODULES_HOSTNAME"
-    if [ "${REDIS_TLS}" == "false" ]; then
-        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST"
-    else
-        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "tls://$REDIS_HOST"
-    fi
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_database" "$REDIS_WORKER_DB"
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
-    echo 'Setting "SimpleBackgroundJobs.redis_password" changed to "[REDACTED]"'
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_host" "$WORKERS_HOSTNAME"
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" >/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'
@@ -430,39 +435,7 @@ on_start() {
     $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
     python3 /opt/scripts/trigger_set_org_name.py
     $CAKE Admin setSetting "Security.otp_required" "$REQUIRE_TOTP"
-
-    if [ "${REDIS_TLS}" == "false" ]; then
-        REDIS_URL="tcp:\/\/${REDIS_HOST}:6379"
-    else
-        REDIS_URL="tls:\/\/${REDIS_HOST}:6379"
-    fi
-    sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini
-    if [ -z "${REDIS_PASSWORD}" ]; then
-        echo "Warning: No Redis password is set, ensure network access control is implemented"
-        sed -i "s/^\(session.save_path\).*/\1 = \"${REDIS_URL}\"/" /usr/local/etc/php/php.ini
-    else
-        SED_REDIS_PASSWORD=${REDIS_PASSWORD//\//\\\/}
-        sed -i "s/^\(session.save_path\).*/\1 = \"${REDIS_URL}?auth=${SED_REDIS_PASSWORD}\"/" /usr/local/etc/php/php.ini
-    fi
-
-    /wait-for-it.sh -h "${REDIS_HOST:-misp_redis}" -p 6379 -t 0 -- true
-    if [ "${REDIS_TLS}" == "false" ]; then
-        $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST"
-    else
-        $CAKE Admin setSetting "MISP.redis_host" "tls://$REDIS_HOST"
-    fi
-    $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB"
-    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
-    echo 'Setting "MISP.redis_password" changed to "[REDACTED]"'
-    if [ "${REDIS_TLS}" == "false" ]; then
-        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST"
-    else
-        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "tls://$REDIS_HOST"
-    fi
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_database" "$REDIS_WORKER_DB"
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
-    echo 'Setting "SimpleBackgroundJobs.redis_password" changed to "[REDACTED]"'
-
+    setup_redis
     /wait-for-it.sh -h "${MODULES_HOSTNAME:-misp_modules}" -p 6666 -t 0 -- true
     $CAKE Admin setSetting "Plugin.Enrichment_services_url" "http://$MODULES_HOSTNAME"
     $CAKE Admin setSetting "Plugin.Import_services_url" "http://$MODULES_HOSTNAME"
@@ -547,7 +520,7 @@ on_start() {
                         echo "Custom taxonomy ${taxonomy} found, copying..."
                         cp -r -f "$taxonomy" /var/www/MISPData/files/taxonomies/
                     else
-                        echo "Custom taxonomy ${taxonomy} has no machinetag.json." 
+                        echo "Custom taxonomy ${taxonomy} has no machinetag.json."
                     fi
                 fi
             done
@@ -599,7 +572,7 @@ done
 # Obtain startup lock
 hostname >$STARTUP_LOCK
 echo "Obtained startup lock."
-# Initalise container
+# Initialise container
 set_env_vars
 restore_persistence
 setup_db
@@ -617,4 +590,5 @@ rm /var/www/MISPData/.init_lock
 echo "Released startup lock."
 # Start MISP
 echo "Starting MISP at $MISP_URL..."
+# shellcheck disable=SC1091
 source /etc/apache2/envvars && exec /usr/sbin/apache2 -D FOREGROUND

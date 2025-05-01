@@ -11,15 +11,15 @@ RUN . /misp_modules/bin/activate &&\
     python3 -m pip install --upgrade  --no-cache-dir --quiet misp-modules[all]==${MISP_VERSION}
 
 FROM python:3.12-slim-bookworm AS final
-ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical \
-    REDIS_BACKEND=misp_redis REDIS_DATABASE=1
+ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 LABEL org.opencontainers.image.title="misp-modules" \
     org.opencontainers.image.version=${MISP_VERSION}\
     org.opencontainers.image.ref.name="misp-modules"\
     org.opencontainers.image.description="Modules for expansion services, import and export in MISP."\
     org.opencontainers.image.authors="Jisc <CTI.Analysts@jisc.ac.uk"\
     org.opencontainers.image.base.name="hub.docker.com/_/python:3.12-slim-bullseye"
-ENV HOME=/mnt/cache/ MPLCONFIGDIR=/mnt/cache/matplotlib
+ENV HOME=/mnt/cache/ MPLCONFIGDIR=/mnt/cache/matplotlib REDIS_BACKEND=misp_redis REDIS_DATABASE=1 \
+    REDIS_PORT=6379
 EXPOSE 6666
 
 RUN apt-get update &&\

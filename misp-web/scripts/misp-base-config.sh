@@ -127,8 +127,6 @@ $CAKE Admin setSetting "Plugin.Kafka_audit_notifications_topic" "misp_audit"
 # ZeroMQ settings
 $CAKE Admin setSetting "Plugin.ZeroMQ_host" "127.0.0.1"
 $CAKE Admin setSetting "Plugin.ZeroMQ_port" 50000
-$CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "localhost"
-$CAKE Admin setSetting "Plugin.ZeroMQ_redis_port" 6379
 $CAKE Admin setSetting "Plugin.ZeroMQ_redis_database" 1
 $CAKE Admin setSetting "Plugin.ZeroMQ_redis_namespace" "mispq"
 $CAKE Admin setSetting "Plugin.ZeroMQ_event_notifications_enable" false
@@ -143,8 +141,6 @@ $CAKE Admin setSetting "Plugin.ZeroMQ_tag_notifications_enable" false
 # Force defaults to make MISP Server Settings less RED
 $CAKE Admin setSetting "MISP.language" "eng"
 $CAKE Admin setSetting "MISP.proposals_block_attributes" false
-# Redis block
-$CAKE Admin setSetting "MISP.redis_port" 6379
 # Force defaults to make MISP Server Settings less YELLOW
 $CAKE Admin setSetting "MISP.ssdeep_correlation_threshold" 40
 $CAKE Admin setSetting "MISP.extended_alert_subject" false

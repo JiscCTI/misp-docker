@@ -39,5 +39,5 @@ COPY healthcheck.sh /healthcheck.sh
 RUN chmod 755 /*.sh
 
 WORKDIR /var/www/MISP/
-ENTRYPOINT ["sh", "-c", "/wait-for-it.sh -h ${REDIS_HOST:-misp_redis} -p 6379 -t 0 -- /entrypoint.sh"]
+ENTRYPOINT ["sh", "-c", "/wait-for-it.sh -h ${REDIS_HOST:-misp_redis} -p ${REDIS_PORT:-6379} -t 0 -- /entrypoint.sh"]
 HEALTHCHECK --start-period=10m --timeout=5s CMD ["/healthcheck.sh"]

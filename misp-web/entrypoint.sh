@@ -224,6 +224,9 @@ initial_config() {
     echo "Generating encryption salt value..."
     $CAKE Admin setSetting "Security.salt" "$(openssl rand -base64 32)" >/dev/null 2>&1
     echo 'Setting "Security.salt" changed to "[REDACTED]"'
+    echo "Generating encryption cipher seed value..."
+    $CAKE Admin "Security.cipherSeed" "$(python3 /opt/scripts/generate_cipher_seed.py)" >/dev/null 2>&1
+    echo 'Setting "Security.cipherSeed" changed to "[REDACTED]"'
     $CAKE userInit -q >/dev/null 2>&1
     $CAKE Admin setSetting "Security.advanced_authkeys" false
     python3 /opt/scripts/set_auth_key.py -k "$($CAKE Admin getAuthKey admin@admin.test | tr -d "[:blank:]" 2>&1)" >/dev/null 2>&1

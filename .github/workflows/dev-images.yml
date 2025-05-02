@@ -43,7 +43,7 @@ jobs:
           sed -i 's/latest/${{ env.BRANCH_NAME }}/g' docker-compose.yml
           sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' misp-workers/Dockerfile
           sed -i 's/\${MISP_VERSION}/${{ env.BRANCH_NAME }}/g' misp-workers/Dockerfile
-          cp example.env .env
+          cp .github/workflows/actions.env .env
           mkdir -p persistent/$COMPOSE_PROJECT_NAME/gpg persistent/$COMPOSE_PROJECT_NAME/tls
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/gpg/import.asc
           ${{ secrets.TEST_PGP_KEY }}

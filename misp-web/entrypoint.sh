@@ -9,6 +9,29 @@
 
 set -e
 
+block_default_credentials() {
+    if [ "$GPG_PASSPHRASE" == "misp" ]; then
+        echo "The GPG_PASSPHRASE environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    if [ "$MYSQL_PASSWORD" == "misp" ]; then
+        echo "The MYSQL_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    if [ "$REDIS_PASSWORD" == "misp" ]; then
+        echo "The REDIS_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    if [ "$SMTP_PASSWORD" == "misp" ]; then
+        echo "The SMTP_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    if [ "$WORKERS_PASSWORD" == "misp" ]; then
+        echo "The WORKERS_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+}
+
 set_env_vars() {
     if [[ "$HTTPS_PORT" -eq 443 ]]; then
         MISP_URL="https://$FQDN"
@@ -572,6 +595,8 @@ while [ -f "$STARTUP_LOCK" ]; do
         rm $STARTUP_LOCK
     fi
 done
+
+block_default_credentials
 # Obtain startup lock
 hostname >$STARTUP_LOCK
 echo "Obtained startup lock."

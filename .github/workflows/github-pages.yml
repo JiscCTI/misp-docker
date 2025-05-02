@@ -1,13 +1,8 @@
-# SPDX-FileCopyrightText: 2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
-
-name: Update GitHub Pages
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+---
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,15 +26,21 @@ jobs:
         with:
           path: site
   deploy:
-    needs: build
-    permissions:
-      pages: write
-      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
+      - id: deployment
+        name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
+name: Update GitHub Pages
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+  pages: write

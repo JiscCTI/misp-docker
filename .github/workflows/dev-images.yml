@@ -1,14 +1,9 @@
-# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
 # SPDX-FileContributor: James Ellor
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
-
-name: Development Images
-on:
-  workflow_dispatch:
-  pull_request:
-
+---
 env:
   COMPOSE_PROJECT_NAME: misp_dev
   BRANCH_NAME: ${{ github.event.pull_request.number || github.head_ref || github.ref_name }} 
@@ -16,12 +11,10 @@ jobs:
   run-dev:
     name: Build, Test, and Release (Dev)
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: 'write'
     steps:
       - id: pr-comment-start
-        name: Add Comment to PR (Start)
         if: ${{ github.event_name == 'pull_request' }}
+        name: Add Comment to PR (Start)
         uses: actions/github-script@v7
         with:
           script: |
@@ -31,7 +24,6 @@ jobs:
               repo: context.repo.repo,
               body: 'Test images for this PR are now being built, see Actions tab for details.'
             })
-      # Environment Setup
       - id: checkout
         name: Checkout Project
         uses: actions/checkout@v4
@@ -64,8 +56,6 @@ jobs:
           EOF
           python3 -m venv venv
           ./venv/bin/pip install --upgrade defusedxml requests
-
-      # Load statuses
       - id: misp_version
         name: Get current MISP version number
         run: echo "MISP_VERSION=$(./venv/bin/python3 ./misp-web/latest.py)" >> $GITHUB_ENV
@@ -75,8 +65,6 @@ jobs:
       - id: shibb_version
         name: Get current Shibboleth SP version number
         run: echo "SHIBB_VERSION=$(./venv/bin/python3 ./misp-shibb-sp/latest.py)" >> $GITHUB_ENV
-
-      # Print Image tag and upstream version
       - id: print_versions
         name: Image Tag and Upstream Versions
         run: |
@@ -84,8 +72,6 @@ jobs:
           echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.BRANCH_NAME }} using upstream version v${{ env.SHIBB_VERSION }}"
           echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.BRANCH_NAME }} using upstream version ${{ env.MISP_VERSION }}"
           echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.BRANCH_NAME }} using upstream version ${{ env.MISP_VERSION }}"
-      
-      # Build / Pull Images
       - id: build_modules
         name: Build misp-modules
         run: |
@@ -110,53 +96,46 @@ jobs:
           cd misp-shibb-sp
           docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.BRANCH_NAME }} --build-arg SHIBB_VERSION="${{ env.SHIBB_VERSION }}" .
           cd ..
-
-      # Test
       - id: start_test_env
         name: Deploy Test Instance
         run: docker compose up -d
-
-      - id: initial_setup
+      - continue-on-error: true
+        id: initial_setup
         name: Wait for Initial Setup
         run: timeout 30m /bin/bash -c 'while [[ $(docker container ls --format {{.Status}} | grep -P "(unhealthy)|(starting)" | wc -l) -gt 0 ]] ; do sleep 30; done'
-        continue-on-error: true
-
       - id: dump_logs
+        if: steps.initial_setup.outcome == 'failure'
         name: Dump Container Log
         run: |
           docker compose logs
           docker compose down
           exit 1
-        if: steps.initial_setup.outcome == 'failure'
-
       - id: stop_test_env
         name: Stop MISP
         run: docker compose down
-
-      # Push New Images
       - id: push-modules
-        name: Push misp-modules
         if: steps.build_modules.outcome == 'success'
+        name: Push misp-modules
         run: |
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.BRANCH_NAME }}
       - id: push-web
-        name: Push misp-web
         if: steps.build_web.outcome == 'success'
+        name: Push misp-web
         run: |
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.BRANCH_NAME }}
       - id: push-workers
-        name: Push misp-workers
         if: steps.build_workers.outcome == 'success'
+        name: Push misp-workers
         run: |
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.BRANCH_NAME }}
       - id: push-shibb
-        name: Push misp-shibb-sp
         if: steps.build_shibb.outcome == 'success'
+        name: Push misp-shibb-sp
         run: |
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.BRANCH_NAME }}
       - id: pr-comment-done
-        name: Add Comment to PR (Done)
         if: ${{ github.event_name == 'pull_request' }}
+        name: Add Comment to PR (Done)
         uses: actions/github-script@v7
         with:
           script: |
@@ -166,3 +145,10 @@ jobs:
               repo: context.repo.repo,
               body: 'New test images for this PR have been published: `${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.BRANCH_NAME }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.BRANCH_NAME }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.BRANCH_NAME }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.BRANCH_NAME }}`'
             })
+name: Development Images
+on:
+  workflow_dispatch:
+  pull_request:
+permissions:
+  contents: read
+  pull-requests: write

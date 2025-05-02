@@ -86,7 +86,7 @@ your chosen CA's documentation for how to use other challenge types such as DNS-
     your alternate ACME-enabled CA's equivalent agreement).
 1. Installed Certbot on the host machine per the
     [Certbot documentation](https://certbot.eff.org/instructions).
-1. Uncomment the `/etc/letsencrypt/live/MISP` volume of `misp-web` in `docker-compose.yml`.
+1. Uncomment the two `/etc/letsencrypt/` volumes of `misp-web` in `docker-compose.yml`.
 1. Start MISP as usual and wait for until MISP is up and running.
 1. Use the following command to request the certificate, setting `--email`, `--webroot-path` and
     `--domain` to appropriate values for your environment and adding any additional options for your

@@ -96,7 +96,7 @@ your chosen CA's documentation for how to use other challenge types such as DNS-
 
 ```sh
 certbot certonly --non-interactive --agree-tos --email certmaster@org.ac.uk \
-    --webroot --webroot-path /opt/misp/persistent/misp/acme \
+    --webroot --webroot-path /opt/misp/persistent/misp/data/acme \
     --cert-name MISP --domain misp.org.ac.uk \
     --deploy-hook '/usr/bin/docker container restart $(docker ps --filter ancestor=jisccti/misp-web:latest -aq)'
 ```

@@ -37,8 +37,9 @@ services:
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
-      - REDIS_BACKEND=${REDIS_HOST:-misp_redis}
+      - REDIS_BACKEND=${MODULES_REDIS:-${REDIS_HOST:-misp_redis}}
       - REDIS_DATABASE=${REDIS_MODULES_DB:-1}
+      - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PW=${REDIS_PASSWORD:-misp}
     hostname: ${MODULES_HOSTNAME:-misp_modules}
     image: jisccti/misp-modules:latest
@@ -83,6 +84,7 @@ services:
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
       - REDIS_MISP_DB=${REDIS_MISP_DB:-2}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-misp}
+      - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_TLS=${REDIS_TLS:-false}
       - REDIS_WORKER_DB=${REDIS_WORKER_DB:-3}
       - REQUIRE_TOTP=${REQUIRE_TOTP:-true}
@@ -127,6 +129,7 @@ services:
       - ORG_NAME=${ORG_NAME:-ORGNAME}
       - ORG_UUID=${ORG_UUID:-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
     hostname: ${WORKERS_HOSTNAME:-misp_workers}
     image: jisccti/misp-workers:latest

@@ -40,6 +40,7 @@ hexadecimal password.
 | MISP_EMAIL_NAME | The email display name MISP will use. | `MISP` |
 | MISP_HOSTNAME | The internal hostname of the MISP Web container. | `misp_web` |
 | MODULES_HOSTNAME | The internal hostname of the MISP Modules container. | `misp_modules` |
+| MODULES_REDIS | The redis hostname used by modules, must be prefixed with `tls://` for Redis over TLS. | `$REDIS_HOST` |
 | MYSQL_DBNAME | The database to use for MISP. | `misp` |
 | MYSQL_HOSTNAME | The hostname of the MySQL service. | `misp_db` |
 | **MYSQL_PASSWORD** | The password MISP will use to connect to MySQL. Must have all privileges on `MYSQL_DBNAME` for a third-party DB. | `misp` |
@@ -50,6 +51,7 @@ hexadecimal password.
 | REDIS_HOST | The hostname of the Redis service. | `misp_redis` |
 | REDIS_MISP_DB | The database number to use for MISP within Redis. | `2` |
 | **REDIS_PASSWORD** | The password MISP will use to connect to Redis. | `misp` |
+| REDIS_PORT | The port MISP will use to connect to Redis. | `6379` |
 | REDIS_MODULES_DB | The database number to use for the MISP Modules within Redis. | `1` |
 | REDIS_TLS | Whether to use TLS to communicate with Redis. | `false` |
 | REDIS_WORKER_DB | The database number to use for the MISP Workers within Redis. | `3` |

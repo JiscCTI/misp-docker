@@ -111,6 +111,7 @@ services:
       - ${HTTPS_PORT:-443}:443
     restart: unless-stopped
     volumes:
+      #- /etc/letsencrypt/archive/MISP:/etc/letsencrypt/archive/MISP:ro
       #- /etc/letsencrypt/live/MISP:/etc/letsencrypt/live/MISP:ro
       - ./persistent/${COMPOSE_PROJECT_NAME}/custom/:/opt/misp_custom
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData

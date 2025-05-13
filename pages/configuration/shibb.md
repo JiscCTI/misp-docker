@@ -77,3 +77,24 @@ have been created / updated and can be imported into the Identity Provider manua
 Once MISP has been enrolled into the Identify Provider, access `https://{FQDN}:{HTTPS_PORT}` and you
 will be redirected to authenticate against the Identity Provider before being redirected back to
 MISP.
+
+## High Availability
+
+With some additional configuration the Shibboleth container can be run in a high availability mode.
+
+* All `misp-shibb-sp` and `misp-web` containers need to share the same `/etc/shibboleth` volume.
+* Each pair of `misp-shibb-sp` and `misp-web` containers need to share a unique `/run/shibboleth`
+    volume.
+* Each `misp-shibb-sp` container needs a unique `/var/log/shibboleth` volume.
+
+For example, an instance running in AWS's eu-west-2 region across three availability zones and using
+EFS for persistent storage could be configured like this:
+
+| Container | Region | AZ | `/etc/shibboleth` | `/run/shibboleth` | `/var/log/shibboleth` |
+|-----------|--------|----|-------------------|-------------------|-----------------------|
+| `misp-shibb-sp` | eu-west-2 | az1 | `EFS://shibb/etc` | `EFS://shibb/run/euw2-az1` | `EFS://shibb/log/euw2-az1` |
+| `misp-web` | eu-west-2 | az1 | `EFS://shibb/etc` | `EFS://shibb/run/euw2-az1` | N/A |
+| `misp-shibb-sp` | eu-west-2 | az2 | `EFS://shibb/etc` | `EFS://shibb/run/euw2-az2` | `EFS://shibb/log/euw2-az2` |
+| `misp-web` | eu-west-2 | az2 | `EFS://shibb/etc` | `EFS://shibb/run/euw2-az2` | N/A |
+| `misp-shibb-sp` | eu-west-2 | az3 | `EFS://shibb/etc` | `EFS://shibb/run/euw2-az3` | `EFS://shibb/log/euw2-az3` |
+| `misp-web` | eu-west-2 | az3 | `EFS://shibb/etc` | `EFS://shibb/run/euw2-az3` | N/A |

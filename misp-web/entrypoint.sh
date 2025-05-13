@@ -603,6 +603,7 @@ block_default_credentials
 # Obtain startup lock
 hostname >$STARTUP_LOCK
 echo "Obtained startup lock."
+
 # Initialise container
 set_env_vars
 restore_persistence
@@ -616,9 +617,11 @@ on_start
 # Ensure database schema and objects are up to date
 $CAKE Admin runUpdates
 /opt/scripts/update_objects.sh
+
 # Release startup lock
-rm /var/www/MISPData/.init_lock
+rm $STARTUP_LOCK
 echo "Released startup lock."
+
 # Start MISP
 echo "Starting MISP at $MISP_URL..."
 # shellcheck disable=SC1091

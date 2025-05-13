@@ -104,10 +104,35 @@ on_start() {
     chown shibd: /etc/shibboleth/*
 }
 
+# Check for startup lock
+STARTUP_LOCK=/run/shibboleth/.init_lock
+while [ -f "$STARTUP_LOCK" ]; do
+    if [ "$(hostname)" == "$(cat $STARTUP_LOCK)" ]; then
+        echo "Self-referencing startup lock found, clearing..."
+        rm $STARTUP_LOCK
+    elif ping -q -c 1 "$(cat $STARTUP_LOCK)" >/dev/null; then
+        # Random timeout between 3 and 10 seconds
+        TIMEOUT=$((RANDOM % 8 + 3))
+        echo "Valid startup lock for $(cat $STARTUP_LOCK) found, waiting $TIMEOUT seconds..."
+        sleep $TIMEOUT
+    else
+        echo "Invalid startup lock for $(cat $STARTUP_LOCK) found, clearing..."
+        rm $STARTUP_LOCK
+    fi
+done
+# Obtain startup lock
+hostname >$STARTUP_LOCK
+echo "Obtained startup lock."
+
 set_env_vars
 if [ ! -f /etc/shibboleth/.configured ]; then
     initial_config
 fi
 on_start
+
+# Release startup lock
+rm $STARTUP_LOCK
+echo "Released startup lock."
+
 echo "Starting shibd in foreground"
 /usr/sbin/shibd -F

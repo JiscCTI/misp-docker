@@ -9,6 +9,29 @@
 
 set -e
 
+block_default_credentials() {
+    if [ "$GPG_PASSPHRASE" == "misp" ]; then
+        echo "The GPG_PASSPHRASE environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    if [ "$MYSQL_PASSWORD" == "misp" ]; then
+        echo "The MYSQL_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    if [ "$REDIS_PASSWORD" == "misp" ]; then
+        echo "The REDIS_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    if [ "$SMTP_PASSWORD" == "misp" ]; then
+        echo "The SMTP_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    if [ "$WORKERS_PASSWORD" == "misp" ]; then
+        echo "The WORKERS_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+}
+
 set_env_vars() {
     if [[ "$HTTPS_PORT" -eq 443 ]]; then
         MISP_URL="https://$FQDN"
@@ -211,6 +234,12 @@ initial_config() {
     cd /var/www/ || exit 1
     cp -a MISP/app/Config/bootstrap.default.php MISP/app/Config/bootstrap.php
     cp /opt/scripts/core.php MISP/app/Config/core.php
+    echo "Generating encryption cipher seed value..."
+    {
+        echo "Configure::write('Security.cipherSeed', '$(python3 /opt/scripts/generate_cipher_seed.py)');"
+        echo "//Comment the following out if you do not with to use the background workers (not recommended)"
+        echo "require_once '/var/www/MISP/app/Vendor/autoload.php';"
+    } >>MISP/app/Config/core.php
     cp -a MISP/app/Config/config.default.php MISP/app/Config/config.php
 
     echo "Setting file ownership and permissions..."
@@ -220,10 +249,10 @@ initial_config() {
     chmod -R 750 /var/www/MISP/app/Config/
 
     $CAKE Admin setSetting "MISP.server_settings_skip_backup_rotate" true
-    setup_redis
     echo "Generating encryption salt value..."
     $CAKE Admin setSetting "Security.salt" "$(openssl rand -base64 32)" >/dev/null 2>&1
     echo 'Setting "Security.salt" changed to "[REDACTED]"'
+    setup_redis
     $CAKE userInit -q >/dev/null 2>&1
     $CAKE Admin setSetting "Security.advanced_authkeys" false
     python3 /opt/scripts/set_auth_key.py -k "$($CAKE Admin getAuthKey admin@admin.test | tr -d "[:blank:]" 2>&1)" >/dev/null 2>&1
@@ -569,6 +598,8 @@ while [ -f "$STARTUP_LOCK" ]; do
         rm $STARTUP_LOCK
     fi
 done
+
+block_default_credentials
 # Obtain startup lock
 hostname >$STARTUP_LOCK
 echo "Obtained startup lock."

@@ -195,7 +195,7 @@ Configure::write('Session', array(
 // Set session cookie SameSite parameter to Lax if this param is supported and no default value is set
 if (PHP_VERSION_ID >= 70300 && empty(ini_get('session.cookie_samesite'))) {
     Configure::write('Session.ini', [
-        'session.cookie_samesite' => 'Lax'
+        'session.cookie_samesite' => 'Strict'
     ]);
 }
 
@@ -203,16 +203,6 @@ if (PHP_VERSION_ID >= 70300 && empty(ini_get('session.cookie_samesite'))) {
  * The level of CakePHP security.
  */
 Configure::write('Security.level', 'medium');
-
-/**
- * A random string used in security hashing methods.
- */
-Configure::write('Security.salt', 'Rooraenietu8Eeyo<Qu2eeNfterd-dd+');
-
-/**
- * A random numeric string (digits only) used to encrypt/decrypt strings.
- */
-Configure::write('Security.cipherSeed', '395786739573056621429506834955');
 
 /**
  * Apply timestamps with the last modified time to static assets (js, css, images).
@@ -300,7 +290,3 @@ Cache::config('_cake_model_', array(
 	'serialize' => ($engine === 'File'),
 	'duration'  => $duration
 ));
-
-
-//Comment the following out if you do not with to use the background workers (not recommended)
-require_once '/var/www/MISP/app/Vendor/autoload.php';

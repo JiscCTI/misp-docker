@@ -67,6 +67,8 @@ Quick Start requires:
 
 * Python >= 3.6 with pip >= 21.2, and
 * Dotenv (can be installed with `python3 -m pip install --user python-dotenv`).
+* Defused XML (can be installed with `python3 -m pip install --user defusedxml`)
+* Requests (can be installed with `python3 -m pip install --user requests`).
 
 For a more customised test instance see the [misp-web](./docs/misp-web.md) documentation.
 

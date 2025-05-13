@@ -1,9 +1,16 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
+
+block_default_credentials() {
+    if [ "$WORKERS_PASSWORD" == "misp" ]; then
+        echo "The WORKERS_PASSWORD environment variable must be overwritten in .env for the MISP workers to start"
+        exit 1
+    fi
+}
 
 restore_persistence() {
     echo "Restoring persistent file storage..."
@@ -59,6 +66,7 @@ if [ ! -f /var/www/MISPData/.configured ]; then
     done
 fi
 
+block_default_credentials
 restore_persistence
 mkdir -p /var/www/MISPData/tmp/logs
 WORKERS_PASSWORD="${WORKERS_PASSWORD:-misp}"

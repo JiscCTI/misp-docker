@@ -29,9 +29,9 @@ RUN apt-get update &&\
     mkdir -p /mnt/cache/matplotlib &&\
     chown -R nobody:nogroup /mnt/cache
 
-VOLUME [ "/mnt/cache/" ]
 COPY --from=build /misp_modules/ /misp_modules/
 WORKDIR /misp_modules/bin/
 ENTRYPOINT ["./misp-modules", "-l", "0.0.0.0"]
 HEALTHCHECK --start-period=30s --timeout=3s CMD ["sh", "-c", "curl -fk http://127.0.0.1:6666/modules || exit 1"]
 USER nobody
+VOLUME [ "/mnt/cache/" ]

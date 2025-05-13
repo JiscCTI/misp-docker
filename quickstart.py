@@ -116,7 +116,7 @@ run(["/usr/bin/docker", "pull", "mysql/mysql-server:8.0"], check=True)
 print("Building MISP Modules image...")
 chdir(join(home_directory, "misp-modules"))
 MODULES_VERSION = get_latest_from_github_tags(
-    repository="MISP/misp-modules", max_major=2
+    repository="MISP/misp-modules", max_major=3
 )
 run(
     [
@@ -136,7 +136,7 @@ run(
 
 print("Building MISP Web image...")
 chdir(join(home_directory, "misp-web"))
-WEB_VERSION = get_latest_from_github_releases(repository="MISP/MISP", max_major=2)
+WEB_VERSION = get_latest_from_github_releases(repository="MISP/MISP", max_major=2, max_minor=5)
 run(
     [
         "/usr/bin/docker",

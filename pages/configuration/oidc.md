@@ -3,6 +3,7 @@ SPDX-FileCopyrightText: 2023 Science and Technology Facilities Council (STFC)
 SPDX-FileCopyrightText: 2024 Jisc Services Limited
 SPDX-FileContributor: Iain Brown (Jisc Services Limited)
 SPDX-FileContributor: James Acris (STFC)
+SPDX-FileContributor: James Ellor (Jisc Services Limited)
 SPDX-FileContributor: Joe Pitt (Jisc Services Limited)
 
 SPDX-License-Identifier: GPL-3.0-only

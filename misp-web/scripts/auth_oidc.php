@@ -1,11 +1,11 @@
-<!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
-SPDX-FileContributor: James Acris
-SPDX-FileContributor: Joe Pitt
-
-SPDX-License-Identifier: GPL-3.0-only
--->
 <?php
+/**
+ * SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
+ * SPDX-FileContributor: James Acris
+ * SPDX-FileContributor: Joe Pitt
+ *
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
 include '/var/www/MISPData/config/config.php';
 
 $config["Security"]["auth"] = array("OidcAuth.Oidc");

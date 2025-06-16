@@ -494,6 +494,7 @@ on_start() {
     else
         if [ "$AUTH_METHOD" != misp ]; then
             echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp', 'oidc' or 'shibb'"
+            echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp', 'oidc' or 'shibb'"
         fi
         echo "Enabling MISP Native Authentication"
         sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Strict\"/" /usr/local/etc/php/php.ini

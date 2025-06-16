@@ -21,6 +21,7 @@ nav:
   - Configuration:
     - General: configuration/general.md
     - Single Sign On:
+      - Azure Entra ID: configuration/entra-id.md
       - OpenID Connect (OIDC): configuration/oidc.md
       - SAML2/Shibboleth: configuration/shibb.md  
     - Splunk: splunk.md

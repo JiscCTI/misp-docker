@@ -159,9 +159,10 @@ on each start of `misp-web` protected by `GPG_PASSPHRASE`.
 
 Details about configuring Single Sign On (SSO) can be found on the pages below:
 
-- [Microsoft Entra ID](../configuration/entra-id.md) (formerly Azure Active Directory, or AAD).
-- [OpenID Connect (OIDC)](../configuration/oidc.md).
-- [Shibboleth / SAML 2.0](../configuration/shibb.md).
+- [OpenID Connect (OIDC)](./oidc.md), including:
+    - [Microsoft Entra ID](./entra-id.md) (formerly Azure Active Directory).
+    - [Keycloak](./keycloak.md)
+- [Shibboleth / SAML 2.0](./shibb.md).
 
 ## Log Forwarding to Splunk
 

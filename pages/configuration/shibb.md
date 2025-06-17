@@ -18,13 +18,18 @@ login across a range of services from different providers.
 
 ## Environment Variables
 
-To use Shibboleth for authentication you need to add some environment variables to your `.env` file.
-You only need to add those that you will change from their default value. The items in **bold** are
-highly recommended to be changed.
+To use Shibboleth for authentication you need to add some environment variables to your `misp-web`
+container:
+
+1. In your `.env` file:
+    1. Add the line `AUTH_METHOD=shibb`.
+    2. Optionally, if your OP enforces Multi-Factor Authentication (MFA), add `REQUIRE_TOTP=false`.
+2. Create a new file called `shibb.env`,
+3. In `shibb.env` add any settings that are being changed from their default values (below).
+    * The items in **bold** are highly recommended.
 
 | Option Name | Description | Default Value |
 |-------------|-------------|---------------|
-| **AUTH_METHOD** | The authentication engine to use, must be changed to `shibb`. | `misp` |
 | SHIBB_ADMIN_ROLE | The shibboleth group / role to be granted the MISP admin role. | `misp-admin` |
 | SHIBB_BLOCK_ORG_CHANGE | If shibboleth should be prevented from changing a user's organisation. | `false` |
 | SHIBB_BLOCK_ROLE_CHANGE | If shibboleth should be prevented from changing a user's role. | `false` |
@@ -53,7 +58,7 @@ highly recommended to be changed.
 To use shibboleth, use the
 [docker-compose-shibb.yml⁠](https://github.com/JiscCTI/misp-docker/blob/main/docker-compose-shibb.yml)
 as your `docker-compose.yml` file. The compose file contains all of the MISP service dependencies
-related to using shibboleth. 
+related to using shibboleth.
 
 ## Identity Provider (IdP) Metadata
 

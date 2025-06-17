@@ -77,7 +77,7 @@ all of these settings.
 | SPLUNK_INDEX | The index logs should be written to. | `default` |
 | SPLUNK_PASSWORD | A password to use when creating the admin account on the Splunk Universal Forwarder. | `ChangeMeChangeMeChangeMe` |
 
-## Add Splunk Forwarder 
+## Add Splunk Forwarder
 
 At the bottom of `docker-compose.yml`, add:
 

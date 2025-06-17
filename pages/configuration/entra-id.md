@@ -76,11 +76,11 @@ MISP needs to be registered in Entra ID as an Enterprise Application.
 1. Click **{Directory Name} | Groups** in the breadcrumb at the top of the page.
 2. Click **Add** then **App Registration**.
 3. Set **Name** in line with local policies, for example: *Example University MISP*.
-4. In most cases you should leave **Supported account types** set to 
+4. In most cases you should leave **Supported account types** set to
     **Accounts in this organizational directory only**.
 5. Under **Redirect URI**:
     1. Set **Select Platform** to **Web**.
-    2. Set the URL to your MISP instance's base URL plus `/users/login`, e.g. 
+    2. Set the URL to your MISP instance's base URL plus `/users/login`, e.g.
         `https://misp.example.ac.uk/users/login`.
 6. Click **Register**.
 7. Note the **Application (client) ID**.

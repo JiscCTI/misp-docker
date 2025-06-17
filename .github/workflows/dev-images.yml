@@ -73,7 +73,7 @@ jobs:
           echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ github.event_name }}_${{ github.sha }} using upstream version v${{ env.SHIBB_VERSION }}"
           echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ github.event_name }}_${{ github.sha }} using upstream version ${{ env.MISP_VERSION }}"
           echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ github.event_name }}_${{ github.sha }} using upstream version ${{ env.MISP_VERSION }}"
-      
+    
       # Build / Pull Images
       - id: build_modules
         name: Build misp-modules

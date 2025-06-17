@@ -117,7 +117,7 @@ Once your certificate has been issued, you will need two files:
 1. Public Certificate - save as `./tls/misp.crt` in the `misp_custom` volume:
     * Some CAs will provide you with a "certificate with chain" file, if so, download this.
     * If the "certificate with chain" file is not available from your CA, concatenate each of the
-        `.crt` files that form the chain of trust, into one file putting your certificate first, 
+        `.crt` files that form the chain of trust, into one file putting your certificate first,
         then each intermediate certificate in order up to but excluding the CA's root certificate.
 1. **Unencrypted** private key - save as `./tls/misp.key` in the `misp_custom` volume.
 

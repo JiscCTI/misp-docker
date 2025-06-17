@@ -10,7 +10,7 @@ SPDX-License-Identifier: GPL-3.0-only
 -->
 # OpenID Connect (OIDC) Authentication
 
-MISP can use OpenID Connect (OIDC) to authenticate users. Instruction on setting this up are 
+MISP can use OpenID Connect (OIDC) to authenticate users. Instruction on setting this up are
 detailed below.
 
 ## Configure the Identity Provider (IdP)

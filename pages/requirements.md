@@ -14,7 +14,7 @@ theoretically work using Docker Desktop running in Windows Subsystem for Linux (
 
 ## Hardware Requirements
 
-Due to the nature of MISP, it is difficult to give definitive numbers for what hardware to use. 
+Due to the nature of MISP, it is difficult to give definitive numbers for what hardware to use.
 Resource requirements will depend on the number of feeds coming in, the number of servers being
 synchronised with and the number of security tools integrated into MISP.
 

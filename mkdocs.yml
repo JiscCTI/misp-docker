@@ -24,9 +24,9 @@ nav:
       - Keycloak: configuration/keycloak.md
       - Microsoft Entra ID: configuration/entra-id.md
       - OpenID Connect (OIDC): configuration/oidc.md
-      - SAML2/Shibboleth: configuration/shibb.md  
+      - SAML2/Shibboleth: configuration/shibb.md
     - Splunk: splunk.md
-    - Customisation: configuration/custom.md 
+    - Customisation: configuration/custom.md
   - First Start: first_start.md
   - Management:
     - Backups: management/backups.md
@@ -41,5 +41,5 @@ nav:
       - misp-web: dev/misp-web.md
       - misp-workers: dev/misp-workers.md
     - GitHub Actions: dev/gh-actions.md
-theme: 
+theme:
   name: material

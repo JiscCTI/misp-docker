@@ -4,7 +4,7 @@
  * SPDX-FileContributor: Joe Pitt
  *
  * SPDX-License-Identifier: MIT
- * 
+ *
  * Changes Made: Make autoload path absolute
  */
 /**

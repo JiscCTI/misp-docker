@@ -13,6 +13,8 @@ SPDX-License-Identifier: GPL-3.0-only
 MISP can use OpenID Connect (OIDC) to authenticate users. Instruction on setting this up are 
 detailed below.
 
+For Microsoft Entra-ID see the [dedicated page](./entra-id.md).
+
 ## Configure the Identity Provider (IdP)
 
 To setup MISP you need to have created MISP as a client in your OIDC Identity Provider (IdP). This 
@@ -57,7 +59,7 @@ authenticated, the IdP will redirect the user back to MISP.
 
 **Note:** You must be a realm admin in Keycloak in order to follow this guide. 
 
-**Note:** This guide is based on the Keycloak admin console in version 26.
+**Note:** This guide is based on the Keycloak admin console in version 26.2.5.
 
 Ensure you are in the right Realm, then:
 
@@ -72,22 +74,23 @@ Ensure you are in the right Realm, then:
 5. On the **Capability config** screen use:
     1. **Client authentication:** On
     2. **Authorization:** On
-    3. **Authentication flow:** Standard flow (Direct access grants is ticked by default, but is not
-        used so can be unticked).
+    3. **Authentication flow:** Standard flow (Direct access grants is ticked by default in some
+        versions, but is not used so can be unticked).
 6. Click **Next**.
 7. On the **Login settings** screen use:
     1. Root URL: `https://{FQDN}[:{HTTPS_PORT}]`
-    2. Home URL: /
-    3. Valid redirect URIs: /users/login
+    2. Home URL: `/`
+    3. Valid redirect URIs: `/users/login`
     4. Valid post logout redirect URIs: (blank)
-    5. Web origins: +
+    5. Web origins: `+`
 8. Click **Save**.
-9. On the **Credentials** tab:
+9. Under **Logout settings** disable **Front channel logout**.
+10. On the **Credentials** tab:
     1. Change **Client Authenticator** to **Signed Jwt with Client Secret**.
-    2. Click the **Copy to clipboard** icon next to **Client Secret** (override `OIDC_CLIENT_SECRET`
+    2. Click **Save** then **Yes**.
+    3. Click the **Copy to clipboard** icon next to **Client Secret** (override `OIDC_CLIENT_SECRET`
         with this value as above).
-    3. Click **Save** then **Yes**.
-10. On the **Roles** tab:
+11. On the **Roles** tab:
     1. Click **Create role**.
     2. Set **Role name** to `misp-admin` (can be different, override `OIDC_ADMIN_ROLE` as above).
     3. Optionally, set **Role description**.
@@ -96,25 +99,37 @@ Ensure you are in the right Realm, then:
     6. Repeat for `misp-orgadmin` (`OIDC_ORG_ADMIN_ROLE`), `misp-publisher` (`OIDC_PUBLISHER_ROLE`),
         `misp-readonly` (`OIDC_READONLY_ROLE`), `misp-sync` (`OIDC_SYNC_ROLE`), and `misp-user`
         (`OIDC_USER_ROLE`).
-11. On the **Client scopes** tab:
+12. On the **Client scopes** tab:
     1. Click **misp-dedicated** (will be {Client ID}-dedicated if different Client ID was set).
     2. Click **Scope**.
     3. Turn **Full scope allowed** Off (Only sends MISP MISP-specific roles).
-    4. Click **Client details** (top of window).
-12. On the **Advanced** tab:
-    1. Optionally, in the **Fine grain OpenID Connect configuration** section:
-        1. Set **Logo URL** to **https://avatars.githubusercontent.com/u/4134875?s=128&v=4**.
+    4. Click **Mappers**.
+    5. Click **Add predefined mapper**.
+    6. Tick **Client roles** and click **Add**.
+    7. Click **client roles** and in the next window:
+        1. Set **Client ID** to `misp` (or your chosen Client ID).
+        2. Set **Token Claim Name** to `roles`.
+        3. Enable **Add to ID token**.
+        4. Disable **Add to access token**.
+        5. Click **Save**.
+    84. Click **Client details** (top of window).
+13. On the **Advanced** tab:
+    1. In the **Fine grain OpenID Connect configuration** section:
+        1. Optionally, Set **Logo URL** to **https://avatars.githubusercontent.com/u/4134875?s=128&v=4**.
+        2. Set **Request object signature algorithm**  to **HS256**.
         2. Click **Save**.
     2. In the **Advanced settings** section:
         1. Set **Proof Key for Code Exchange Code Challenge Method** to **S256**.
         2. Click **Save**.
-13. On the **Users** page (left hand menu).
+14. On the **Users** page (left hand menu).
     1. Click on a user's username.
     2. Click on to the **Role mappings** tab.
     3. Click **Assign role**.
-    4. Change **Filter by realm roles** to **Filter by clients**
+    4. Ensure **Filter by clients** is selected (some version default to by realm).
     5. In **Search by role name** type **misp** (or the prefix you used for your roles) and click
         the Search icon.
     6. Tick the box next to the role to assign the user, e.g. **misp-admin**.
     7. Click **Assign**.
     8. Repeat as needed for each user.
+15. Go to **Realm Settings** (left hand side) and copy the link **OpenID Endpoint Configuration**
+    use this as `OIDC_PROVIDER`.

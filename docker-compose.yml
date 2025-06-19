@@ -55,7 +55,7 @@ services:
     healthcheck:
       test: redis-cli -e ping || exit 1
     hostname: ${REDIS_HOST:-misp_redis}
-    image: redis:7
+    image: redis:8
     restart: unless-stopped
   web:
     depends_on:

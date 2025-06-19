@@ -110,7 +110,7 @@ if exists(persistent_storage_directory):
 
 print("Pulling external images...")
 run(["/usr/bin/docker", "pull", "clamav/clamav:1.0_base"], check=True)
-run(["/usr/bin/docker", "pull", "redis:7"], check=True)
+run(["/usr/bin/docker", "pull", "redis:8"], check=True)
 run(["/usr/bin/docker", "pull", "mysql/mysql-server:8.0"], check=True)
 
 print("Building MISP Modules image...")

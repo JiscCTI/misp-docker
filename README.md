@@ -36,7 +36,7 @@ services:
 
 * ClamAV TCP endpoint. Tested against Docker image: `clamav/clamav:1.0_base`.
 * MySQL/MariaDB server (5.7 or 8.0). Tested against Docker image: `mysql/mysql-server:8.0`.
-* Redis server (v6 or v7). Tested against Docker Image: `redis:7`.
+* Redis server (6, 7 or 8). Tested against Docker Image: `redis:8`.
 * An SMTP service. Tested against Postfix.
 
 ## System Requirements

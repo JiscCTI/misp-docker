@@ -30,6 +30,11 @@ block_default_credentials() {
         echo "The WORKERS_PASSWORD environment variable must be overwritten in .env for MISP to start"
         exit 1
     fi
+    
+    if [ "$AUTH_METHOD" == "oidc" ] && [ "$OIDC_CLIENT_SECRET" == "misp" ]; then
+        echo "The OIDC_CLIENT_SECRET environment variable must be overwritten in oidc.env for MISP to start"
+        exit 1
+    fi
 }
 
 check_gnupg() {

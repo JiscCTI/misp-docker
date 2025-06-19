@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -37,15 +37,12 @@ services:
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
-      - REDIS_BACKEND=${MODULES_REDIS:-${REDIS_HOST:-misp_redis}}
+      - REDIS_BACKEND=${REDIS_HOST:-misp_redis}
       - REDIS_DATABASE=${REDIS_MODULES_DB:-1}
-      - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PW=${REDIS_PASSWORD:-misp}
     hostname: ${MODULES_HOSTNAME:-misp_modules}
-    image: jisccti/misp-modules:latest
+    image: jisccti/misp-modules-dev:latest
     restart: unless-stopped
-    volumes:
-      - ./persistent/${COMPOSE_PROJECT_NAME}/modules_cache/:/mnt/cache
   redis:
     entrypoint: redis-server --loglevel warning --requirepass ${REDIS_PASSWORD:-misp}
     environment:
@@ -65,13 +62,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      shibb:
-        condition: service_healthy
-    env_file:
-      - path: shibb.env
-        required: true
     environment:
-      - AUTH_METHOD=${AUTH_METHOD:-shibb}
+      - AUTH_METHOD=${AUTH_METHOD:-misp}
       - CLAMAV_HOSTNAME=${CLAMAV_HOSTNAME:-misp_clamav}
       - FQDN=${FQDN:-misp.local}
       - GPG_PASSPHRASE=${GPG_PASSPHRASE:-misp}
@@ -87,8 +79,6 @@ services:
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
       - REDIS_MISP_DB=${REDIS_MISP_DB:-2}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-misp}
-      - REDIS_PORT=${REDIS_PORT:-6379}
-      - REDIS_TLS=${REDIS_TLS:-false}
       - REDIS_WORKER_DB=${REDIS_WORKER_DB:-3}
       - REQUIRE_TOTP=${REQUIRE_TOTP:-true}
       - SMTP_HOSTNAME=${SMTP_HOSTNAME:-localhost}
@@ -99,20 +89,15 @@ services:
       - WORKERS_HOSTNAME=${WORKERS_HOSTNAME:-misp_workers}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
     hostname: ${MISP_HOSTNAME:-misp_web}
-    image: jisccti/misp-web:latest
+    image: jisccti/misp-web-dev:latest
     ports:
       - ${HTTP_PORT:-80}:80
       - ${HTTPS_PORT:-443}:443
     restart: unless-stopped
     volumes:
-      #- /etc/letsencrypt/archive/MISP:/etc/letsencrypt/archive/MISP:ro
-      #- /etc/letsencrypt/live/MISP:/etc/letsencrypt/live/MISP:ro
-      - ./persistent/${COMPOSE_PROJECT_NAME}/custom/:/opt/misp_custom
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData
       - ./persistent/${COMPOSE_PROJECT_NAME}/gpg/:/var/www/MISPGnuPG
       - ./persistent/${COMPOSE_PROJECT_NAME}/tls/:/etc/ssl/private
-      - ./persistent/${COMPOSE_PROJECT_NAME}/shibb/etc:/etc/shibboleth
-      - ./persistent/${COMPOSE_PROJECT_NAME}/shibb/run:/run/shibboleth
   workers:
     depends_on:
       web:
@@ -123,26 +108,10 @@ services:
       - ORG_NAME=${ORG_NAME:-ORGNAME}
       - ORG_UUID=${ORG_UUID:-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
       - REDIS_HOST=${REDIS_HOST:-misp_redis}
-      - REDIS_PORT=${REDIS_PORT:-6379}
       - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
     hostname: ${WORKERS_HOSTNAME:-misp_workers}
-    image: jisccti/misp-workers:latest
+    image: jisccti/misp-workers-dev:latest
     restart: unless-stopped
     volumes:
-      - ./persistent/${COMPOSE_PROJECT_NAME}/custom/:/opt/misp_custom
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData
       - ./persistent/${COMPOSE_PROJECT_NAME}/gpg/:/var/www/MISPGnuPG
-  shibb:
-    env_file:
-      - path: shibb.env
-        required: true
-    environment:
-      - FQDN=${FQDN:-misp.local}
-      - HTTPS_PORT=${HTTPS_PORT:-443}
-    hostname: ${SHIBB_HOSTNAME:-misp_shibb}
-    image: jisccti/misp-shibb-sp:latest
-    restart: unless-stopped
-    volumes:
-      - ./persistent/${COMPOSE_PROJECT_NAME}/shibb/etc:/etc/shibboleth
-      - ./persistent/${COMPOSE_PROJECT_NAME}/shibb/logs:/var/log/shibboleth
-      - ./persistent/${COMPOSE_PROJECT_NAME}/shibb/run:/run/shibboleth

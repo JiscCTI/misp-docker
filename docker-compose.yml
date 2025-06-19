@@ -55,7 +55,7 @@ services:
     healthcheck:
       test: redis-cli -e ping || exit 1
     hostname: ${REDIS_HOST:-misp_redis}
-    image: redis:7
+    image: redis:8
     restart: unless-stopped
   web:
     depends_on:
@@ -65,6 +65,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    env_file:
+      - path: oidc.env
+        required: false
     environment:
       - AUTH_METHOD=${AUTH_METHOD:-misp}
       - CLAMAV_HOSTNAME=${CLAMAV_HOSTNAME:-misp_clamav}
@@ -86,15 +89,6 @@ services:
       - REDIS_TLS=${REDIS_TLS:-false}
       - REDIS_WORKER_DB=${REDIS_WORKER_DB:-3}
       - REQUIRE_TOTP=${REQUIRE_TOTP:-true}
-      - SHIBB_ADMIN_ROLE=${SHIBB_ADMIN_ROLE:-misp-admin}
-      - SHIBB_BLOCK_ORG_CHANGE=${SHIBB_BLOCK_ORG_CHANGE:-false}
-      - SHIBB_BLOCK_ROLE_CHANGE=${SHIBB_BLOCK_ROLE_CHANGE:-false}
-      - SHIBB_DEFAULT_ROLE=${SHIBB_DEFAULT_ROLE:-false}
-      - SHIBB_ORG_ADMIN_ROLE=${SHIBB_ORG_ADMIN_ROLE:-misp-orgadmin}
-      - SHIBB_PUBLISHER_ROLE=${SHIBB_PUBLISHER_ROLE:-misp-publisher}
-      - SHIBB_READONLY_ROLE=${SHIBB_READONLY_ROLE:-misp-readonly}
-      - SHIBB_SYNC_ROLE=${SHIBB_SYNC_ROLE:-misp-sync}
-      - SHIBB_USER_ROLE=${SHIBB_USER_ROLE:-misp-user}
       - SMTP_HOSTNAME=${SMTP_HOSTNAME:-localhost}
       - SMTP_PASSWORD=${SMTP_PASSWORD:-misp}
       - SMTP_PORT=${SMTP_PORT:-587}

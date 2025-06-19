@@ -117,7 +117,7 @@ Once your certificate has been issued, you will need two files:
 1. Public Certificate - save as `./tls/misp.crt` in the `misp_custom` volume:
     * Some CAs will provide you with a "certificate with chain" file, if so, download this.
     * If the "certificate with chain" file is not available from your CA, concatenate each of the
-        `.crt` files that form the chain of trust, into one file putting your certificate first, 
+        `.crt` files that form the chain of trust, into one file putting your certificate first,
         then each intermediate certificate in order up to but excluding the CA's root certificate.
 1. **Unencrypted** private key - save as `./tls/misp.key` in the `misp_custom` volume.
 
@@ -159,11 +159,10 @@ on each start of `misp-web` protected by `GPG_PASSPHRASE`.
 
 Details about configuring Single Sign On (SSO) can be found on the pages below:
 
-- Microsoft Entra ID (formerly Azure Active Directory, or AAD) 
-    - This integration is awaiting upstream fixes, however SSO with Entra ID may be possible using
-        OIDC.
-- [OpenID Connect (OIDC)](../configuration/oidc.md)
-- [Shibboleth / SAML 2.0](../configuration/shibb.md).
+- [OpenID Connect (OIDC)](./oidc.md), including:
+    - [Microsoft Entra ID](./entra-id.md) (formerly Azure Active Directory).
+    - [Keycloak](./keycloak.md)
+- [Shibboleth / SAML 2.0](./shibb.md).
 
 ## Log Forwarding to Splunk
 

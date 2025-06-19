@@ -1,5 +1,4 @@
 <?php
-
 /**
  * SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
  * SPDX-FileContributor: Joe Pitt

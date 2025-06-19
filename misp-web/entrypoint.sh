@@ -30,203 +30,137 @@ block_default_credentials() {
         echo "The WORKERS_PASSWORD environment variable must be overwritten in .env for MISP to start"
         exit 1
     fi
-}
-
-set_env_vars() {
-    if [[ "$HTTPS_PORT" -eq 443 ]]; then
-        MISP_URL="https://$FQDN"
-    else
-        MISP_URL="https://$FQDN:$HTTPS_PORT"
+    
+    if [ "$AUTH_METHOD" == "oidc" ] && [ "$OIDC_CLIENT_SECRET" == "misp" ]; then
+        echo "The OIDC_CLIENT_SECRET environment variable must be overwritten in oidc.env for MISP to start"
+        exit 1
     fi
 }
 
-setup_objects() {
-    cd /var/www/MISPData/files/ || exit 1
-    echo "Cloning misp-decaying-models..."
-    git clone --quiet https://github.com/MISP/misp-decaying-models misp-decaying-models
-    echo "Cloning misp-galaxy..."
-    git clone --quiet https://github.com/MISP/misp-galaxy misp-galaxy
-    echo "Cloning misp-objects..."
-    git clone --quiet https://github.com/MISP/misp-objects misp-objects
-    echo "Cloning misp-workflow-blueprints..."
-    git clone --quiet https://github.com/MISP/misp-workflow-blueprints misp-workflow-blueprints
-    echo "Cloning noticelists..."
-    git clone --quiet https://github.com/MISP/misp-noticelist noticelists
-    echo "Cloning taxonomies..."
-    git clone --quiet https://github.com/MISP/misp-taxonomies taxonomies
-    echo "Cloning warninglists..."
-    git clone --quiet https://github.com/MISP/misp-warninglists warninglists
-    cd /var/www/ || exit 1
+check_gnupg() {
+    MISP_EMAIL_ADDRESS="${MISP_EMAIL_ADDRESS:-misp@misp.local}"
+    mkdir -p /opt/misp_custom/gpg/
+    chown -R www-data: /opt/misp_custom/gpg/
+    chmod 700 /opt/misp_custom/gpg/
+    chown -R www-data: /var/www/MISPGnuPG
+    chmod 700 /var/www/MISPGnuPG
+    if [ -r /var/www/MISPGnuPG/import.asc ]; then
+        set +e
+        echo "[Deprecated] /var/www/MISPGnuPG/import.asc found, importing..."
+        echo "Deprecation Warning: use /opt/misp_custom/gpg/import.asc instead"
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /var/www/MISPGnuPG/import.asc"
+        echo "Setting trust level for imported GnuPG key..."
+        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /var/www/MISPGnuPG/import.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
+        set -e
+    fi
+    if [ -r /opt/misp_custom/gpg/import.asc ]; then
+        set +e
+        echo "/opt/misp_custom/gpg/import.asc found, importing..."
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /opt/misp_custom/gpg/import.asc"
+        echo "Setting trust level for imported GnuPG key..."
+        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /opt/misp_custom/gpg/import.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
+        set -e
+    elif [ -r /opt/misp_custom/gpg/export.asc ]; then
+        set +e
+        echo "/opt/misp_custom/gpg/export.asc found, importing..."
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /opt/misp_custom/gpg/export.asc"
+        echo "Setting trust level for imported GnuPG key..."
+        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /opt/misp_custom/gpg/export.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
+        set -e
+    fi
+    echo "Checking for usable GnuPG Key..."
+    GPG_KEY=$(su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS 2>/dev/null")
+    if [[ "$GPG_KEY" != "-----BEGIN PGP PUBLIC KEY BLOCK-----"* ]]; then
+        echo "Generating new GnuPG Key"
+        echo "%echo Generating a default key
+        Key-Type: RSA
+        Key-Length: 4096
+        Subkey-Type: RSA
+        Name-Real: $MISP_EMAIL_NAME
+        Name-Comment: $FQDN
+        Name-Email: $MISP_EMAIL_ADDRESS
+        Expire-Date: 0
+        Passphrase: $GPG_PASSPHRASE
+        # Do a commit here, so that we can later print 'done'
+        %commit
+        %echo done" >/tmp/gen-key-script
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --gen-key /tmp/gen-key-script" >/dev/null 2>&1
+        rm /tmp/gen-key-script
+        echo "GnuPG key generated, exporting to webroot..."
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS>/var/www/MISP/app/webroot/gpg.asc"
+    else
+        echo "GnuPG key found, exporting to webroot..."
+        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS>/var/www/MISP/app/webroot/gpg.asc"
+    fi
+    echo "Exporting encrypted GnuPG private key to ASCII File"
+    su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode=loopback --yes --export-secret-key --armor $MISP_EMAIL_ADDRESS>/opt/misp_custom/gpg/export.asc"
+    chown -R www-data: /var/www/MISPGnuPG
+    chmod 700 /var/www/MISPGnuPG
 }
 
-setup_smtp() {
-    cd /var/www/MISPData/ || exit 1
-    echo "<?php
-    class EmailConfig {
-        public \$default = array(
-            'transport'     => 'Smtp',
-            'from'          => array('$MISP_EMAIL_ADDRESS' => '$MISP_EMAIL_NAME'),
-            'host'          => '$SMTP_HOSTNAME',
-            'port'          => $SMTP_PORT,
-            'timeout'       => 30,
-            'username'      => '$SMTP_USERNAME',
-            'password'      => '$SMTP_PASSWORD',
-            'client'        => null,
-            'log'           => false,
-            'tls'           => $SMTP_STARTTLS,
-        );
-    }" >config/email.php
-}
-
-restore_persistence() {
-    echo "Restoring persistent file storage..."
-    cd /var/www/ || exit 1
-    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files \
-        MISPData/images MISPData/tmp MISPData/acme/.well-known/acme-challenge
-
-    if [ ! -L MISP/app/Config ]; then
-        echo "Persisting config..."
-        if [ ! -f /var/www/MISPData/.configured ]; then
-            if [ "$(ls -A MISPData/config/)" ]; then
-                echo "MISP isn't configured but files exist - assuming files are valid"
-                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+check_tls_certificate() {
+    if [ -r /etc/letsencrypt/live/MISP/fullchain.pem ]; then
+        if [ -r /etc/letsencrypt/live/MISP/privkey.pem ]; then
+            PUBLIC=$(openssl x509 -noout -pubkey -in /etc/letsencrypt/live/MISP/fullchain.pem | openssl sha256 | awk '{print $2}')
+            PRIVATE=$(openssl pkey -pubout -in /etc/letsencrypt/live/MISP/privkey.pem | openssl sha256 | awk '{print $2}')
+            if [[ "$PUBLIC" == "$PRIVATE" ]]; then
+                echo "Found certificate to import in /etc/letsencrypt/live/MISP"
+                cp -f /etc/letsencrypt/live/MISP/fullchain.pem /etc/ssl/private/misp.crt
+                cp -f /etc/letsencrypt/live/MISP/privkey.pem /etc/ssl/private/misp.key
             else
-                mv MISP/app/Config/* MISPData/config/
+                echo "Found certificate in /etc/letsencrypt/live/MISP, but private key does not match"
             fi
+        else
+            echo "Found certificate in /etc/letsencrypt/live/MISP, but private key missing"
         fi
-        rm -rf MISP/app/Config
-        ln -s /var/www/MISPData/config/ /var/www/MISP/app/Config
-    else
-        echo "Config already persistent."
-    fi
-
-    if [ ! -L MISP/app/files ]; then
-        echo "Persisting app files..."
-        if [ ! -f /var/www/MISPData/.configured ]; then
-            if [ "$(ls -A MISPData/files/)" ]; then
-                echo "MISP isn't configured but files exist - assuming files are valid"
-                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+    elif [ -r /opt/misp_custom/tls/misp.crt ]; then
+        if [ -r /opt/misp_custom/tls/misp.key ]; then
+            PUBLIC=$(openssl x509 -noout -pubkey -in /opt/misp_custom/tls/misp.crt | openssl sha256 | awk '{print $2}')
+            PRIVATE=$(openssl pkey -pubout -in /opt/misp_custom/tls/misp.key | openssl sha256 | awk '{print $2}')
+            if [[ "$PUBLIC" == "$PRIVATE" ]]; then
+                echo "Found certificate to import in /opt/misp_custom/tls"
+                cp -f /opt/misp_custom/tls/misp.crt /etc/ssl/private/misp.crt
+                cp -f /opt/misp_custom/tls/misp.key /etc/ssl/private/misp.key
             else
-                mv MISP/app/files/* MISPData/files/
+                echo "Found certificate in /opt/misp_custom/tls, but private key does not match"
             fi
-            setup_objects
+        else
+            echo "Found certificate in /opt/misp_custom/tls, but private key missing"
         fi
-        rm -rf MISP/app/files
-        ln -s /var/www/MISPData/files/ /var/www/MISP/app/files
-    else
-        echo "App files already persistent."
     fi
 
-    if [ ! -L MISP/app/tmp ]; then
-        echo "Persisting temp files..."
-        if [ ! -f /var/www/MISPData/.configured ]; then
-            if [ "$(ls -A MISPData/tmp/)" ]; then
-                echo "MISP isn't configured but files exist - assuming files are valid"
-                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+    if [ -r /etc/ssl/private/misp.crt ]; then
+        if [ -r /etc/ssl/private/misp.key ]; then
+            PUBLIC=$(openssl x509 -noout -pubkey -in /etc/ssl/private/misp.crt | openssl sha256 | awk '{print $2}')
+            PRIVATE=$(openssl pkey -pubout -in /etc/ssl/private/misp.key | openssl sha256 | awk '{print $2}')
+            if [[ "$PUBLIC" == "$PRIVATE" ]]; then
+                echo "TLS key validated successfully"
+                if ! grep -q -- "-----BEGIN DH PARAMETERS-----" /etc/ssl/private/misp.crt; then
+                    echo "Appending Mozilla recommended Ephemeral Diffie-Hellman (DHE) parameters to certificate"
+                    curl https://ssl-config.mozilla.org/ffdhe2048.txt >>/etc/ssl/private/misp.crt
+                fi
             else
-                mv MISP/app/tmp/* MISPData/tmp/
+                echo "Key /etc/ssl/private/misp.key does not match certificate /etc/ssl/private/misp.crt"
+                echo "Generating temporary certificate..."
+                generate_self_signed_certificate
             fi
+        else
+            echo "Key /etc/ssl/private/misp.key for certificate /etc/ssl/private/misp.crt missing"
+            echo "Generating temporary certificate..."
+            generate_self_signed_certificate
         fi
-        rm -rf MISP/app/tmp
-        ln -s /var/www/MISPData/tmp/ /var/www/MISP/app/tmp
     else
-        echo "Temp files already persistent."
-    fi
-    mkdir -p MISPData/tmp/logs
-    touch -a MISPData/tmp/logs/apache_access.log MISPData/tmp/logs/apache_error.log MISPData/tmp/logs/debug.log MISPData/tmp/logs/error.log MISPData/tmp/logs/exec-errors.log MISPData/tmp/logs/misp_maintenance_runner.log MISPData/tmp/logs/misp_maintenance_supervisor-errors.log MISPData/tmp/logs/misp_maintenance_supervisor.log MISPData/tmp/logs/misp-workers-errors.log MISPData/tmp/logs/misp-workers.log MISPData/tmp/logs/run_misp_sync_jobs.log
-    chmod 755 MISPData/tmp/logs
-    chmod 644 MISPData/tmp/logs/*
-    chown -R www-data: MISPData/tmp/logs
-
-    # Migrate organisation icons from pre v2.4.185
-    if [ -d MISPData/icons/ ]; then
-        if [ -n "$(ls -A MISPData/icons/)" ]; then
-            # If MISPData/icons is not empty
-            echo "Relocating org icons..."
-            mkdir -p MISPData/files/img/orgs
-            mv MISPData/icons/* MISPData/files/img/orgs/
-        fi
-        rm -rf MISPData/icons/
-    fi
-
-    if [ ! -L MISP/app/webroot/img/custom ]; then
-        echo "Persisting images..."
-        if [ ! -f /var/www/MISPData/.configured ]; then
-            if [ "$(ls -A MISPData/images/)" ]; then
-                echo "MISP isn't configured but files exist - assuming files are valid"
-                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
-            else
-                mv MISP/app/webroot/img/custom/* MISPData/images/
-            fi
-        fi
-        rm -rf MISP/app/webroot/img/custom
-        ln -s /var/www/MISPData/images/ /var/www/MISP/app/webroot/img/custom
-    else
-        echo "Images already persistent."
-    fi
-
-    echo "Persistent file storage restored."
-}
-
-setup_db() {
-    cd /var/www/MISPData/ || exit 1
-    echo "<?php
-    class DATABASE_CONFIG {
-        public \$default = array(
-            'datasource' => 'Database/Mysql',
-            'persistent' => false,
-            'host' => '$MYSQL_HOSTNAME',
-            'login' => '$MYSQL_USERNAME',
-            'port' => 3306,
-            'password' => '$MYSQL_PASSWORD',
-            'database' => '$MYSQL_DBNAME',
-            'prefix' => '',
-            'encoding' => 'utf8',
-        );
-    }" >config/database.php
-
-    if mysql -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" <<<"SELECT id FROM users LIMIT 1" >/dev/null 2>&1; then
-        echo "Database schema appears to already be created"
-    else
-        echo "Database schema not present"
-        echo "Creating database schema..."
-        mysql -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" </var/www/MISP/INSTALL/MYSQL.sql
+        echo "Certificate /etc/ssl/private/misp.crt missing"
+        echo "Generating temporary certificate..."
+        generate_self_signed_certificate
     fi
 }
 
-setup_redis() {
-    /wait-for-it.sh -h "${REDIS_HOST:-misp_redis}" -p "${REDIS_PORT:-6379}" -t 0 -- true
-
-    if [ "${REDIS_TLS}" == "false" ]; then
-        REDIS_URL="tcp:\/\/${REDIS_HOST}:${REDIS_PORT:-6379}"
-        $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST" --force
-        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST" --force
-        $CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "$REDIS_HOST" --force
-    else
-        REDIS_URL="tls:\/\/${REDIS_HOST}:${REDIS_PORT:-6379}"
-        $CAKE Admin setSetting "MISP.redis_host" "tls://$REDIS_HOST" --force
-        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "tls://$REDIS_HOST" --force
-        $CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "tls://$REDIS_HOST" --force
-    fi
-    sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini
-    if [ -z "${REDIS_PASSWORD}" ]; then
-        echo "Warning: No Redis password is set, ensure network access control is implemented"
-        sed -i "s/^\(session.save_path\).*/\1 = \"${REDIS_URL}\"/" /usr/local/etc/php/php.ini
-    else
-        SED_REDIS_PASSWORD=${REDIS_PASSWORD//\//\\\/}
-        sed -i "s/^\(session.save_path\).*/\1 = \"${REDIS_URL}?auth=${SED_REDIS_PASSWORD}\"/" /usr/local/etc/php/php.ini
-    fi
-
-    $CAKE Admin setSetting "MISP.redis_port" "${REDIS_PORT:-6379}" --force
-    $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB" --force
-    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
-    echo 'Setting "MISP.redis_password" changed to "[REDACTED]"'
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_port" "${REDIS_PORT:-6379}" --force
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_database" "$REDIS_WORKER_DB" --force
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
-    echo 'Setting "SimpleBackgroundJobs.redis_password" changed to "[REDACTED]"'
-
-    $CAKE Admin setSetting "Plugin.ZeroMQ_redis_port" "${REDIS_PORT:-6379}" --force
+generate_self_signed_certificate() {
+    openssl req -x509 -newkey rsa:4096 -subj "/CN=$(hostname)" \
+        -keyout /etc/ssl/private/misp.key -out /etc/ssl/private/misp.crt -sha256 -days 365 -nodes >/dev/null 2>&1
+    cat /etc/ssl/private/misp.crt /etc/ssl/private/misp.key >/etc/ssl/private/haproxy.pem
+    curl https://ssl-config.mozilla.org/ffdhe2048.txt >>/etc/ssl/private/misp.crt
 }
 
 initial_config() {
@@ -319,132 +253,6 @@ initial_config() {
     echo "Initial configuration finished."
 }
 
-check_gnupg() {
-    MISP_EMAIL_ADDRESS="${MISP_EMAIL_ADDRESS:-misp@misp.local}"
-    mkdir -p /opt/misp_custom/gpg/
-    chown -R www-data: /opt/misp_custom/gpg/
-    chmod 700 /opt/misp_custom/gpg/
-    chown -R www-data: /var/www/MISPGnuPG
-    chmod 700 /var/www/MISPGnuPG
-    if [ -r /var/www/MISPGnuPG/import.asc ]; then
-        set +e
-        echo "[Deprecated] /var/www/MISPGnuPG/import.asc found, importing..."
-        echo "Deprecation Warning: use /opt/misp_custom/gpg/import.asc instead"
-        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /var/www/MISPGnuPG/import.asc"
-        echo "Setting trust level for imported GnuPG key..."
-        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /var/www/MISPGnuPG/import.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
-        set -e
-    fi
-    if [ -r /opt/misp_custom/gpg/import.asc ]; then
-        set +e
-        echo "/opt/misp_custom/gpg/import.asc found, importing..."
-        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /opt/misp_custom/gpg/import.asc"
-        echo "Setting trust level for imported GnuPG key..."
-        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /opt/misp_custom/gpg/import.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
-        set -e
-    elif [ -r /opt/misp_custom/gpg/export.asc ]; then
-        set +e
-        echo "/opt/misp_custom/gpg/export.asc found, importing..."
-        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --import /opt/misp_custom/gpg/export.asc"
-        echo "Setting trust level for imported GnuPG key..."
-        su -s /bin/bash www-data -c "echo $(gpg --homedir /var/www/MISPGnuPG --batch --show-keys /opt/misp_custom/gpg/export.asc | sed -n '2p' | awk '{$1=$1};1'):6 | gpg --homedir /var/www/MISPGnuPG --batch --import-ownertrust"
-        set -e
-    fi
-    echo "Checking for usable GnuPG Key..."
-    GPG_KEY=$(su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS 2>/dev/null")
-    if [[ "$GPG_KEY" != "-----BEGIN PGP PUBLIC KEY BLOCK-----"* ]]; then
-        echo "Generating new GnuPG Key"
-        echo "%echo Generating a default key
-        Key-Type: RSA
-        Key-Length: 4096
-        Subkey-Type: RSA
-        Name-Real: $MISP_EMAIL_NAME
-        Name-Comment: $FQDN
-        Name-Email: $MISP_EMAIL_ADDRESS
-        Expire-Date: 0
-        Passphrase: $GPG_PASSPHRASE
-        # Do a commit here, so that we can later print 'done'
-        %commit
-        %echo done" >/tmp/gen-key-script
-        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --gen-key /tmp/gen-key-script" >/dev/null 2>&1
-        rm /tmp/gen-key-script
-        echo "GnuPG key generated, exporting to webroot..."
-        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS>/var/www/MISP/app/webroot/gpg.asc"
-    else
-        echo "GnuPG key found, exporting to webroot..."
-        su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --export --armor $MISP_EMAIL_ADDRESS>/var/www/MISP/app/webroot/gpg.asc"
-    fi
-    echo "Exporting encrypted GnuPG private key to ASCII File"
-    su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode=loopback --yes --export-secret-key --armor $MISP_EMAIL_ADDRESS>/opt/misp_custom/gpg/export.asc"
-    chown -R www-data: /var/www/MISPGnuPG
-    chmod 700 /var/www/MISPGnuPG
-}
-
-generate_self_signed_certificate() {
-    openssl req -x509 -newkey rsa:4096 -subj "/CN=$(hostname)" \
-        -keyout /etc/ssl/private/misp.key -out /etc/ssl/private/misp.crt -sha256 -days 365 -nodes >/dev/null 2>&1
-    cat /etc/ssl/private/misp.crt /etc/ssl/private/misp.key >/etc/ssl/private/haproxy.pem
-    curl https://ssl-config.mozilla.org/ffdhe2048.txt >>/etc/ssl/private/misp.crt
-}
-
-check_tls_certificate() {
-    if [ -r /etc/letsencrypt/live/MISP/fullchain.pem ]; then
-        if [ -r /etc/letsencrypt/live/MISP/privkey.pem ]; then
-            PUBLIC=$(openssl x509 -noout -pubkey -in /etc/letsencrypt/live/MISP/fullchain.pem | openssl sha256 | awk '{print $2}')
-            PRIVATE=$(openssl pkey -pubout -in /etc/letsencrypt/live/MISP/privkey.pem | openssl sha256 | awk '{print $2}')
-            if [[ "$PUBLIC" == "$PRIVATE" ]]; then
-                echo "Found certificate to import in /etc/letsencrypt/live/MISP"
-                cp -f /etc/letsencrypt/live/MISP/fullchain.pem /etc/ssl/private/misp.crt
-                cp -f /etc/letsencrypt/live/MISP/privkey.pem /etc/ssl/private/misp.key
-            else
-                echo "Found certificate in /etc/letsencrypt/live/MISP, but private key does not match"
-            fi
-        else
-            echo "Found certificate in /etc/letsencrypt/live/MISP, but private key missing"
-        fi
-    elif [ -r /opt/misp_custom/tls/misp.crt ]; then
-        if [ -r /opt/misp_custom/tls/misp.key ]; then
-            PUBLIC=$(openssl x509 -noout -pubkey -in /opt/misp_custom/tls/misp.crt | openssl sha256 | awk '{print $2}')
-            PRIVATE=$(openssl pkey -pubout -in /opt/misp_custom/tls/misp.key | openssl sha256 | awk '{print $2}')
-            if [[ "$PUBLIC" == "$PRIVATE" ]]; then
-                echo "Found certificate to import in /opt/misp_custom/tls"
-                cp -f /opt/misp_custom/tls/misp.crt /etc/ssl/private/misp.crt
-                cp -f /opt/misp_custom/tls/misp.key /etc/ssl/private/misp.key
-            else
-                echo "Found certificate in /opt/misp_custom/tls, but private key does not match"
-            fi
-        else
-            echo "Found certificate in /opt/misp_custom/tls, but private key missing"
-        fi
-    fi
-
-    if [ -r /etc/ssl/private/misp.crt ]; then
-        if [ -r /etc/ssl/private/misp.key ]; then
-            PUBLIC=$(openssl x509 -noout -pubkey -in /etc/ssl/private/misp.crt | openssl sha256 | awk '{print $2}')
-            PRIVATE=$(openssl pkey -pubout -in /etc/ssl/private/misp.key | openssl sha256 | awk '{print $2}')
-            if [[ "$PUBLIC" == "$PRIVATE" ]]; then
-                echo "TLS key validated successfully"
-                if ! grep -q -- "-----BEGIN DH PARAMETERS-----" /etc/ssl/private/misp.crt; then
-                    echo "Appending Mozilla recommended Ephemeral Diffie-Hellman (DHE) parameters to certificate"
-                    curl https://ssl-config.mozilla.org/ffdhe2048.txt >>/etc/ssl/private/misp.crt
-                fi
-            else
-                echo "Key /etc/ssl/private/misp.key does not match certificate /etc/ssl/private/misp.crt"
-                echo "Generating temporary certificate..."
-                generate_self_signed_certificate
-            fi
-        else
-            echo "Key /etc/ssl/private/misp.key for certificate /etc/ssl/private/misp.crt missing"
-            echo "Generating temporary certificate..."
-            generate_self_signed_certificate
-        fi
-    else
-        echo "Certificate /etc/ssl/private/misp.crt missing"
-        echo "Generating temporary certificate..."
-        generate_self_signed_certificate
-    fi
-}
-
 on_start() {
     echo "Updating settings based on environment variables..."
     sed -i "s/^\(ServerName\).*/\1 \${FQDN}/" /etc/apache2/sites-enabled/000-default.conf
@@ -479,19 +287,36 @@ on_start() {
     $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" >/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'
 
-    #if [ "$AUTH_METHOD" == oidc ]; then
-        #echo "Enabling OIDC Authentication"
-        #cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
-        #php /opt/scripts/auth_oidc.php
-    if [ "$AUTH_METHOD" == shibb ]; then
+    if [ "$AUTH_METHOD" == oidc ]; then
+        echo "Enabling OIDC Authentication"
+        sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Lax\"/" /usr/local/etc/php/php.ini
+        $CAKE Admin setSetting "Security.require_password_confirmation" false
+        if variable_is_true "$OIDC_ONLY" ; then
+            $CAKE Admin setSetting "Security.auth_enforced" true
+        else
+            $CAKE Admin setSetting "Security.auth_enforced" false
+        fi
+        cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
+        php /opt/scripts/auth_oidc.php
+    elif [ "$AUTH_METHOD" == shibb ]; then
         echo "Enabling Shibboleth Authentication"
+        sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Strict\"/" /usr/local/etc/php/php.ini
+        $CAKE Admin setSetting "Security.require_password_confirmation" false
+        if variable_is_true "$SHIBB_ONLY" ; then
+            $CAKE Admin setSetting "Security.auth_enforced" true
+        else
+            $CAKE Admin setSetting "Security.auth_enforced" false
+        fi
         cp /etc/apache2/sites-available/apache.shibb.conf /etc/apache2/sites-enabled/000-default.conf
         php /opt/scripts/auth_shibb.php
     else
         if [ "$AUTH_METHOD" != misp ]; then
-            echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp' or 'shibb'"
+            echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp', 'oidc' or 'shibb'"
         fi
         echo "Enabling MISP Native Authentication"
+        sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Strict\"/" /usr/local/etc/php/php.ini
+        $CAKE Admin setSetting "Security.require_password_confirmation" true
+        $CAKE Admin setSetting "Security.auth_enforced" false
         cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
         php /opt/scripts/auth_misp.php
     fi
@@ -580,6 +405,215 @@ on_start() {
     fi
 
     echo "Done processing /opt/misp_custom customisations."
+}
+
+restore_persistence() {
+    echo "Restoring persistent file storage..."
+    cd /var/www/ || exit 1
+    mkdir -p MISPData/attachments MISPData/config MISPData/custom_scripts MISPData/files \
+        MISPData/images MISPData/tmp MISPData/acme/.well-known/acme-challenge
+
+    if [ ! -L MISP/app/Config ]; then
+        echo "Persisting config..."
+        if [ ! -f /var/www/MISPData/.configured ]; then
+            if [ "$(ls -A MISPData/config/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/Config/* MISPData/config/
+            fi
+        fi
+        rm -rf MISP/app/Config
+        ln -s /var/www/MISPData/config/ /var/www/MISP/app/Config
+    else
+        echo "Config already persistent."
+    fi
+
+    if [ ! -L MISP/app/files ]; then
+        echo "Persisting app files..."
+        if [ ! -f /var/www/MISPData/.configured ]; then
+            if [ "$(ls -A MISPData/files/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/files/* MISPData/files/
+            fi
+            setup_objects
+        fi
+        rm -rf MISP/app/files
+        ln -s /var/www/MISPData/files/ /var/www/MISP/app/files
+    else
+        echo "App files already persistent."
+    fi
+
+    if [ ! -L MISP/app/tmp ]; then
+        echo "Persisting temp files..."
+        if [ ! -f /var/www/MISPData/.configured ]; then
+            if [ "$(ls -A MISPData/tmp/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/tmp/* MISPData/tmp/
+            fi
+        fi
+        rm -rf MISP/app/tmp
+        ln -s /var/www/MISPData/tmp/ /var/www/MISP/app/tmp
+    else
+        echo "Temp files already persistent."
+    fi
+    mkdir -p MISPData/tmp/logs
+    touch -a MISPData/tmp/logs/apache_access.log MISPData/tmp/logs/apache_error.log MISPData/tmp/logs/debug.log MISPData/tmp/logs/error.log MISPData/tmp/logs/exec-errors.log MISPData/tmp/logs/misp_maintenance_runner.log MISPData/tmp/logs/misp_maintenance_supervisor-errors.log MISPData/tmp/logs/misp_maintenance_supervisor.log MISPData/tmp/logs/misp-workers-errors.log MISPData/tmp/logs/misp-workers.log MISPData/tmp/logs/run_misp_sync_jobs.log
+    chmod 755 MISPData/tmp/logs
+    chmod 644 MISPData/tmp/logs/*
+    chown -R www-data: MISPData/tmp/logs
+
+    # Migrate organisation icons from pre v2.4.185
+    if [ -d MISPData/icons/ ]; then
+        if [ -n "$(ls -A MISPData/icons/)" ]; then
+            # If MISPData/icons is not empty
+            echo "Relocating org icons..."
+            mkdir -p MISPData/files/img/orgs
+            mv MISPData/icons/* MISPData/files/img/orgs/
+        fi
+        rm -rf MISPData/icons/
+    fi
+
+    if [ ! -L MISP/app/webroot/img/custom ]; then
+        echo "Persisting images..."
+        if [ ! -f /var/www/MISPData/.configured ]; then
+            if [ "$(ls -A MISPData/images/)" ]; then
+                echo "MISP isn't configured but files exist - assuming files are valid"
+                echo "If MISP does not run properly clear MISPData mountpoint and create misp-web container"
+            else
+                mv MISP/app/webroot/img/custom/* MISPData/images/
+            fi
+        fi
+        rm -rf MISP/app/webroot/img/custom
+        ln -s /var/www/MISPData/images/ /var/www/MISP/app/webroot/img/custom
+    else
+        echo "Images already persistent."
+    fi
+
+    echo "Persistent file storage restored."
+}
+
+set_env_vars() {
+    if [[ "$HTTPS_PORT" -eq 443 ]]; then
+        MISP_URL="https://$FQDN"
+    else
+        MISP_URL="https://$FQDN:$HTTPS_PORT"
+    fi
+}
+
+setup_db() {
+    cd /var/www/MISPData/ || exit 1
+    echo "<?php
+    class DATABASE_CONFIG {
+        public \$default = array(
+            'datasource' => 'Database/Mysql',
+            'persistent' => false,
+            'host' => '$MYSQL_HOSTNAME',
+            'login' => '$MYSQL_USERNAME',
+            'port' => 3306,
+            'password' => '$MYSQL_PASSWORD',
+            'database' => '$MYSQL_DBNAME',
+            'prefix' => '',
+            'encoding' => 'utf8',
+        );
+    }" >config/database.php
+
+    if mysql -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" <<<"SELECT id FROM users LIMIT 1" >/dev/null 2>&1; then
+        echo "Database schema appears to already be created"
+    else
+        echo "Database schema not present"
+        echo "Creating database schema..."
+        mysql -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" </var/www/MISP/INSTALL/MYSQL.sql
+    fi
+}
+
+setup_objects() {
+    cd /var/www/MISPData/files/ || exit 1
+    echo "Cloning misp-decaying-models..."
+    git clone --quiet https://github.com/MISP/misp-decaying-models misp-decaying-models
+    echo "Cloning misp-galaxy..."
+    git clone --quiet https://github.com/MISP/misp-galaxy misp-galaxy
+    echo "Cloning misp-objects..."
+    git clone --quiet https://github.com/MISP/misp-objects misp-objects
+    echo "Cloning misp-workflow-blueprints..."
+    git clone --quiet https://github.com/MISP/misp-workflow-blueprints misp-workflow-blueprints
+    echo "Cloning noticelists..."
+    git clone --quiet https://github.com/MISP/misp-noticelist noticelists
+    echo "Cloning taxonomies..."
+    git clone --quiet https://github.com/MISP/misp-taxonomies taxonomies
+    echo "Cloning warninglists..."
+    git clone --quiet https://github.com/MISP/misp-warninglists warninglists
+    cd /var/www/ || exit 1
+}
+
+setup_redis() {
+    /wait-for-it.sh -h "${REDIS_HOST:-misp_redis}" -p "${REDIS_PORT:-6379}" -t 0 -- true
+
+    if variable_is_true "${REDIS_TLS}"; then
+        REDIS_URL="tls:\/\/${REDIS_HOST}:${REDIS_PORT:-6379}"
+        $CAKE Admin setSetting "MISP.redis_host" "tls://$REDIS_HOST" --force
+        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "tls://$REDIS_HOST" --force
+        $CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "tls://$REDIS_HOST" --force
+    else
+        REDIS_URL="tcp:\/\/${REDIS_HOST}:${REDIS_PORT:-6379}"
+        $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST" --force
+        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST" --force
+        $CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "$REDIS_HOST" --force
+    fi
+    sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini
+    if [ -z "${REDIS_PASSWORD}" ]; then
+        echo "Warning: No Redis password is set, ensure network access control is implemented"
+        sed -i "s/^\(session.save_path\).*/\1 = \"${REDIS_URL}\"/" /usr/local/etc/php/php.ini
+    else
+        SED_REDIS_PASSWORD=${REDIS_PASSWORD//\//\\\/}
+        sed -i "s/^\(session.save_path\).*/\1 = \"${REDIS_URL}?auth=${SED_REDIS_PASSWORD}\"/" /usr/local/etc/php/php.ini
+    fi
+
+    $CAKE Admin setSetting "MISP.redis_port" "${REDIS_PORT:-6379}" --force
+    $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB" --force
+    $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
+    echo 'Setting "MISP.redis_password" changed to "[REDACTED]"'
+    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_port" "${REDIS_PORT:-6379}" --force
+    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_database" "$REDIS_WORKER_DB" --force
+    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
+    echo 'Setting "SimpleBackgroundJobs.redis_password" changed to "[REDACTED]"'
+
+    $CAKE Admin setSetting "Plugin.ZeroMQ_redis_port" "${REDIS_PORT:-6379}" --force
+}
+
+setup_smtp() {
+    cd /var/www/MISPData/ || exit 1
+    echo "<?php
+    class EmailConfig {
+        public \$default = array(
+            'transport'     => 'Smtp',
+            'from'          => array('$MISP_EMAIL_ADDRESS' => '$MISP_EMAIL_NAME'),
+            'host'          => '$SMTP_HOSTNAME',
+            'port'          => $SMTP_PORT,
+            'timeout'       => 30,
+            'username'      => '$SMTP_USERNAME',
+            'password'      => '$SMTP_PASSWORD',
+            'client'        => null,
+            'log'           => false,
+            'tls'           => $SMTP_STARTTLS,
+        );
+    }" >config/email.php
+}
+
+variable_is_true() {
+    # adapted from: https://stackoverflow.com/a/20473191
+    if [[ "$1" == "" ]]; then
+        return 1
+    elif [[ " 1 on On t true True y yes Yes " =~ (^|[[:space:]])"$1"($|[[:space:]]) ]] ; then
+        # variable is true
+        return 0
+    else
+        return 1
+    fi
 }
 
 # Check for startup lock

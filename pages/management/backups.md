@@ -14,7 +14,7 @@ updates and other significant changes.
 ## Stop MISP
 
 It is recommended to tear down the container first, to ensure no in-memory database transactions are
-missed when the backup is taken. 
+missed when the backup is taken.
 
 This can be done with the command `docker compose down`
 

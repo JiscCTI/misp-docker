@@ -11,7 +11,7 @@ edit_uri: blob/main/pages/
 docs_dir: pages
 site_description: Documentation for running MISP with the Docker images produced by Jisc's Cyber Threat Intelligence team.
 site_author: Jisc's Cyber Threat Intelligence Team
-copyright: 2024 Jisc Services Limited
+copyright: 2024-2025 Jisc Services Limited
 nav:
   - Introduction: index.md
   - Requirements: requirements.md
@@ -21,10 +21,12 @@ nav:
   - Configuration:
     - General: configuration/general.md
     - Single Sign On:
+      - Keycloak: configuration/keycloak.md
+      - Microsoft Entra ID: configuration/entra-id.md
       - OpenID Connect (OIDC): configuration/oidc.md
-      - SAML2/Shibboleth: configuration/shibb.md  
+      - SAML2/Shibboleth: configuration/shibb.md
     - Splunk: splunk.md
-    - Customisation: configuration/custom.md 
+    - Customisation: configuration/custom.md
   - First Start: first_start.md
   - Management:
     - Backups: management/backups.md
@@ -39,5 +41,5 @@ nav:
       - misp-web: dev/misp-web.md
       - misp-workers: dev/misp-workers.md
     - GitHub Actions: dev/gh-actions.md
-theme: 
+theme:
   name: material

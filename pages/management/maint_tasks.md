@@ -62,7 +62,7 @@ therefore if you need to disable or remove a task, you need leave it in your cus
 `misp_maintenance_jobs.ini` but set `enabled` to `false`, for ease of maintenance, you can remove
 all other options.
 
-### Example: Temporarily Disabled 
+### Example: Temporarily Disabled
 
 ```ini
 [my_script]

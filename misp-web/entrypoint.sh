@@ -197,16 +197,16 @@ setup_db() {
 setup_redis() {
     /wait-for-it.sh -h "${REDIS_HOST:-misp_redis}" -p "${REDIS_PORT:-6379}" -t 0 -- true
 
-    if [ "${REDIS_TLS}" == "false" ]; then
-        REDIS_URL="tcp:\/\/${REDIS_HOST}:${REDIS_PORT:-6379}"
-        $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST" --force
-        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST" --force
-        $CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "$REDIS_HOST" --force
-    else
+    if variable_is_true "${REDIS_TLS}"; then
         REDIS_URL="tls:\/\/${REDIS_HOST}:${REDIS_PORT:-6379}"
         $CAKE Admin setSetting "MISP.redis_host" "tls://$REDIS_HOST" --force
         $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "tls://$REDIS_HOST" --force
         $CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "tls://$REDIS_HOST" --force
+    else
+        REDIS_URL="tcp:\/\/${REDIS_HOST}:${REDIS_PORT:-6379}"
+        $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST" --force
+        $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST" --force
+        $CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "$REDIS_HOST" --force
     fi
     sed -i "s/^\(session.save_handler\).*/\1 = redis/" /usr/local/etc/php/php.ini
     if [ -z "${REDIS_PASSWORD}" ]; then
@@ -483,12 +483,22 @@ on_start() {
         echo "Enabling OIDC Authentication"
         sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Lax\"/" /usr/local/etc/php/php.ini
         $CAKE Admin setSetting "Security.require_password_confirmation" false
+        if variable_is_true "$OIDC_ONLY" ; then
+            $CAKE Admin setSetting "Security.auth_enforced" true
+        else
+            $CAKE Admin setSetting "Security.auth_enforced" false
+        fi
         cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
         php /opt/scripts/auth_oidc.php
     elif [ "$AUTH_METHOD" == shibb ]; then
         echo "Enabling Shibboleth Authentication"
         sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Strict\"/" /usr/local/etc/php/php.ini
         $CAKE Admin setSetting "Security.require_password_confirmation" false
+        if variable_is_true "$SHIBB_ONLY" ; then
+            $CAKE Admin setSetting "Security.auth_enforced" true
+        else
+            $CAKE Admin setSetting "Security.auth_enforced" false
+        fi
         cp /etc/apache2/sites-available/apache.shibb.conf /etc/apache2/sites-enabled/000-default.conf
         php /opt/scripts/auth_shibb.php
     else
@@ -498,6 +508,7 @@ on_start() {
         echo "Enabling MISP Native Authentication"
         sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Strict\"/" /usr/local/etc/php/php.ini
         $CAKE Admin setSetting "Security.require_password_confirmation" true
+        $CAKE Admin setSetting "Security.auth_enforced" false
         cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
         php /opt/scripts/auth_misp.php
     fi
@@ -586,6 +597,18 @@ on_start() {
     fi
 
     echo "Done processing /opt/misp_custom customisations."
+}
+
+variable_is_true() {
+    # adapted from: https://stackoverflow.com/a/20473191
+    if [[ "$1" == "" ]]; then
+        return 1
+    elif [[ " 1 on On t true True y yes Yes " =~ (^|[[:space:]])"$1"($|[[:space:]]) ]] ; then
+        # variable is true
+        return 0
+    else
+        return 1
+    fi
 }
 
 # Check for startup lock

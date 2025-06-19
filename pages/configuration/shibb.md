@@ -41,6 +41,7 @@ container:
 | SHIBB_HOSTNAME | The hostname of the Shibboleth service container. | `misp_shibb` |
 | **SHIBB_IDP_ENTITY_ID** | The entity ID of the shibboleth identity provider. | `https://idp.example.org/idp/shibboleth` |
 | **SHIBB_IDP_METADATA_URL** | The URL of the shibboleth identity provider's metadata file. `false` = use `./persistent/misp/shibb/etc/idp-metadata.xml` | `false` |
+| SHIBB_ONLY | Require shibboleth authentication for all users, disable local account access. | `false` |
 | SHIBB_ORG_ADMIN_ROLE | The shibboleth group / role to be granted the MISP org admin role. | `misp-orgadmin` |
 | SHIBB_ORG_FORMAT | The Name Format of the attribute containing a user's organisation. | `urn:oasis:names:tc:SAML:2.0:attrname-format:uri` |
 | SHIBB_ORG_NAME | The Name (not Friendly Name) of the attribute containing a user's organisation. | `urn:oid:1.3.6.1.4.1.25178.1.2.9` |

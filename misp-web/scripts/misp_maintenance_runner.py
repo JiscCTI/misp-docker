@@ -189,11 +189,13 @@ while True:
         LOGGER.setLevel(INFO)
 
     try:
-        get(
+        response = get(
             config.get("DEFAULT", "baseUrl"),
             timeout=3,
             verify=config.getboolean("DEFAULT", "verifyTls"),
         )
+        if response.status_code >= 400:
+            raise ValueError(f"HTTP Status: {response.status_code} ({response.reason})")
     except (KeyError, ValueError, RequestException) as e:
         LOGGER.warning("MISP isn't up at %s", config.get("DEFAULT", "baseUrl"))
         LOGGER.debug("Reason: (%s): %s", type(e), e)

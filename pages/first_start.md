@@ -38,6 +38,9 @@ communication between workers and web is also required.
 For a [Cloud Deployment](deploy/cloud.md) follow your chosen provider's documentation to start the
 containers and monitor the logs for the above message.
 
+***NOTE*** The database container log will warn about the `--skip-host-cache` option being
+deprecated, this option is set within the container image itself and can be ignored.
+
 ## Access MISP
 
 Once MISP is running, and the Organisation Name and UUID have been set, go to

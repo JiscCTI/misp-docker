@@ -45,7 +45,7 @@ services:
     image: jisccti/misp-modules:latest
     restart: unless-stopped
     volumes:
-      - ./persistent/${COMPOSE_PROJECT_NAME}/modules_cache/:/mnt/cache
+      - modules_cache:/mnt/cache/
   redis:
     entrypoint: redis-server --loglevel warning --requirepass ${REDIS_PASSWORD:-misp}
     environment:
@@ -146,3 +146,5 @@ services:
       - ./persistent/${COMPOSE_PROJECT_NAME}/shibb/etc:/etc/shibboleth
       - ./persistent/${COMPOSE_PROJECT_NAME}/shibb/logs:/var/log/shibboleth
       - ./persistent/${COMPOSE_PROJECT_NAME}/shibb/run:/run/shibboleth
+volumes:
+  modules_cache:

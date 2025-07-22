@@ -30,6 +30,16 @@ By default the `docker-compose.yml` file provides ClamAV, MySQL and Redis. If yo
 these components another way, such as through managed Cloud Services, then please comment these
 sections out using `#`s at the start of each relevant line.
 
+## Enable Memory Overcommit for Redis
+
+To ensure proper operation of Redis, Memory Overcommit needs to be enabled on the host system.
+
+To do this:
+
+1. Open `/etc/sysctl.conf` for editing.
+2. Add `vm.overcommit_memory = 1` to the end of the file.
+3. Run `sudo sysctl -p`.
+
 ## Configure MISP
 
 Now move on to [Configuring MISP](../configuration/general.md).

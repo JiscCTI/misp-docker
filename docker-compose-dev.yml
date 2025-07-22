@@ -43,6 +43,8 @@ services:
     hostname: ${MODULES_HOSTNAME:-misp_modules}
     image: jisccti/misp-modules-dev:latest
     restart: unless-stopped
+    volumes:
+      - modules_cache:/mnt/cache/
   redis:
     entrypoint: redis-server --loglevel warning --requirepass ${REDIS_PASSWORD:-misp}
     environment:
@@ -115,3 +117,5 @@ services:
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData
       - ./persistent/${COMPOSE_PROJECT_NAME}/gpg/:/var/www/MISPGnuPG
+volumes:
+  modules_cache:

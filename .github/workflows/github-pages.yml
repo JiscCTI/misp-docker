@@ -22,7 +22,7 @@ jobs:
       - name: Build docs site
         run: mkdocs build
       - name: Upload site bundle
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: site
   deploy:

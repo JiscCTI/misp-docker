@@ -15,7 +15,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         name: Add Comment to PR (Start)
         continue-on-error: true
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({
@@ -140,7 +140,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         name: Add Comment to PR (Done)
         continue-on-error: true
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({

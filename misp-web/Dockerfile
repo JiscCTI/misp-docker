@@ -40,7 +40,7 @@ ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 # Install build dependencies
 RUN apt-get -qy update &&\
     apt-get -qy install --no-install-recommends cmake gcc git libcaca-dev libfuzzy-dev libgpgme11 libjpeg-dev liblua5.3-dev\
-    libopencv-dev libpoppler-cpp-dev librdkafka-dev libxml2-dev libxslt1-dev libyara-dev libzbar-dev libzip4 make\
+    libopencv-dev libpoppler-cpp-dev librdkafka-dev libxml2-dev libxslt1-dev libyara-dev libzbar-dev libzip5 make\
     openssl python3 python3-dev python3-venv ruby sqlite3 ssdeep tesseract-ocr unzip zip zlib1g-dev
 
 # Download MISP
@@ -129,7 +129,7 @@ ENV CAKE="sudo -H -u www-data /var/www/MISP/app/Console/cake"
 RUN apt-get -qy update &&\
     apt-get -qy upgrade apache2 &&\
     apt-get -qy install --no-install-recommends git gnupg iputils-ping libapache2-mod-shib\
-        libfuzzy2 libgd3 libgpgme11 libpng16-16 librdkafka1 libzip4 mariadb-client python3\
+        libfuzzy2 libgd3 libgpgme11 libpng16-16 librdkafka1 libzip5 mariadb-client python3\
         python3-venv ssdeep sudo uuid zip &&\
     rm -rf /var/lib/apt/lists/* &&\
     mkdir -p /opt/misp_custom &&\

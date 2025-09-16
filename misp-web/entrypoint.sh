@@ -522,12 +522,12 @@ setup_db() {
         );
     }" >config/database.php
 
-    if mysql -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" <<<"SELECT id FROM users LIMIT 1" >/dev/null 2>&1; then
+    if mysql --skip-ssl-verify-server-cert -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" <<<"SELECT id FROM users LIMIT 1" >/dev/null 2>&1; then
         echo "Database schema appears to already be created"
     else
         echo "Database schema not present"
         echo "Creating database schema..."
-        mysql -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" </var/www/MISP/INSTALL/MYSQL.sql
+        mysql --skip-ssl-verify-server-cert -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" </var/www/MISP/INSTALL/MYSQL.sql
     fi
 }
 

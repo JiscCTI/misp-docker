@@ -321,6 +321,21 @@ on_start() {
         php /opt/scripts/auth_misp.php
     fi
 
+    if variable_is_true "${X_FORWARDED_FOR:-false}"; then
+        a2enmod remoteip >/dev/null 2>&1
+        echo "RemoteIPHeader X-Forwarded-For" > /etc/apache/conf-available/remoteip.conf
+        if variable_is_true "${X_FORWARDED_FOR_ALLOW_INTERNAL:-false}"; then
+            echo "RemoteIPInternalProxy ${X_FORWARDED_FOR_PROXY:-127.0.0.1}" >> /etc/apache/conf-available/remoteip.conf
+            echo "Enabled X-Forwarded-For from '${X_FORWARDED_FOR_PROXY:-127.0.0.1}' (RFC 1918 IPs Allowed)"
+        else
+            echo "RemoteIPTrustedProxy ${X_FORWARDED_FOR_PROXY:-127.0.0.1}" >> /etc/apache/conf-available/remoteip.conf
+            echo "Enabled X-Forwarded-For from '${X_FORWARDED_FOR_PROXY:-127.0.0.1}' (RFC 1918 IPs Prohibited)"
+        fi
+    else
+        a2dismod remoteip >/dev/null 2>&1
+        echo "Disabled X-Forwarded-For"
+    fi
+
     echo "Settings updated based on environment variables."
 
     echo "Processing /opt/misp_custom customisations..."

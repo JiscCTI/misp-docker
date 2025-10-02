@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
 SPDX-FileContributor: Joe Pitt
 
 SPDX-License-Identifier: GPL-3.0-only
@@ -15,7 +15,8 @@ Exact services to use will depend on the cloud provider selected and local desig
 In Amazon Web Services (AWS), MISP can be deployed using these services:
 
 * Certificate Manager for TLS certificate management,
-* Elastic Load Balancer to front the `misp-web` containers,
+* Elastic Load Balancer to front the `misp-web` containers (see X_FORWARDED_FOR environment 
+    variables on [Configuring MISP](../configuration/general)),
 * WAF (Web Application Firewall) to protect the application,
 * Aurora MySQL Relational Database Service for the backend database,
 * ElastiCache Redis for in-memory caching,

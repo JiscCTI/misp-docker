@@ -40,10 +40,9 @@ jobs:
         name: Configure Environment
         run: |
           sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' docker-compose-dev.yml
-          sed -i 's/latest/${{ github.event_name }}_${{ github.sha }}/g' docker-compose-dev.yml
           sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' misp-workers/Dockerfile
           sed -i 's/misp-web/misp-web-dev/g' misp-workers/Dockerfile
-          sed -i 's/\${MISP_VERSION}/${{ github.event_name }}_${{ github.sha }}/g' misp-workers/Dockerfile
+          sed -i 's/\${MISP_VERSION}/latest/g' misp-workers/Dockerfile
           cp .github/workflows/actions.env .env
           mkdir -p persistent/$COMPOSE_PROJECT_NAME/gpg persistent/$COMPOSE_PROJECT_NAME/tls
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/gpg/import.asc

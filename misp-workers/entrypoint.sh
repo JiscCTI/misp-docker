@@ -5,9 +5,18 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-block_default_credentials() {
+apply_env_vars() {
+    WORKERS_PASSWORD="${WORKERS_PASSWORD:-misp}"
+    SED_WORKERS_PASSWORD=${WORKERS_PASSWORD//\//\\\/}
+    sed -i "s/^\(password\)=.*/\1=${SED_WORKERS_PASSWORD}/" /etc/supervisor/conf.d/misp-workers.conf
+}
+
+load_env_vars() {
+    export FQDN=${FQDN:-misp.local}
+    export HTTPS_PORT=${HTTPS_PORT:-443}
+    export WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
     if [ "$WORKERS_PASSWORD" == "misp" ]; then
-        echo "The WORKERS_PASSWORD environment variable must be overwritten in .env for the MISP workers to start"
+        echo "The WORKERS_PASSWORD environment variable must be overwritten in .env for MISP to start"
         exit 1
     fi
 }
@@ -59,19 +68,15 @@ restore_persistence() {
     echo "Persistent file storage restored."
 }
 
+load_env_vars
 if [ ! -f /var/www/MISPData/.configured ]; then
     echo "Waiting for misp_web to finish configuration..."
     while [ ! -f /var/www/MISPData/.configured ]; do
         sleep 5
     done
 fi
-
-block_default_credentials
 restore_persistence
+apply_env_vars
 mkdir -p /var/www/MISPData/tmp/logs
-WORKERS_PASSWORD="${WORKERS_PASSWORD:-misp}"
-SED_WORKERS_PASSWORD=${WORKERS_PASSWORD//\//\\\/}
-sed -i "s/^\(password\)=.*/\1=${SED_WORKERS_PASSWORD}/" /etc/supervisor/conf.d/misp-workers.conf
-
 echo "Starting MISP Workers..."
 supervisord -c /etc/supervisor/conf.d/misp-workers.conf

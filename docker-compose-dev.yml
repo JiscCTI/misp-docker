@@ -64,32 +64,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    environment:
-      - AUTH_METHOD=${AUTH_METHOD:-misp}
-      - CLAMAV_HOSTNAME=${CLAMAV_HOSTNAME:-misp_clamav}
-      - FQDN=${FQDN:-misp.local}
-      - GPG_PASSPHRASE=${GPG_PASSPHRASE:-misp}
-      - HTTPS_PORT=${HTTPS_PORT:-443}
-      - MISP_EMAIL_ADDRESS=${MISP_EMAIL_ADDRESS:-misp@misp.local}
-      - MISP_EMAIL_NAME=${MISP_EMAIL_NAME:-MISP}
-      - MODULES_HOSTNAME=${MODULES_HOSTNAME:-misp_modules}
-      - MYSQL_DBNAME=${MYSQL_DBNAME:-misp}
-      - MYSQL_HOSTNAME=${MYSQL_HOSTNAME:-misp_db}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
-      - MYSQL_USERNAME=${MYSQL_USERNAME:-misp}
-      - ORG_NAME=${ORG_NAME:-ORGNAME}
-      - REDIS_HOST=${REDIS_HOST:-misp_redis}
-      - REDIS_MISP_DB=${REDIS_MISP_DB:-2}
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-misp}
-      - REDIS_WORKER_DB=${REDIS_WORKER_DB:-3}
-      - REQUIRE_TOTP=${REQUIRE_TOTP:-true}
-      - SMTP_HOSTNAME=${SMTP_HOSTNAME:-localhost}
-      - SMTP_PASSWORD=${SMTP_PASSWORD:-misp}
-      - SMTP_PORT=${SMTP_PORT:-587}
-      - SMTP_STARTTLS=${SMTP_STARTTLS:-true}
-      - SMTP_USERNAME=${SMTP_USERNAME:-misp}
-      - WORKERS_HOSTNAME=${WORKERS_HOSTNAME:-misp_workers}
-      - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
+    env_file:
+      - path: .env
+        required: false
+      - path: oidc.env
+        required: false
     hostname: ${MISP_HOSTNAME:-misp_web}
     image: jisccti/misp-web-dev:latest
     ports:
@@ -104,13 +83,9 @@ services:
     depends_on:
       web:
         condition: service_started
-    environment:
-      - FQDN=${FQDN:-misp.local}
-      - HTTPS_PORT=${HTTPS_PORT:-443}
-      - ORG_NAME=${ORG_NAME:-ORGNAME}
-      - ORG_UUID=${ORG_UUID:-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
-      - REDIS_HOST=${REDIS_HOST:-misp_redis}
-      - WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
+    env_file:
+      - path: .env
+        required: false
     hostname: ${WORKERS_HOSTNAME:-misp_workers}
     image: jisccti/misp-workers-dev:latest
     restart: unless-stopped

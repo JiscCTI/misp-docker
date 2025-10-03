@@ -7,38 +7,202 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-set -e
+apply_customisations() {
+    echo "Processing /opt/misp_custom customisations..."
 
-block_default_credentials() {
-    if [ "$GPG_PASSPHRASE" == "misp" ]; then
-        echo "The GPG_PASSPHRASE environment variable must be overwritten in .env for MISP to start"
-        exit 1
+    if [ -d /opt/misp_custom/images ]; then
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/images/ | grep -q "\.jpg"; then
+            for image in /opt/misp_custom/images/*.jpg; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/custom/
+            done
+        fi
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/images/ | grep -q "\.png"; then
+            for image in /opt/misp_custom/images/*.png; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/custom/
+            done
+        fi
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/images/ | grep -q "\.svg"; then
+            for image in /opt/misp_custom/images/*.svg; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/custom/
+            done
+        fi
     fi
-    if [ "$MYSQL_PASSWORD" == "misp" ]; then
-        echo "The MYSQL_PASSWORD environment variable must be overwritten in .env for MISP to start"
-        exit 1
+
+    if [ -d /opt/misp_custom/org_icons ]; then
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/org_icons/ | grep -q "\.png"; then
+            for image in /opt/misp_custom/org_icons/*.png; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/orgs/
+            done
+        fi
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/org_icons/ | grep -q "\.svg"; then
+            for image in /opt/misp_custom/org_icons/*.svg; do
+                echo "Custom image ${image} found, copying..."
+                cp "$image" /var/www/MISPData/files/img/orgs/
+            done
+        fi
     fi
-    if [ "$REDIS_PASSWORD" == "misp" ]; then
-        echo "The REDIS_PASSWORD environment variable must be overwritten in .env for MISP to start"
-        exit 1
+
+    if [ -d /opt/misp_custom/taxonomies ]; then
+        if [ -n "$(ls /opt/misp_custom/taxonomies/)" ]; then
+            for taxonomy in /opt/misp_custom/taxonomies/*; do
+                if [ -d "$taxonomy" ]; then
+                    if [ -f "${taxonomy}/machinetag.json" ]; then
+                        echo "Custom taxonomy ${taxonomy} found, copying..."
+                        cp -r -f "$taxonomy" /var/www/MISPData/files/taxonomies/
+                    else
+                        echo "Custom taxonomy ${taxonomy} has no machinetag.json."
+                    fi
+                fi
+            done
+        fi
     fi
-    if [ "$SMTP_PASSWORD" == "misp" ]; then
-        echo "The SMTP_PASSWORD environment variable must be overwritten in .env for MISP to start"
-        exit 1
+
+    if [ -d /opt/misp_custom/terms ]; then
+        if [ -n "$(ls /opt/misp_custom/terms/)" ]; then
+            for terms_file in /opt/misp_custom/terms/*; do
+                if [ -f "${terms_file}" ]; then
+                    echo "Custom terms file ${terms_file} found, copying..."
+                    cp -f "${terms_file}" /var/www/MISPData/files/terms/
+                fi
+            done
+        fi
     fi
-    if [ "$WORKERS_PASSWORD" == "misp" ]; then
-        echo "The WORKERS_PASSWORD environment variable must be overwritten in .env for MISP to start"
-        exit 1
+
+    if [ -d /opt/misp_custom/on_start ]; then
+        # shellcheck disable=SC2010
+        if ls /opt/misp_custom/on_start/ | grep -q "\.sh"; then
+            for startup_script in /opt/misp_custom/on_start/*.sh; do
+                echo "Custom startup script ${startup_script} found, executing..."
+                bash "$startup_script"
+            done
+        else
+            echo "Custom startup script directory found - but no *.sh scripts to run"
+        fi
     fi
-    
-    if [ "$AUTH_METHOD" == "oidc" ] && [ "$OIDC_CLIENT_SECRET" == "misp" ]; then
-        echo "The OIDC_CLIENT_SECRET environment variable must be overwritten in oidc.env for MISP to start"
-        exit 1
+
+    echo "Done processing /opt/misp_custom customisations."
+}
+
+apply_env_vars() {
+    echo "Updating settings based on environment variables..."
+    sed -i "s/^\(ServerName\).*/\1 \${FQDN}/" /etc/apache2/sites-enabled/000-default.conf
+    setup_smtp
+    check_gnupg
+    if echo "1234" | su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode loopback -o /dev/null --local-user $MISP_EMAIL_ADDRESS -as -" >/dev/null 2>&1; then
+        $CAKE Admin setSetting "GnuPG.password" "$GPG_PASSPHRASE" >/dev/null 2>&1
+        echo 'Setting "GnuPG.password" changed to "[REDACTED]"'
+    else
+        echo "GPG Passphrase not changed as new value doesn't unlock the current key"
     fi
+    $CAKE Admin setSetting "GnuPG.email" "$MISP_EMAIL_ADDRESS"
+    $CAKE Admin setSetting "MISP.email" "$MISP_EMAIL_ADDRESS"
+    $CAKE Admin setSetting "MISP.contact" "$MISP_EMAIL_ADDRESS"
+    $CAKE Admin setSetting "MISP.baseurl" "$MISP_URL"
+    $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
+    $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
+    python3 /opt/scripts/trigger_set_org_name.py
+    $CAKE Admin setSetting "Security.otp_required" "$REQUIRE_TOTP"
+    setup_redis
+    /wait-for-it.sh -h "$MODULES_HOSTNAME" -p 6666 -t 0 -- true
+    $CAKE Admin setSetting "Plugin.Enrichment_services_url" "http://$MODULES_HOSTNAME"
+    $CAKE Admin setSetting "Plugin.Import_services_url" "http://$MODULES_HOSTNAME"
+    $CAKE Admin setSetting "Plugin.Export_services_url" "http://$MODULES_HOSTNAME"
+    $CAKE Admin setSetting "Plugin.Action_services_url" "http://$MODULES_HOSTNAME"
+
+    /wait-for-it.sh -h "$CLAMAV_HOSTNAME" -p 3310 -t 0 -- true
+    $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
+
+    /wait-for-it.sh -h "$WORKERS_HOSTNAME" -p 9001 -t 0 -- true
+    $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_host" "$WORKERS_HOSTNAME"
+    $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" >/dev/null 2>&1
+    echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'
+
+    if [ "$AUTH_METHOD" == "oidc" ]; then
+        echo "Enabling OIDC Authentication"
+        sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Lax\"/" /usr/local/etc/php/php.ini
+        $CAKE Admin setSetting "Security.require_password_confirmation" false
+        if variable_is_true "$OIDC_ONLY" ; then
+            $CAKE Admin setSetting "Security.auth_enforced" true
+        else
+            $CAKE Admin setSetting "Security.auth_enforced" false
+        fi
+        cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
+        php /opt/scripts/auth_oidc.php
+    elif [ "$AUTH_METHOD" == "shibb" ]; then
+        echo "Enabling Shibboleth Authentication"
+        sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Strict\"/" /usr/local/etc/php/php.ini
+        $CAKE Admin setSetting "Security.require_password_confirmation" false
+        if variable_is_true "$SHIBB_ONLY" ; then
+            $CAKE Admin setSetting "Security.auth_enforced" true
+        else
+            $CAKE Admin setSetting "Security.auth_enforced" false
+        fi
+        cp /etc/apache2/sites-available/apache.shibb.conf /etc/apache2/sites-enabled/000-default.conf
+        php /opt/scripts/auth_shibb.php
+    else
+        if [ "$AUTH_METHOD" != "misp" ]; then
+            echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp', 'oidc' or 'shibb'"
+        fi
+        echo "Enabling MISP Native Authentication"
+        sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Strict\"/" /usr/local/etc/php/php.ini
+        $CAKE Admin setSetting "Security.require_password_confirmation" true
+        $CAKE Admin setSetting "Security.auth_enforced" false
+        cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
+        php /opt/scripts/auth_misp.php
+    fi
+
+    if variable_is_true "$X_FORWARDED_FOR"; then
+        a2enmod remoteip >/dev/null 2>&1
+        echo "RemoteIPHeader X-Forwarded-For" > /etc/apache/conf-available/remoteip.conf
+        if variable_is_true "$X_FORWARDED_FOR_ALLOW_INTERNAL"; then
+            echo "RemoteIPInternalProxy $X_FORWARDED_FOR_PROXY" >> /etc/apache/conf-available/remoteip.conf
+            echo "Enabled X-Forwarded-For from '$X_FORWARDED_FOR_PROXY' (RFC 1918 IPs Allowed)"
+        else
+            echo "RemoteIPTrustedProxy $X_FORWARDED_FOR_PROXY" >> /etc/apache/conf-available/remoteip.conf
+            echo "Enabled X-Forwarded-For from '$X_FORWARDED_FOR_PROXY' (RFC 1918 IPs Prohibited)"
+        fi
+    else
+        a2dismod remoteip >/dev/null 2>&1
+        echo "Disabled X-Forwarded-For"
+    fi
+
+    echo "Settings updated based on environment variables."
+}
+
+await_startup_lock() {
+    # Check for startup lock
+    STARTUP_LOCK=/var/www/MISPData/.init_lock
+    CURRENT_LOCK="$(cat $STARTUP_LOCK)"
+    while [ -f "$STARTUP_LOCK" ]; do
+        if [ "$(hostname)" == "$CURRENT_LOCK" ]; then
+            echo "Self-referencing startup lock found, clearing..."
+            rm $STARTUP_LOCK
+        elif ping -q -c 1 "$CURRENT_LOCK" >/dev/null; then
+            # Random timeout between 3 and 10 seconds
+            TIMEOUT=$((RANDOM % 8 + 3))
+            echo "Valid startup lock for $CURRENT_LOCK found, waiting $TIMEOUT seconds..."
+            sleep $TIMEOUT
+        else
+            echo "Invalid startup lock for $CURRENT_LOCK found, clearing..."
+            rm $STARTUP_LOCK
+        fi
+    done
+
+    # Obtain startup lock
+    hostname >$STARTUP_LOCK
+    echo "Obtained startup lock."
 }
 
 check_gnupg() {
-    MISP_EMAIL_ADDRESS="${MISP_EMAIL_ADDRESS:-misp@misp.local}"
     mkdir -p /opt/misp_custom/gpg/
     chown -R www-data: /opt/misp_custom/gpg/
     chmod 700 /opt/misp_custom/gpg/
@@ -157,7 +321,7 @@ check_tls_certificate() {
 }
 
 generate_self_signed_certificate() {
-    openssl req -x509 -newkey rsa:4096 -subj "/CN=$(hostname)" \
+    openssl req -x509 -newkey rsa:4096 -subj "/CN=${FQDN}" \
         -keyout /etc/ssl/private/misp.key -out /etc/ssl/private/misp.crt -sha256 -days 365 -nodes >/dev/null 2>&1
     cat /etc/ssl/private/misp.crt /etc/ssl/private/misp.key >/etc/ssl/private/haproxy.pem
     curl https://ssl-config.mozilla.org/ffdhe2048.txt >>/etc/ssl/private/misp.crt
@@ -214,7 +378,7 @@ initial_config() {
     setup_smtp
 
     touch /var/www/MISPData/.configured
-    /wait-for-it.sh -h "${WORKERS_HOSTNAME:-misp_workers}" -p 9001 -t 0 -- true
+    /wait-for-it.sh -h "$WORKERS_HOSTNAME" -p 9001 -t 0 -- true
 
     echo "Executing all updates to bring the database up to date with the current version."
     $CAKE Admin runUpdates >/dev/null 2>&1
@@ -253,173 +417,94 @@ initial_config() {
     echo "Initial configuration finished."
 }
 
-on_start() {
-    echo "Updating settings based on environment variables..."
-    sed -i "s/^\(ServerName\).*/\1 \${FQDN}/" /etc/apache2/sites-enabled/000-default.conf
-    setup_smtp
-    check_gnupg
-    if echo "1234" | su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode loopback -o /dev/null --local-user $MISP_EMAIL_ADDRESS -as -" >/dev/null 2>&1; then
-        $CAKE Admin setSetting "GnuPG.password" "$GPG_PASSPHRASE" >/dev/null 2>&1
-        echo 'Setting "GnuPG.password" changed to "[REDACTED]"'
+load_env_vars() {
+    export AUTH_METHOD=${AUTH_METHOD:-misp}
+    export CLAMAV_HOSTNAME=${CLAMAV_HOSTNAME:-misp_clamav}
+    export FQDN=${FQDN:-misp.local}
+    export GPG_PASSPHRASE=${GPG_PASSPHRASE:-misp}
+    if [ "$GPG_PASSPHRASE" == "misp" ]; then
+        echo "The GPG_PASSPHRASE environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    export HTTPS_PORT=${HTTPS_PORT:-443}
+    export MISP_EMAIL_ADDRESS=${MISP_EMAIL_ADDRESS:-misp@misp.local}
+    export MISP_EMAIL_NAME=${MISP_EMAIL_NAME:-MISP}
+    if [[ "$HTTPS_PORT" -eq 443 ]]; then
+        export MISP_URL="https://$FQDN"
     else
-        echo "GPG Passphrase not changed as new value doesn't unlock the current key"
+        export MISP_URL="https://$FQDN:$HTTPS_PORT"
     fi
-    $CAKE Admin setSetting "GnuPG.email" "$MISP_EMAIL_ADDRESS"
-    $CAKE Admin setSetting "MISP.email" "$MISP_EMAIL_ADDRESS"
-    $CAKE Admin setSetting "MISP.contact" "$MISP_EMAIL_ADDRESS"
-    $CAKE Admin setSetting "MISP.baseurl" "$MISP_URL"
-    $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
-    $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
-    python3 /opt/scripts/trigger_set_org_name.py
-    $CAKE Admin setSetting "Security.otp_required" "$REQUIRE_TOTP"
-    setup_redis
-    /wait-for-it.sh -h "${MODULES_HOSTNAME:-misp_modules}" -p 6666 -t 0 -- true
-    $CAKE Admin setSetting "Plugin.Enrichment_services_url" "http://$MODULES_HOSTNAME"
-    $CAKE Admin setSetting "Plugin.Import_services_url" "http://$MODULES_HOSTNAME"
-    $CAKE Admin setSetting "Plugin.Export_services_url" "http://$MODULES_HOSTNAME"
-    $CAKE Admin setSetting "Plugin.Action_services_url" "http://$MODULES_HOSTNAME"
-
-    /wait-for-it.sh -h "${CLAMAV_HOSTNAME:-misp_clamav}" -p 3310 -t 0 -- true
-    $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
-
-    /wait-for-it.sh -h "${WORKERS_HOSTNAME:-misp_workers}" -p 9001 -t 0 -- true
-    $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_host" "$WORKERS_HOSTNAME"
-    $CAKE Admin setSetting "SimpleBackgroundJobs.supervisor_password" "$WORKERS_PASSWORD" >/dev/null 2>&1
-    echo 'Setting "SimpleBackgroundJobs.supervisor_password" changed to "[REDACTED]"'
-
-    if [ "$AUTH_METHOD" == oidc ]; then
-        echo "Enabling OIDC Authentication"
-        sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Lax\"/" /usr/local/etc/php/php.ini
-        $CAKE Admin setSetting "Security.require_password_confirmation" false
-        if variable_is_true "$OIDC_ONLY" ; then
-            $CAKE Admin setSetting "Security.auth_enforced" true
-        else
-            $CAKE Admin setSetting "Security.auth_enforced" false
-        fi
-        cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
-        php /opt/scripts/auth_oidc.php
-    elif [ "$AUTH_METHOD" == shibb ]; then
-        echo "Enabling Shibboleth Authentication"
-        sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Strict\"/" /usr/local/etc/php/php.ini
-        $CAKE Admin setSetting "Security.require_password_confirmation" false
-        if variable_is_true "$SHIBB_ONLY" ; then
-            $CAKE Admin setSetting "Security.auth_enforced" true
-        else
-            $CAKE Admin setSetting "Security.auth_enforced" false
-        fi
-        cp /etc/apache2/sites-available/apache.shibb.conf /etc/apache2/sites-enabled/000-default.conf
-        php /opt/scripts/auth_shibb.php
-    else
-        if [ "$AUTH_METHOD" != misp ]; then
-            echo "Unknown AUTH_METHOD ($AUTH_METHOD), must be 'misp', 'oidc' or 'shibb'"
-        fi
-        echo "Enabling MISP Native Authentication"
-        sed -i "s/^\(session.cookie_samesite\).*/\1 = \"Strict\"/" /usr/local/etc/php/php.ini
-        $CAKE Admin setSetting "Security.require_password_confirmation" true
-        $CAKE Admin setSetting "Security.auth_enforced" false
-        cp /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/000-default.conf
-        php /opt/scripts/auth_misp.php
+    export MODULES_HOSTNAME=${MODULES_HOSTNAME:-misp_modules}
+    export MYSQL_DBNAME=${MYSQL_DBNAME:-misp}
+    export MYSQL_HOSTNAME=${MYSQL_HOSTNAME:-misp_db}
+    export MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
+    if [ "$MYSQL_PASSWORD" == "misp" ]; then
+        echo "The MYSQL_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
     fi
+    export MYSQL_USERNAME=${MYSQL_USERNAME:-misp}
+    export ORG_NAME=${ORG_NAME:-ORGNAME}
+    export REDIS_HOST=${REDIS_HOST:-misp_redis}
+    export REDIS_MISP_DB=${REDIS_MISP_DB:-2}
+    export REDIS_PASSWORD=${REDIS_PASSWORD:-misp}
+    if [ "$REDIS_PASSWORD" == "misp" ]; then
+        echo "The REDIS_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    export REDIS_PORT=${REDIS_PORT:-6379}
+    export REDIS_TLS=${REDIS_TLS:-false}
+    export REDIS_WORKER_DB=${REDIS_WORKER_DB:-3}
+    export REQUIRE_TOTP=${REQUIRE_TOTP:-true}
+    export SMTP_HOSTNAME=${SMTP_HOSTNAME:-localhost}
+    export SMTP_PASSWORD=${SMTP_PASSWORD:-misp}
+    if [ "$SMTP_PASSWORD" == "misp" ]; then
+        echo "The SMTP_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    export SMTP_PORT=${SMTP_PORT:-587}
+    export SMTP_STARTTLS=${SMTP_STARTTLS:-true}
+    export SMTP_USERNAME=${SMTP_USERNAME:-misp}
+    export WORKERS_HOSTNAME=${WORKERS_HOSTNAME:-misp_workers}
+    export WORKERS_PASSWORD=${WORKERS_PASSWORD:-misp}
+    if [ "$WORKERS_PASSWORD" == "misp" ]; then
+        echo "The WORKERS_PASSWORD environment variable must be overwritten in .env for MISP to start"
+        exit 1
+    fi
+    export X_FORWARDED_FOR=${X_FORWARDED_FOR:-false}
+    export X_FORWARDED_FOR_ALLOW_INTERNAL=${X_FORWARDED_FOR_ALLOW_INTERNAL:-false}
+    export X_FORWARDED_FOR_PROXY=${X_FORWARDED_FOR_PROXY:-127.0.0.1}
 
-    if variable_is_true "${X_FORWARDED_FOR:-false}"; then
-        a2enmod remoteip >/dev/null 2>&1
-        echo "RemoteIPHeader X-Forwarded-For" > /etc/apache/conf-available/remoteip.conf
-        if variable_is_true "${X_FORWARDED_FOR_ALLOW_INTERNAL:-false}"; then
-            echo "RemoteIPInternalProxy ${X_FORWARDED_FOR_PROXY:-127.0.0.1}" >> /etc/apache/conf-available/remoteip.conf
-            echo "Enabled X-Forwarded-For from '${X_FORWARDED_FOR_PROXY:-127.0.0.1}' (RFC 1918 IPs Allowed)"
-        else
-            echo "RemoteIPTrustedProxy ${X_FORWARDED_FOR_PROXY:-127.0.0.1}" >> /etc/apache/conf-available/remoteip.conf
-            echo "Enabled X-Forwarded-For from '${X_FORWARDED_FOR_PROXY:-127.0.0.1}' (RFC 1918 IPs Prohibited)"
+    if [ "$AUTH_METHOD" == "oidc" ]; then
+        export OIDC_ADMIN_ROLE=${OIDC_ADMIN_ROLE:-misp-admin}
+        export OIDC_AUTH_METHOD=${OIDC_AUTH_METHOD:-client_secret_jwt}
+        export OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-misp}
+        export OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-misp}
+        if [ "$OIDC_CLIENT_SECRET" == "misp" ]; then
+            echo "The OIDC_CLIENT_SECRET environment variable must be overwritten in oidc.env for MISP to start"
+            exit 1
         fi
-    else
-        a2dismod remoteip >/dev/null 2>&1
-        echo "Disabled X-Forwarded-For"
+        export OIDC_CODE_CHALLENGE_METHOD=${OIDC_CODE_CHALLENGE_METHOD:-S256}
+        export OIDC_ONLY=${OIDC_ONLY:-false}
+        export OIDC_ORG_ADMIN_ROLE=${OIDC_ORG_ADMIN_ROLE:-misp-orgadmin}
+        export OIDC_PROVIDER=${OIDC_PROVIDER:-example.com/auth/realms/realm/.well-known/openid-configuration}
+        export OIDC_PUBLISHER_ROLE=${OIDC_PUBLISHER_ROLE:-misp-publisher}
+        export OIDC_READONLY_ROLE=${OIDC_READONLY_ROLE:-misp-readonly}
+        export OIDC_SYNC_ROLE=${OIDC_SYNC_ROLE:-misp-sync}
+        export OIDC_USER_ROLE=${OIDC_USER_ROLE:-misp-user}
     fi
 
-    echo "Settings updated based on environment variables."
-
-    echo "Processing /opt/misp_custom customisations..."
-
-    if [ -d /opt/misp_custom/images ]; then
-        # shellcheck disable=SC2010
-        if ls /opt/misp_custom/images/ | grep -q "\.jpg"; then
-            for image in /opt/misp_custom/images/*.jpg; do
-                echo "Custom image ${image} found, copying..."
-                cp "$image" /var/www/MISPData/files/img/custom/
-            done
-        fi
-        # shellcheck disable=SC2010
-        if ls /opt/misp_custom/images/ | grep -q "\.png"; then
-            for image in /opt/misp_custom/images/*.png; do
-                echo "Custom image ${image} found, copying..."
-                cp "$image" /var/www/MISPData/files/img/custom/
-            done
-        fi
-        # shellcheck disable=SC2010
-        if ls /opt/misp_custom/images/ | grep -q "\.svg"; then
-            for image in /opt/misp_custom/images/*.svg; do
-                echo "Custom image ${image} found, copying..."
-                cp "$image" /var/www/MISPData/files/img/custom/
-            done
-        fi
+    if [ "$AUTH_METHOD" == "shibb" ]; then
+        export SHIBB_ADMIN_ROLE=misp-admin
+        export SHIBB_BLOCK_ORG_CHANGE=false
+        export SHIBB_BLOCK_ROLE_CHANGE=false
+        export SHIBB_DEFAULT_ROLE=false
+        export SHIBB_ONLY=${SHIBB_ONLY:-false}
+        export SHIBB_ORG_ADMIN_ROLE=misp-orgadmin
+        export SHIBB_PUBLISHER_ROLE=misp-publisher
+        export SHIBB_READONLY_ROLE=misp-readonly
+        export SHIBB_SYNC_ROLE=misp-sync
+        export SHIBB_USER_ROLE=misp-user
     fi
-
-    if [ -d /opt/misp_custom/org_icons ]; then
-        # shellcheck disable=SC2010
-        if ls /opt/misp_custom/org_icons/ | grep -q "\.png"; then
-            for image in /opt/misp_custom/org_icons/*.png; do
-                echo "Custom image ${image} found, copying..."
-                cp "$image" /var/www/MISPData/files/img/orgs/
-            done
-        fi
-        # shellcheck disable=SC2010
-        if ls /opt/misp_custom/org_icons/ | grep -q "\.svg"; then
-            for image in /opt/misp_custom/org_icons/*.svg; do
-                echo "Custom image ${image} found, copying..."
-                cp "$image" /var/www/MISPData/files/img/orgs/
-            done
-        fi
-    fi
-
-    if [ -d /opt/misp_custom/taxonomies ]; then
-        if [ -n "$(ls /opt/misp_custom/taxonomies/)" ]; then
-            for taxonomy in /opt/misp_custom/taxonomies/*; do
-                if [ -d "$taxonomy" ]; then
-                    if [ -f "${taxonomy}/machinetag.json" ]; then
-                        echo "Custom taxonomy ${taxonomy} found, copying..."
-                        cp -r -f "$taxonomy" /var/www/MISPData/files/taxonomies/
-                    else
-                        echo "Custom taxonomy ${taxonomy} has no machinetag.json."
-                    fi
-                fi
-            done
-        fi
-    fi
-
-    if [ -d /opt/misp_custom/terms ]; then
-        if [ -n "$(ls /opt/misp_custom/terms/)" ]; then
-            for terms_file in /opt/misp_custom/terms/*; do
-                if [ -f "${terms_file}" ]; then
-                    echo "Custom terms file ${terms_file} found, copying..."
-                    cp -f "${terms_file}" /var/www/MISPData/files/terms/
-                fi
-            done
-        fi
-    fi
-
-    if [ -d /opt/misp_custom/on_start ]; then
-        # shellcheck disable=SC2010
-        if ls /opt/misp_custom/on_start/ | grep -q "\.sh"; then
-            for startup_script in /opt/misp_custom/on_start/*.sh; do
-                echo "Custom startup script ${startup_script} found, executing..."
-                bash "$startup_script"
-            done
-        else
-            echo "Custom startup script directory found - but no *.sh scripts to run"
-        fi
-    fi
-
-    echo "Done processing /opt/misp_custom customisations."
 }
 
 restore_persistence() {
@@ -512,14 +597,6 @@ restore_persistence() {
     echo "Persistent file storage restored."
 }
 
-set_env_vars() {
-    if [[ "$HTTPS_PORT" -eq 443 ]]; then
-        MISP_URL="https://$FQDN"
-    else
-        MISP_URL="https://$FQDN:$HTTPS_PORT"
-    fi
-}
-
 setup_db() {
     cd /var/www/MISPData/ || exit 1
     echo "<?php
@@ -566,15 +643,15 @@ setup_objects() {
 }
 
 setup_redis() {
-    /wait-for-it.sh -h "${REDIS_HOST:-misp_redis}" -p "${REDIS_PORT:-6379}" -t 0 -- true
+    /wait-for-it.sh -h "$REDIS_HOST" -p "$REDIS_PORT" -t 0 -- true
 
-    if variable_is_true "${REDIS_TLS}"; then
-        REDIS_URL="tls:\/\/${REDIS_HOST}:${REDIS_PORT:-6379}"
+    if variable_is_true "$REDIS_TLS"; then
+        REDIS_URL="tls:\/\/${REDIS_HOST}:${REDIS_PORT}"
         $CAKE Admin setSetting "MISP.redis_host" "tls://$REDIS_HOST" --force
         $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "tls://$REDIS_HOST" --force
         $CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "tls://$REDIS_HOST" --force
     else
-        REDIS_URL="tcp:\/\/${REDIS_HOST}:${REDIS_PORT:-6379}"
+        REDIS_URL="tcp:\/\/${REDIS_HOST}:${REDIS_PORT}"
         $CAKE Admin setSetting "MISP.redis_host" "$REDIS_HOST" --force
         $CAKE Admin setSetting "SimpleBackgroundJobs.redis_host" "$REDIS_HOST" --force
         $CAKE Admin setSetting "Plugin.ZeroMQ_redis_host" "$REDIS_HOST" --force
@@ -588,16 +665,15 @@ setup_redis() {
         sed -i "s/^\(session.save_path\).*/\1 = \"${REDIS_URL}?auth=${SED_REDIS_PASSWORD}\"/" /usr/local/etc/php/php.ini
     fi
 
-    $CAKE Admin setSetting "MISP.redis_port" "${REDIS_PORT:-6379}" --force
+    $CAKE Admin setSetting "MISP.redis_port" "$REDIS_PORT" --force
     $CAKE Admin setSetting "MISP.redis_database" "$REDIS_MISP_DB" --force
     $CAKE Admin setSetting "MISP.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
     echo 'Setting "MISP.redis_password" changed to "[REDACTED]"'
-    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_port" "${REDIS_PORT:-6379}" --force
+    $CAKE Admin setSetting "SimpleBackgroundJobs.redis_port" "$REDIS_PORT" --force
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_database" "$REDIS_WORKER_DB" --force
     $CAKE Admin setSetting "SimpleBackgroundJobs.redis_password" "$REDIS_PASSWORD" --force >/dev/null 2>&1
     echo 'Setting "SimpleBackgroundJobs.redis_password" changed to "[REDACTED]"'
-
-    $CAKE Admin setSetting "Plugin.ZeroMQ_redis_port" "${REDIS_PORT:-6379}" --force
+    $CAKE Admin setSetting "Plugin.ZeroMQ_redis_port" "$REDIS_PORT" --force
 }
 
 setup_smtp() {
@@ -631,46 +707,31 @@ variable_is_true() {
     fi
 }
 
-# Check for startup lock
-STARTUP_LOCK=/var/www/MISPData/.init_lock
-while [ -f "$STARTUP_LOCK" ]; do
-    if [ "$(hostname)" == "$(cat $STARTUP_LOCK)" ]; then
-        echo "Self-referencing startup lock found, clearing..."
-        rm $STARTUP_LOCK
-    elif ping -q -c 1 "$(cat $STARTUP_LOCK)" >/dev/null; then
-        # Random timeout between 3 and 10 seconds
-        TIMEOUT=$((RANDOM % 8 + 3))
-        echo "Valid startup lock for $(cat $STARTUP_LOCK) found, waiting $TIMEOUT seconds..."
-        sleep $TIMEOUT
-    else
-        echo "Invalid startup lock for $(cat $STARTUP_LOCK) found, clearing..."
-        rm $STARTUP_LOCK
-    fi
-done
-
-block_default_credentials
-# Obtain startup lock
-hostname >$STARTUP_LOCK
-echo "Obtained startup lock."
-
-# Initialise container
-set_env_vars
+set -e
+# Prevent race conditions in HA deployments
+await_startup_lock
+# Populate missing environment variables with default values
+load_env_vars
+# Persist required directories
 restore_persistence
+# Ensure the database schema is in place
 setup_db
+# Run initial configuration if not already done
 if [ ! -f /var/www/MISPData/.configured ]; then
     initial_config
 fi
+# Ensure a valid TLS certificate is present
 check_tls_certificate
-# Apply all environment variables
-on_start
+# Apply environment variables to MISP configuration
+apply_env_vars
+# Apply any customisations in /opt/misp_custom
+apply_customisations
 # Ensure database schema and objects are up to date
 $CAKE Admin runUpdates
 /opt/scripts/update_objects.sh
-
 # Release startup lock
-rm $STARTUP_LOCK
+rm -f /run/shibboleth/.init_lock
 echo "Released startup lock."
-
 # Start MISP
 echo "Starting MISP at $MISP_URL..."
 # shellcheck disable=SC1091

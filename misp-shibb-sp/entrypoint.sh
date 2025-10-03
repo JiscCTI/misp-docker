@@ -5,18 +5,53 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-set -e
+await_startup_lock() {
+    # Check for startup lock
+    STARTUP_LOCK=/run/shibboleth/.init_lock
+    CURRENT_LOCK="$(cat $STARTUP_LOCK)"
+    while [ -f "$STARTUP_LOCK" ]; do
+        if [ "$(hostname)" == "$CURRENT_LOCK" ]; then
+            echo "Self-referencing startup lock found, clearing..."
+            rm $STARTUP_LOCK
+        elif ping -q -c 1 "$CURRENT_LOCK" >/dev/null; then
+            # Random timeout between 3 and 10 seconds
+            TIMEOUT=$((RANDOM % 8 + 3))
+            echo "Valid startup lock for $CURRENT_LOCK found, waiting $TIMEOUT seconds..."
+            sleep $TIMEOUT
+        else
+            echo "Invalid startup lock for $CURRENT_LOCK found, clearing..."
+            rm $STARTUP_LOCK
+        fi
+    done
 
-set_env_vars() {
+    # Obtain startup lock
+    hostname >$STARTUP_LOCK
+    echo "Obtained startup lock."
+}
+
+load_env_vars() {
+    export FQDN=${FQDN:-misp.local}
+    export HTTPS_PORT=${HTTPS_PORT:-443}
     if [[ "$HTTPS_PORT" -eq 443 ]]; then
-        MISP_URL="https://$FQDN"
+        export MISP_URL="https://$FQDN"
     else
-        MISP_URL="https://$FQDN:$HTTPS_PORT"
+        export MISP_URL="https://$FQDN:$HTTPS_PORT"
     fi
-
+    export SHIBB_EMAIL_FORMAT=${SHIBB_EMAIL_FORMAT:-urn:oasis:names:tc:SAML:2.0:attrname-format:uri}
+    export SHIBB_EMAIL_NAME=${SHIBB_EMAIL_NAME:-urn:oid:0.9.2342.19200300.100.1.3}
+    export SHIBB_GROUP_FORMAT=${SHIBB_GROUP_FORMAT:-urn:oasis:names:tc:SAML:2.0:attrname-format:uri}
+    export SHIBB_GROUP_NAME=${SHIBB_GROUP_NAME:-urn:oid:1.3.6.1.4.1.5923.1.5.1.1}
+    export SHIBB_IDP_ENTITY_ID=${SHIBB_IDP_ENTITY_ID:-https://idp.example.org/idp/shibboleth}
+    export SHIBB_IDP_METADATA_URL=${SHIBB_IDP_METADATA_URL:-false}
+    export SHIBB_ORG_FORMAT=${SHIBB_ORG_FORMAT:-urn:oasis:names:tc:SAML:2.0:attrname-format:uri}
+    export SHIBB_ORG_NAME=${SHIBB_ORG_NAME:-urn:oid:1.3.6.1.4.1.25178.1.2.9}
+    export SHIBB_SP_ENCRYPT_REQUESTS=${SHIBB_SP_ENCRYPT_REQUESTS:-true}
+    export SHIBB_SP_ENTITY_ID=${SHIBB_SP_ENTITY_ID:-default}
     if [[ "$SHIBB_SP_ENTITY_ID" == "default" ]]; then
-        SHIBB_SP_ENTITY_ID="${MISP_URL}/shibboleth"
+        export SHIBB_SP_ENTITY_ID="${MISP_URL}/shibboleth"
     fi
+    export SHIBB_SP_SHARE_KEY=${SHIBB_SP_SHARE_KEY:-true}
+    export SHIBB_SP_SIGN_REQUESTS=${SHIBB_SP_SIGN_REQUESTS:-true}
 }
 
 initial_config() {
@@ -32,7 +67,7 @@ initial_config() {
     touch /etc/shibboleth/.configured
 }
 
-on_start() {
+apply_env_vars() {
     if [[ "${SHIBB_IDP_METADATA_URL}" != "false" ]]; then
         echo "Downloading IdP Metadata"
         if curl -s --output /etc/shibboleth/idp-metadata.xml "${SHIBB_IDP_METADATA_URL}"; then
@@ -105,35 +140,20 @@ on_start() {
     chown shibd: /etc/shibboleth/*
 }
 
-# Check for startup lock
-STARTUP_LOCK=/run/shibboleth/.init_lock
-while [ -f "$STARTUP_LOCK" ]; do
-    if [ "$(hostname)" == "$(cat $STARTUP_LOCK)" ]; then
-        echo "Self-referencing startup lock found, clearing..."
-        rm $STARTUP_LOCK
-    elif ping -q -c 1 "$(cat $STARTUP_LOCK)" >/dev/null; then
-        # Random timeout between 3 and 10 seconds
-        TIMEOUT=$((RANDOM % 8 + 3))
-        echo "Valid startup lock for $(cat $STARTUP_LOCK) found, waiting $TIMEOUT seconds..."
-        sleep $TIMEOUT
-    else
-        echo "Invalid startup lock for $(cat $STARTUP_LOCK) found, clearing..."
-        rm $STARTUP_LOCK
-    fi
-done
-# Obtain startup lock
-hostname >$STARTUP_LOCK
-echo "Obtained startup lock."
-
-set_env_vars
+set -e
+# Prevent race conditions in HA deployments
+await_startup_lock
+# Populate missing environment variables with default values
+load_env_vars
+# Run initial configuration if not already done
 if [ ! -f /etc/shibboleth/.configured ]; then
     initial_config
 fi
-on_start
-
+# Apply environment variables to Shibboleth configuration
+apply_env_vars
 # Release startup lock
-rm $STARTUP_LOCK
+rm -f /run/shibboleth/.init_lock
 echo "Released startup lock."
-
+# Start Shibboleth
 echo "Starting shibd in foreground"
 /usr/sbin/shibd -F

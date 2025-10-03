@@ -7,8 +7,6 @@ ARG MISP_VERSION=0.0.0
 FROM jisccti/misp-web:${MISP_VERSION} AS web
 FROM php:8.3-cli AS final
 ARG MISP_VERSION=0.0.0
-ENV FQDN=misp.local HTTPS_PORT=443 ORG_NAME=ORGNAME ORG_UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX \
-    WORKERS_PASSWORD=misp
 LABEL org.opencontainers.image.title="misp-workers" \
     org.opencontainers.image.version=${MISP_VERSION} \
     org.opencontainers.image.ref.name="misp-workers" \

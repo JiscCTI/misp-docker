@@ -181,8 +181,8 @@ apply_env_vars() {
 await_startup_lock() {
     # Check for startup lock
     STARTUP_LOCK=/var/www/MISPData/.init_lock
-    CURRENT_LOCK="$(cat $STARTUP_LOCK)"
     while [ -f "$STARTUP_LOCK" ]; do
+        CURRENT_LOCK="$(cat $STARTUP_LOCK)"
         if [ "$(hostname)" == "$CURRENT_LOCK" ]; then
             echo "Self-referencing startup lock found, clearing..."
             rm $STARTUP_LOCK

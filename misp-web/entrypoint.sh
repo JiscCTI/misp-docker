@@ -161,16 +161,22 @@ apply_env_vars() {
     fi
 
     if variable_is_true "$X_FORWARDED_FOR"; then
+        REMOTE_IP_CONF=/etc/apache2/conf-available/remoteip.conf
         a2enmod remoteip >/dev/null 2>&1
-        echo "RemoteIPHeader X-Forwarded-For" > /etc/apache/conf-available/remoteip.conf
+        echo "RemoteIPHeader X-Forwarded-For" > $REMOTE_IP_CONF
         if variable_is_true "$X_FORWARDED_FOR_ALLOW_INTERNAL"; then
-            echo "RemoteIPInternalProxy $X_FORWARDED_FOR_PROXY" >> /etc/apache/conf-available/remoteip.conf
+            echo "RemoteIPInternalProxy $X_FORWARDED_FOR_PROXY" >> $REMOTE_IP_CONF
             echo "Enabled X-Forwarded-For from '$X_FORWARDED_FOR_PROXY' (RFC 1918 IPs Allowed)"
         else
-            echo "RemoteIPTrustedProxy $X_FORWARDED_FOR_PROXY" >> /etc/apache/conf-available/remoteip.conf
+            echo "RemoteIPTrustedProxy $X_FORWARDED_FOR_PROXY" >> $REMOTE_IP_CONF
             echo "Enabled X-Forwarded-For from '$X_FORWARDED_FOR_PROXY' (RFC 1918 IPs Prohibited)"
         fi
+        a2enconf remoteip
     else
+        # The config may not exist to allow failure
+        set +e
+        a2enconf remoteip >/dev/null 2>&1
+        set -e
         a2dismod remoteip >/dev/null 2>&1
         echo "Disabled X-Forwarded-For"
     fi

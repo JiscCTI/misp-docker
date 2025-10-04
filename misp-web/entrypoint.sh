@@ -171,7 +171,7 @@ apply_env_vars() {
             echo "RemoteIPTrustedProxy $X_FORWARDED_FOR_PROXY" >> $REMOTE_IP_CONF
             echo "Enabled X-Forwarded-For from '$X_FORWARDED_FOR_PROXY' (RFC 1918 IPs Prohibited)"
         fi
-        a2enconf remoteip
+        a2enconf remoteip >/dev/null 2>&1
     else
         # The config may not exist to allow failure
         set +e

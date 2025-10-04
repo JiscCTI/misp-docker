@@ -100,7 +100,7 @@ jobs:
           cd ..
       - id: start_test_env
         name: Deploy Test Instance
-        run: docker compose up -d
+        run: docker compose -f docker-compose-dev.yml up -d
       - continue-on-error: true
         id: initial_setup
         name: Wait for Initial Setup
@@ -114,7 +114,7 @@ jobs:
           exit 1
       - id: stop_test_env
         name: Stop MISP
-        run: docker compose down
+        run: docker compose -f docker-compose-dev.yml down
       - id: push-modules
         if: steps.build_modules.outcome == 'success'
         name: Push misp-modules

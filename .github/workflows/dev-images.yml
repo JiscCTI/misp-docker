@@ -40,10 +40,9 @@ jobs:
         name: Configure Environment
         run: |
           sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' docker-compose-dev.yml
-          sed -i 's/latest/${{ github.event_name }}_${{ github.sha }}/g' docker-compose-dev.yml
           sed -i 's/jisccti/${{ vars.DOCKERHUB_ORGANISATION }}/g' misp-workers/Dockerfile
           sed -i 's/misp-web/misp-web-dev/g' misp-workers/Dockerfile
-          sed -i 's/\${MISP_VERSION}/${{ github.event_name }}_${{ github.sha }}/g' misp-workers/Dockerfile
+          sed -i 's/\${MISP_VERSION}/latest/g' misp-workers/Dockerfile
           cp .github/workflows/actions.env .env
           mkdir -p persistent/$COMPOSE_PROJECT_NAME/gpg persistent/$COMPOSE_PROJECT_NAME/tls
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/gpg/import.asc
@@ -79,29 +78,29 @@ jobs:
         name: Build misp-modules
         run: |
           cd misp-modules
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ env.MODULES_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ env.MODULES_VERSION }}" .
           cd ..
       - id: build_web
         name: Build misp-web
         run: |
           cd misp-web
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
           cd ..
       - id: build_workers
         name: Build misp-workers
         run: |
           cd misp-workers
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
           cd ..
       - id: build_shibb
         name: Build misp-shibb-sp
         run: |
           cd misp-shibb-sp
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ github.event_name }}_${{ github.sha }} --build-arg SHIBB_VERSION="${{ env.SHIBB_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ github.event_name }}_${{ github.sha }} --build-arg SHIBB_VERSION="${{ env.SHIBB_VERSION }}" .
           cd ..
       - id: start_test_env
         name: Deploy Test Instance
-        run: docker compose up -d
+        run: docker compose -f docker-compose-dev.yml up -d
       - continue-on-error: true
         id: initial_setup
         name: Wait for Initial Setup
@@ -115,27 +114,31 @@ jobs:
           exit 1
       - id: stop_test_env
         name: Stop MISP
-        run: docker compose down
+        run: docker compose -f docker-compose-dev.yml down
       - id: push-modules
         if: steps.build_modules.outcome == 'success'
         name: Push misp-modules
         run: |
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:${{ github.event_name }}_${{ github.sha }}
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:latest
       - id: push-web
         if: steps.build_web.outcome == 'success'
         name: Push misp-web
         run: |
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ github.event_name }}_${{ github.sha }}
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:latest
       - id: push-workers
         if: steps.build_workers.outcome == 'success'
         name: Push misp-workers
         run: |
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ github.event_name }}_${{ github.sha }}
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:latest
       - id: push-shibb
         if: steps.build_shibb.outcome == 'success'
         name: Push misp-shibb-sp
         run: |
           docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ github.event_name }}_${{ github.sha }}
+          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:latest
       - id: pr-comment-done
         if: ${{ github.event_name == 'pull_request' }}
         name: Add Comment to PR (Done)

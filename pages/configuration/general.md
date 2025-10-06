@@ -63,6 +63,9 @@ hexadecimal password.
 | **SMTP_USERNAME** | The username MISP will use to connect to the SMTP service. | `misp` |
 | WORKERS_HOSTNAME | The hostname of the MISP Workers container. | `misp_workers` |
 | **WORKERS_PASSWORD** | The password MISP will use to connect to the MISP Workers container's Supervisor interface. | `misp` |
+| X_FORWARDED_FOR | Whether MISP should accept X-Forwarded-For headers, i.e. if MISP is behind a proxy or load balancer. | `false` |
+| X_FORWARDED_FOR_ALLOW_INTERNAL | When X-Forwarded-For headers are accepted, whether to accept Internal / RFC 1918 addresses (10.0.0.0/8, 172.16.0.0/12 and 192.168.0.0/16). | `false` |
+| X_FORWARDED_FOR_PROXY | A space-delimited list of IPs and/or CIDR subnets to accept X-Forwarded-For headers from, i.e. the address(es) of the upstream proxy or load balancer | `127.0.0.1` (i.e. None) |
 
 ## Importing TLS Certificate
 

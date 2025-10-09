@@ -25,7 +25,7 @@ You may wish to copy this table into a document to capture the required values a
 |---------------|----------------------|-------|
 | n/a | `AUTH_METHOD` | `oidc` |
 | n/a | `OIDC_AUTH_METHOD` | `client_secret_basic` |
-| n/a | `OIDC_CODE_CHALLENGE_METHOD` | (blank) |
+| n/a | `OIDC_CODE_CHALLENGE_METHOD` | `-` |
 | Admin Group's Object Id | `OIDC_ADMIN_ROLE` |  |
 | Org Admin Group's Object Id | `OIDC_ORG_ADMIN_ROLE` |  |
 | Publisher Group's Object Id | `OIDC_PUBLISHER_ROLE` |  |

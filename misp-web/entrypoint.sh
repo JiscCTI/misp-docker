@@ -490,6 +490,9 @@ load_env_vars() {
             exit 1
         fi
         export OIDC_CODE_CHALLENGE_METHOD=${OIDC_CODE_CHALLENGE_METHOD:-S256}
+        if [ "$OIDC_CODE_CHALLENGE_METHOD" == "-" ]; then
+            OIDC_CODE_CHALLENGE_METHOD=""
+        fi
         export OIDC_ONLY=${OIDC_ONLY:-false}
         export OIDC_ORG_ADMIN_ROLE=${OIDC_ORG_ADMIN_ROLE:-misp-orgadmin}
         export OIDC_PROVIDER=${OIDC_PROVIDER:-example.com/auth/realms/realm/.well-known/openid-configuration}

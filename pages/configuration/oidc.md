@@ -41,7 +41,7 @@ Once the OP is configured, you need to add some environment variables to your `m
 | OIDC_AUTH_METHOD | The Client Authenticator mode to use for OIDC authentication, commonly `client_secret_basic` or `client_secret_jwt`. | `client_secret_jwt` |
 | OIDC_CLIENT_ID | The Client ID used to identify MISP in the Identity Provider. | `misp` |
 | **OIDC_CLIENT_SECRET** | The Client Secret used to authenticate requests from MISP to the Identity Provider. | `misp` |
-| OIDC_CODE_CHALLENGE_METHOD | The Proof Key for Code Exchange (PKCE) Code Challenge Method used to ensure that MISP starts and finishes the authentication flow. Enter `OIDC_CODE_CHALLENGE_METHOD=` (with no value) to disable PKCE. | `S256` |
+| OIDC_CODE_CHALLENGE_METHOD | The Proof Key for Code Exchange (PKCE) Code Challenge Method used to ensure that MISP starts and finishes the authentication flow. Set to `-` to disable PKCE. | `S256` |
 | OIDC_ONLY | Require OIDC authentication for all users, disable local account access. | `false` |
 | OIDC_ORG_ADMIN_ROLE | The OIDC group / role to be granted the MISP org admin role. | `misp-orgadmin` |
 | **OIDC_PROVIDER** | The URL of the OIDC Provider's configuration, including the `.well-known/openid-configuration` suffix where applicable. | `example.com/auth/realms/realm/.well-known/openid-configuration` |

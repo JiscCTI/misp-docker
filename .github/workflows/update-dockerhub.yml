@@ -22,7 +22,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
       - id: web
         name: MISP Web
-        uses: peter-evans/dockerhub-description@v4
+        uses: peter-evans/dockerhub-description@v5
         with:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           readme-filepath: docs/misp-web.md
@@ -31,7 +31,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
       - id: workers
         name: MISP Workers
-        uses: peter-evans/dockerhub-description@v4
+        uses: peter-evans/dockerhub-description@v5
         with:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           readme-filepath: docs/misp-modules.md
@@ -40,7 +40,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
       - id: shibb
         name: MISP Shibboleth SP
-        uses: peter-evans/dockerhub-description@v4
+        uses: peter-evans/dockerhub-description@v5
         with:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           readme-filepath: docs/misp-shibb-sp.md

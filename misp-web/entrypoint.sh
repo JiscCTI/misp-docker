@@ -107,6 +107,7 @@ apply_env_vars() {
     $CAKE Admin setSetting "MISP.email" "$MISP_EMAIL_ADDRESS"
     $CAKE Admin setSetting "MISP.contact" "$MISP_EMAIL_ADDRESS"
     $CAKE Admin setSetting "MISP.email_from_name" "$MISP_EMAIL_NAME"
+    $CAKE Admin setSetting "MISP.email_reply_to" "$MISP_EMAIL_ADDRESS"
     $CAKE Admin setSetting "MISP.baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.org" "$ORG_NAME"

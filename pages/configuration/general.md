@@ -37,7 +37,9 @@ hexadecimal password.
 | HTTP_PORT | The port HTTP will be exposed on at the FQDN - redirects to HTTPS. | `80` |
 | HTTPS_PORT | The port HTTPS will be exposed on at the FQDN. | `443` |
 | **MISP_EMAIL_ADDRESS** | The email address MISP will send emails from. | `misp@local` |
+| **MISP_EMAIL_CONTACT_ADDRESS** | The email address for the instance's administrator(s). | Value of `MISP_EMAIL_ADDRESS` |
 | MISP_EMAIL_NAME | The email display name MISP will use. | `MISP` |
+| MISP_EMAIL_REPLY_ADDRESS | The reply-to address used for emails from MISP. | Value of `MISP_EMAIL_CONTACT_ADDRESS` |
 | MISP_HOSTNAME | The internal hostname of the MISP Web container. | `misp_web` |
 | MODULES_HOSTNAME | The internal hostname of the MISP Modules container. | `misp_modules` |
 | MODULES_REDIS | The redis hostname used by modules, must be prefixed with `tls://` for Redis over TLS. | `$REDIS_HOST` |

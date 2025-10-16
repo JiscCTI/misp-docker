@@ -105,7 +105,9 @@ apply_env_vars() {
     fi
     $CAKE Admin setSetting "GnuPG.email" "$MISP_EMAIL_ADDRESS"
     $CAKE Admin setSetting "MISP.email" "$MISP_EMAIL_ADDRESS"
-    $CAKE Admin setSetting "MISP.contact" "$MISP_EMAIL_ADDRESS"
+    $CAKE Admin setSetting "MISP.contact" "$MISP_EMAIL_CONTACT_ADDRESS"
+    $CAKE Admin setSetting "MISP.email_from_name" "$MISP_EMAIL_NAME"
+    $CAKE Admin setSetting "MISP.email_reply_to" "$MISP_EMAIL_REPLY_ADDRESS"
     $CAKE Admin setSetting "MISP.baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.external_baseurl" "$MISP_URL"
     $CAKE Admin setSetting "MISP.org" "$ORG_NAME"
@@ -368,7 +370,7 @@ initial_config() {
     echo 'Setting "GnuPG.password" changed to "[REDACTED]"'
     $CAKE Admin setSetting "GnuPG.binary" "$(which gpg)"
     $CAKE Admin setSetting "MISP.email" "$MISP_EMAIL_ADDRESS"
-    $CAKE Admin setSetting "MISP.contact" "$MISP_EMAIL_ADDRESS"
+    $CAKE Admin setSetting "MISP.contact" "$MISP_EMAIL_CONTACT_ADDRESS"
     $CAKE Admin setSetting "Plugin.Enrichment_services_url" "http://$MODULES_HOSTNAME"
     $CAKE Admin setSetting "Plugin.Import_services_url" "http://$MODULES_HOSTNAME"
     $CAKE Admin setSetting "Plugin.Export_services_url" "http://$MODULES_HOSTNAME"
@@ -393,7 +395,7 @@ initial_config() {
     echo 'Setting "Security.encryption_key" changed to "[REDACTED]"'
     $CAKE Admin setSetting "MISP.email_from_name" "$MISP_EMAIL_NAME"
     $CAKE Admin setSetting "Plugin.Enrichment_clamav_connection" "${CLAMAV_HOSTNAME}:3310"
-    $CAKE Admin setSetting "MISP.email_reply_to" "$MISP_EMAIL_ADDRESS"
+    $CAKE Admin setSetting "MISP.email_reply_to" "$MISP_EMAIL_REPLY_ADDRESS"
     echo "Setting $(grep --count CAKE /opt/scripts/misp-post-update-config.sh) post upgrade configuration settings..."
     /opt/scripts/misp-post-update-config.sh >/dev/null
     echo "Post upgrade configuration complete."
@@ -434,6 +436,8 @@ load_env_vars() {
     fi
     export HTTPS_PORT=${HTTPS_PORT:-443}
     export MISP_EMAIL_ADDRESS=${MISP_EMAIL_ADDRESS:-misp@misp.local}
+    export MISP_EMAIL_CONTACT_ADDRESS=${MISP_EMAIL_CONTACT_ADDRESS:-${MISP_EMAIL_ADDRESS}}
+    export MISP_EMAIL_REPLY_ADDRESS=${MISP_EMAIL_REPLY_ADDRESS:-${MISP_EMAIL_CONTACT_ADDRESS}}
     export MISP_EMAIL_NAME=${MISP_EMAIL_NAME:-MISP}
     if [[ "$HTTPS_PORT" -eq 443 ]]; then
         export MISP_URL="https://$FQDN"

@@ -21,8 +21,8 @@ VOLUME "/var/www/MISPData" "/var/www/MISPGnuPG" "/opt/misp_custom"
 ARG DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 RUN apt-get -qy update &&\
     apt-get -qy upgrade curl libtasn1-6 openssl libncurses6 libkrb5-3 gnutls-bin libxml2 systemd &&\
-    apt-get -qy install git gnupg iputils-ping libfuzzy2 libgd3 libgpgme11 libpng16-16 librdkafka1\
-    libzip5 mariadb-client ssdeep sudo supervisor uuid zip && \
+    apt-get -qy install git gnupg iputils-ping libfuzzy2 libgd3 libgpgme11 libicu76 libpng16-16 \
+    librdkafka1 libzip5 mariadb-client ssdeep sudo supervisor uuid zip && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy in dependencies and MISP

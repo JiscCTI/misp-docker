@@ -110,7 +110,7 @@ ENV CAKE="sudo -H -u www-data /var/www/MISP/app/Console/cake"
 RUN apt-get -qy update &&\
     apt-get -qy upgrade apache2 &&\
     apt-get -qy install --no-install-recommends git gnupg iputils-ping libapache2-mod-shib\
-        libfuzzy2 libgd3 libgpgme11 libpng16-16 librdkafka1 libzip5 mariadb-client python3\
+        libfuzzy2 libgd3 libgpgme11 libicu76 libpng16-16 librdkafka1 libzip5 mariadb-client python3\
         python3-venv ssdeep sudo uuid zip &&\
     rm -rf /var/lib/apt/lists/* &&\
     mkdir -p /opt/misp_custom &&\

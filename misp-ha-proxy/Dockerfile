@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-FROM haproxy:2.7
+FROM haproxy:lts
 ARG DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 VOLUME "/tls/"
 EXPOSE 80 443

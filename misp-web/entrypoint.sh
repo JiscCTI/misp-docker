@@ -748,7 +748,7 @@ apply_customisations
 $CAKE Admin runUpdates
 /opt/scripts/update_objects.sh
 # Release startup lock
-rm -f /run/shibboleth/.init_lock
+rm -f /var/www/MISPData/.init_lock
 echo "Released startup lock."
 # Start MISP
 echo "Starting MISP at $MISP_URL..."

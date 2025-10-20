@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
 SPDX-FileContributor: Joe Pitt
 
 SPDX-License-Identifier: GPL-3.0-only
@@ -19,41 +19,18 @@ SPDX-License-Identifier: GPL-3.0-only
 Project to build a set of three docker images containing the components of
 [MISP](https://github.com/MISP/MISP) with self-configuration into a usable state from first start.
 
-**This GitHub repository is for maintaining the images, to use the images please see
-[jisccti/misp-web on DockerHub](https://hub.docker.com/r/jisccti/misp-web) instead.**
+**This GitHub repository is for maintaining the images, to use the images refer to the
+[documentation site](https://jisccti.github.io/misp-docker/) instead.**
 
 ## Build Dependencies
 
-The images have been build and tested against
-[Docker Engine v26]((https://docs.docker.com/engine/install/#server)), but should build on any
-Linux-based Docker Engine which supports multi-stage images and the built images should run on any
-Linux-based Docker Engine.
-
-## Runtime Dependencies
-
-The created Docker images contain only the MISP components and depend on the following external
-services:
-
-* ClamAV TCP endpoint. Tested against Docker image: `clamav/clamav:1.0_base`.
-* MySQL/MariaDB server (5.7 or 8.0). Tested against Docker image: `mysql/mysql-server:8.0`.
-* Redis server (6, 7 or 8). Tested against Docker Image: `redis:8`.
-* An SMTP service. Tested against Postfix.
-
-## System Requirements
-
-The standard [docker_compose.yml](./docker-compose.yml) deployment has been tested on a system with:
-
-* 2 Cores
-* 8GB RAM
-* 50GB Storage
-
-Depending on the features used, MISP can run on very little resources and could potentially run with
-less RAM.
+The images are build and tested using the latest docker engine, but should build on any Linux-based
+Docker Engine which supports multi-stage images.
 
 ## Quick Start Deployment
 
 `quickstart.py` is designed to create a test instance of MISP for validation of changes to the
-builds it **should not be used in production environments**.
+builds, it **should not be used in production environments**.
 
 It will:
 
@@ -65,12 +42,13 @@ It will:
 
 Quick Start requires:
 
-* Python >= 3.6 with pip >= 21.2, and
-* Dotenv (can be installed with `python3 -m pip install --user python-dotenv`).
-* Defused XML (can be installed with `python3 -m pip install --user defusedxml`)
-* Requests (can be installed with `python3 -m pip install --user requests`).
+* A Python >= 3.9 virtual environment, with the following modules installed:
+    * Dotenv (`python3 -m pip install python-dotenv`),
+    * Defused XML (`python3 -m pip install defusedxml`), and
+    * Requests (`python3 -m pip install requests`).
 
-For a more customised test instance see the [misp-web](./docs/misp-web.md) documentation.
+For customisation options see the
+[documentation site](https://jisccti.github.io/misp-docker/configuration/general/).
 
 ### High Availability Simulation
 
@@ -78,4 +56,10 @@ To simulate a High Availability setup with Quick Start add the `--ha` option, th
 misp-web frontend containers behind a HAProxy load balancing container.
 
 **Note:** It is expected for the HA Proxy container to continually restart until a misp-web
-container completes its initial setup, generating the TLS keypair needed for a successful startup.
+container generates the TLS keypair needed for a successful startup.
+
+### SAML2/Shibboleth Testing
+
+To test with SAML2/Shibboleth Single Sign On, ensure the appropriate options have been set in `.env`
+(see the [SAML2 Documentation](https://jisccti.github.io/misp-docker/configuration/shibb/)), then
+run Quick Start with the `--shibb` option.

@@ -50,6 +50,7 @@ hexadecimal password.
 | MYSQL_USERNAME | The username MISP will use to connect to MySQL. | `misp` |
 | **ORG_NAME** | The organisation that owns this instance of MISP. | `ORGNAME` |
 | **ORG_UUID** | The unique identifier of the organisation that owns this instance of MISP. | (generate a new UUID on first start) |
+| PHP_ADDITIONAL_MEMORY_LIMIT | How much **additional** RAM, beyond the default 2G, to allow each PHP process to consume. E.g. set to `2` for `memory_limit = 4G`. | `0` |
 | REDIS_HOST | The hostname of the Redis service. | `misp_redis` |
 | REDIS_MISP_DB | The database number to use for MISP within Redis. | `2` |
 | **REDIS_PASSWORD** | The password MISP will use to connect to Redis. | `misp` |

@@ -94,7 +94,11 @@ apply_customisations() {
 
 apply_env_vars() {
     echo "Updating settings based on environment variables..."
-    sed -i "s/^\(ServerName\).*/\1 \${FQDN}/" /etc/apache2/sites-enabled/000-default.conf
+    sed -i "s/^\(ServerName\).*/\1 ${FQDN}/" /etc/apache2/sites-enabled/000-default.conf
+    echo "Apache ServerName set to ${FQDN}"
+    PHP_MEMORY_LIMIT=$((2+PHP_ADDITIONAL_MEMORY_LIMIT))
+    sed -i "s/^\(memory_limit\).*/\1 = ${PHP_MEMORY_LIMIT}G/" /usr/local/etc/php/php.ini
+    echo "PHP memory_limit set to ${PHP_MEMORY_LIMIT}G"
     setup_smtp
     check_gnupg
     if echo "1234" | su -s /bin/bash www-data -c "gpg --homedir /var/www/MISPGnuPG --batch --passphrase '$GPG_PASSPHRASE' --pinentry-mode loopback -o /dev/null --local-user $MISP_EMAIL_ADDRESS -as -" >/dev/null 2>&1; then
@@ -454,6 +458,7 @@ load_env_vars() {
     fi
     export MYSQL_USERNAME=${MYSQL_USERNAME:-misp}
     export ORG_NAME=${ORG_NAME:-ORGNAME}
+    export PHP_ADDITIONAL_MEMORY_LIMIT=${PHP_ADDITIONAL_MEMORY_LIMIT:-0}
     export REDIS_HOST=${REDIS_HOST:-misp_redis}
     export REDIS_MISP_DB=${REDIS_MISP_DB:-2}
     export REDIS_PASSWORD=${REDIS_PASSWORD:-misp}

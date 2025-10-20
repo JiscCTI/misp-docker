@@ -5,11 +5,11 @@
 ---
 updates:
   - directories:
-      - misp-ha-proxy/
-      - misp-modules/
-      - misp-shibb-sp/
-      - misp-web/
-      - misp-workers/
+      - /misp-ha-proxy
+      - /misp-modules
+      - /misp-shibb-sp
+      - /misp-web
+      - /misp-workers
     package-ecosystem: docker
     schedule:
       interval: weekly

@@ -3,14 +3,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-FROM python:3.12-slim-bookworm AS build
+FROM python:3.14-slim-bookworm AS build
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 RUN apt-get update -yq && apt-get install -yq g++ git libzbar0 libpoppler-cpp-dev tesseract-ocr
 RUN python3 -m venv /misp_modules
 RUN . /misp_modules/bin/activate &&\
     python3 -m pip install --upgrade  --no-cache-dir --quiet misp-modules[all]==${MISP_VERSION}
 
-FROM python:3.12-slim-bookworm AS final
+FROM python:3.14-slim-bookworm AS final
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 LABEL org.opencontainers.image.title="misp-modules" \
     org.opencontainers.image.version=${MISP_VERSION}\

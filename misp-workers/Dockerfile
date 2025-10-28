@@ -27,7 +27,8 @@ RUN apt-get -qy update &&\
 
 # Copy in dependencies and MISP
 COPY --from=web --chown=root:root /opt/scripts/ /opt/scripts
-COPY --from=web --chown=root:root /usr/local/ /usr/local/
+COPY --from=web --chown=root:root /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=web --chown=root:root /usr/local/etc/php/ /usr/local/etc/php/
 COPY --from=web --chown=root:root /wait-for-it.sh /wait-for-it.sh
 COPY --from=web --chown=www-data:www-data /var/www/ /var/www
 # Copy in worker specific items

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 # Build PHP Modules
-FROM php:8.3-apache AS php_build
+FROM php:8.4-apache AS php_build
 ARG DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 
 COPY --chown=root:root php.ini /usr/local/etc/php/php.ini
@@ -34,7 +34,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp &&\
     docker-php-ext-enable apcu brotli exif gd gettext gnupg mbstring mongodb rdkafka redis simdjson sockets ssdeep zstd
 
 # Build MISP
-FROM php:8.3-apache AS misp_build
+FROM php:8.4-apache AS misp_build
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 
 # Install build dependencies
@@ -53,8 +53,7 @@ RUN git config --global advice.detachedHead false &&\
     git submodule foreach --recursive git config core.filemode false &&\
     git config core.filemode false
 
-COPY --from=php_build --chown=root:root /usr/local/lib/php/extensions/no-debug-non-zts-20230831/ \
-    /usr/local/lib/php/extensions/no-debug-non-zts-20230831/
+COPY --from=php_build --chown=root:root /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 COPY --from=php_build --chown=root:root /usr/local/etc/php/ /usr/local/etc/php/
 
 WORKDIR /var/www/MISP/app
@@ -95,13 +94,13 @@ RUN find /var/www -type d -name .git -exec rm -r {} + &&\
     rm -rf misp-decaying-models misp-galaxy misp-objects misp-workflow-blueprints noticelists taxonomies warninglists
 
 # Build final image
-FROM php:8.3-apache AS final
+FROM php:8.4-apache AS final
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 LABEL org.opencontainers.image.title="misp-web" org.opencontainers.image.version=${MISP_VERSION} \
     org.opencontainers.image.ref.name="misp-web" \
     org.opencontainers.image.description="Open Source Threat Intelligence and Sharing Platform." \
     org.opencontainers.image.authors="Jisc <CTI.Analysts@jisc.ac.uk" \
-    org.opencontainers.image.base.name="hub.docker.com/_/php:8.3-apache"
+    org.opencontainers.image.base.name="hub.docker.com/_/php:8.4-apache"
 EXPOSE 80 443
 
 ENV CAKE="sudo -H -u www-data /var/www/MISP/app/Console/cake"
@@ -116,7 +115,7 @@ RUN apt-get -qy update &&\
     mkdir -p /opt/misp_custom &&\
     chown -R www-data:www-data /opt/misp_custom
 
-COPY --from=php_build --chown=root:root /usr/local/lib/php/extensions/no-debug-non-zts-20230831/ /usr/local/lib/php/extensions/no-debug-non-zts-20230831/
+COPY --from=php_build --chown=root:root /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 COPY --from=php_build --chown=root:root /usr/local/etc/php/ /usr/local/etc/php/
 COPY --from=misp_build --chown=www-data:www-data /var/www/ /var/www
 COPY --chown=root:root apache.* /etc/apache2/sites-available/

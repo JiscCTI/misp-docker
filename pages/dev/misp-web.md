@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
 SPDX-FileContributor: Joe Pitt
 SPDX-FileContributor: James Ellor
 
@@ -21,14 +21,14 @@ artefacts out of the final image.
 ### php_build
 
 As not all of the required PHP modules are available out of the box in the official PHP image, the
-`php_build` phase starts from the `php:8.3-apache` image and installs or builds then enables the
+`php_build` phase starts from the `php:8.4-apache` image and installs or builds then enables the
 required modules. A customised
 [php.ini](https://github.com/JiscCTI/misp-docker/blob/main/misp-web/php.ini) file is also copied in.
 
 ### misp_build
 
 With PHP ready, the `misp_build` stage runs the MISP-specific build tasks, starting from the
-`php:8.3-apache` image.
+`php:8.4-apache` image.
 
 MISP is cloned from GitHub using the version number provided in the Build Argument `MISP_VERSION` as
 the tag to pull.
@@ -48,7 +48,7 @@ those git files used for version checking are retained.
 
 The `final` stage pulls together what has been built in earlier stages, while only installing what
 is required to operate the modules (i.e. no build tools of -dev packages). The image starts from the
-`php:8.3-apache` image.
+`php:8.4-apache` image.
 
 Default values are set for all environment variables, to allow MISP to start without any being
 provided, though this is **not** recommended. For ease of use, the environment variable `$CAKE` is set to

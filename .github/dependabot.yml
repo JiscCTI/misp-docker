@@ -4,7 +4,12 @@
 # SPDX-License-Identifier: GPL-3.0-only
 ---
 updates:
-  - directory: /
+  - directories:
+      - /misp-ha-proxy
+      - /misp-modules
+      - /misp-shibb-sp
+      - /misp-web
+      - /misp-workers
     package-ecosystem: docker
     schedule:
       interval: weekly

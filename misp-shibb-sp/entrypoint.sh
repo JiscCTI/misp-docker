@@ -5,30 +5,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-await_startup_lock() {
-    # Check for startup lock
-    STARTUP_LOCK=/run/shibboleth/.init_lock
-    while [ -f "$STARTUP_LOCK" ]; do
-        CURRENT_LOCK="$(cat $STARTUP_LOCK)"
-        if [ "$(hostname)" == "$CURRENT_LOCK" ]; then
-            echo "Self-referencing startup lock found, clearing..."
-            rm $STARTUP_LOCK
-        elif ping -q -c 1 "$CURRENT_LOCK" >/dev/null; then
-            # Random timeout between 3 and 10 seconds
-            TIMEOUT=$((RANDOM % 8 + 3))
-            echo "Valid startup lock for $CURRENT_LOCK found, waiting $TIMEOUT seconds..."
-            sleep $TIMEOUT
-        else
-            echo "Invalid startup lock for $CURRENT_LOCK found, clearing..."
-            rm $STARTUP_LOCK
-        fi
-    done
-
-    # Obtain startup lock
-    hostname >$STARTUP_LOCK
-    echo "Obtained startup lock."
-}
-
 load_env_vars() {
     export FQDN=${FQDN:-misp.local}
     export HTTPS_PORT=${HTTPS_PORT:-443}
@@ -141,19 +117,26 @@ apply_env_vars() {
 }
 
 set -e
-# Prevent race conditions in HA deployments
-await_startup_lock
 # Populate missing environment variables with default values
+echo "Loading environment variables..."
 load_env_vars
-# Run initial configuration if not already done
-if [ ! -f /etc/shibboleth/.configured ]; then
-    initial_config
-fi
-# Apply environment variables to Shibboleth configuration
-apply_env_vars
-# Release startup lock
-rm -f /run/shibboleth/.init_lock
-echo "Released startup lock."
+# Ensure no other misp-shibb-sp containers are currently starting, to prevent corruption by
+# conflicting configuration file updates.
+(
+    echo "Obtaining Startup Lock..."
+    # --verbose will output wait time to container's log E.g.:
+    # flock: getting lock took 97.275509 seconds
+    flock --verbose 300
+    echo "Startup Lock Obtained."
+    # Run initial configuration if not already done
+    if [ ! -f /etc/shibboleth/.configured ]; then
+        initial_config
+    fi
+    # Apply environment variables to Shibboleth configuration
+    apply_env_vars
+) 300>/run/shibboleth/.pre_start_lock
+echo "Startup Lock Released."
+
 # Start Shibboleth
 echo "Starting shibd in foreground"
 /usr/sbin/shibd -F

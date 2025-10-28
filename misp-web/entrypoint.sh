@@ -190,30 +190,6 @@ apply_env_vars() {
     echo "Settings updated based on environment variables."
 }
 
-await_startup_lock() {
-    # Check for startup lock
-    STARTUP_LOCK=/var/www/MISPData/.init_lock
-    while [ -f "$STARTUP_LOCK" ]; do
-        CURRENT_LOCK="$(cat $STARTUP_LOCK)"
-        if [ "$(hostname)" == "$CURRENT_LOCK" ]; then
-            echo "Self-referencing startup lock found, clearing..."
-            rm $STARTUP_LOCK
-        elif ping -q -c 1 "$CURRENT_LOCK" >/dev/null; then
-            # Random timeout between 3 and 10 seconds
-            TIMEOUT=$((RANDOM % 8 + 3))
-            echo "Valid startup lock for $CURRENT_LOCK found, waiting $TIMEOUT seconds..."
-            sleep $TIMEOUT
-        else
-            echo "Invalid startup lock for $CURRENT_LOCK found, clearing..."
-            rm $STARTUP_LOCK
-        fi
-    done
-
-    # Obtain startup lock
-    hostname >$STARTUP_LOCK
-    echo "Obtained startup lock."
-}
-
 check_gnupg() {
     mkdir -p /opt/misp_custom/gpg/
     chown -R www-data: /opt/misp_custom/gpg/
@@ -726,30 +702,37 @@ variable_is_true() {
 }
 
 set -e
-# Prevent race conditions in HA deployments
-await_startup_lock
 # Populate missing environment variables with default values
+echo "Loading environment variables..."
 load_env_vars
-# Persist required directories
-restore_persistence
-# Ensure the database schema is in place
-setup_db
-# Run initial configuration if not already done
-if [ ! -f /var/www/MISPData/.configured ]; then
-    initial_config
-fi
-# Ensure a valid TLS certificate is present
-check_tls_certificate
-# Apply environment variables to MISP configuration
-apply_env_vars
-# Apply any customisations in /opt/misp_custom
-apply_customisations
-# Ensure database schema and objects are up to date
-$CAKE Admin runUpdates
-/opt/scripts/update_objects.sh
-# Release startup lock
-rm -f /run/shibboleth/.init_lock
-echo "Released startup lock."
+# Ensure no other misp-web containers are currently starting, to prevent corruption by conflicting
+# pre-start tasks - such as: configuration file updates, database migrations and repository pulls.
+(
+    echo "Obtaining Startup Lock..."
+    # --verbose will output wait time to container's log E.g.:
+    # flock: getting lock took 97.275509 seconds
+    flock --verbose 200
+    echo "Startup Lock Obtained."
+    # Persist required directories
+    restore_persistence
+    # Ensure the database schema is in place
+    setup_db
+    # Run initial configuration if not already done
+    if [ ! -f /var/www/MISPData/.configured ]; then
+        initial_config
+    fi
+    # Ensure a valid TLS certificate is present
+    check_tls_certificate
+    # Apply environment variables to MISP configuration
+    apply_env_vars
+    # Apply any customisations in /opt/misp_custom
+    apply_customisations
+    # Ensure database schema and objects are up to date
+    $CAKE Admin runUpdates
+    /opt/scripts/update_objects.sh
+) 200>/var/www/MISPData/.pre_start_lock
+echo "Startup Lock Released."
+
 # Start MISP
 echo "Starting MISP at $MISP_URL..."
 # shellcheck disable=SC1091

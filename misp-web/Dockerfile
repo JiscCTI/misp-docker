@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 # Build PHP Modules
-FROM php:8.3-apache AS php_build
+FROM php:8.5-apache AS php_build
 ARG DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 
 COPY --chown=root:root php.ini /usr/local/etc/php/php.ini
@@ -34,7 +34,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp &&\
     docker-php-ext-enable apcu brotli exif gd gettext gnupg mbstring mongodb rdkafka redis simdjson sockets ssdeep zstd
 
 # Build MISP
-FROM php:8.3-apache AS misp_build
+FROM php:8.5-apache AS misp_build
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 
 # Install build dependencies
@@ -95,7 +95,7 @@ RUN find /var/www -type d -name .git -exec rm -r {} + &&\
     rm -rf misp-decaying-models misp-galaxy misp-objects misp-workflow-blueprints noticelists taxonomies warninglists
 
 # Build final image
-FROM php:8.3-apache AS final
+FROM php:8.5-apache AS final
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 LABEL org.opencontainers.image.title="misp-web" org.opencontainers.image.version=${MISP_VERSION} \
     org.opencontainers.image.ref.name="misp-web" \

@@ -12,7 +12,7 @@ or race conditions will occur starting background jobs.
 
 ## Build
 
-The image starts from the `php:8.4-cli` and imports MISP from the `jisccti/misp-web` image for the
+The image starts from the `php:8.5-cli` and imports MISP from the `jisccti/misp-web` image for the
 MISP version being built.
 
 The image also installs Supervisor for managing the workers.

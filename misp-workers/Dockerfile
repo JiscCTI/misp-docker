@@ -5,14 +5,14 @@
 
 ARG MISP_VERSION=0.0.0
 FROM jisccti/misp-web:${MISP_VERSION} AS web
-FROM php:8.4-cli AS final
+FROM php:8.5-cli AS final
 ARG MISP_VERSION=0.0.0
 LABEL org.opencontainers.image.title="misp-workers" \
     org.opencontainers.image.version=${MISP_VERSION} \
     org.opencontainers.image.ref.name="misp-workers" \
     org.opencontainers.image.description="Open Source Threat Intelligence and Sharing Platform." \
     org.opencontainers.image.authors="Jisc <CTI.Analysts@jisc.ac.uk" \
-    org.opencontainers.image.base.name="hub.docker.com/_/php:8.4-cli"
+    org.opencontainers.image.base.name="hub.docker.com/_/php:8.5-cli"
 ENV CAKE="sudo -H -u www-data /var/www/MISP/app/Console/cake"
 EXPOSE 9001
 VOLUME "/var/www/MISPData" "/var/www/MISPGnuPG" "/opt/misp_custom"

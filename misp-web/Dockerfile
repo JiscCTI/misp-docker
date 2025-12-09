@@ -10,28 +10,44 @@ ARG DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
 COPY --chown=root:root php.ini /usr/local/etc/php/php.ini
 
 RUN apt-get -qy update &&\
-    apt-get -qy install --no-install-recommends git libc6 libcurl4-openssl-dev libfuzzy-dev libfreetype-dev libgd3 \
-    libicu-dev libjpeg-dev libgpgme-dev libonig-dev libpng-dev librdkafka-dev libwebp-dev libzip-dev &&\
-    docker-php-ext-install bcmath curl gd intl mysqli opcache pcntl pdo_mysql zip
-RUN pecl install apcu &&\
-    pecl install gnupg &&\
-    pecl install mongodb &&\
-    pecl install rdkafka &&\
-    pecl install redis &&\
-    pecl install simdjson &&\
-    pecl install zstd
+    apt-get -qy install --no-install-recommends git libc6 libcurl4-openssl-dev libfuzzy-dev \
+        libfreetype-dev libgd3 libicu-dev libjpeg-dev libgpgme-dev libonig-dev libpng-dev \
+        librdkafka-dev libwebp-dev libzip-dev
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
+RUN docker-php-ext-install bcmath
+RUN docker-php-ext-install curl
+RUN docker-php-ext-install exif
+RUN docker-php-ext-install gd
+RUN docker-php-ext-install gettext
+RUN docker-php-ext-install intl
+RUN docker-php-ext-install mbstring
+RUN docker-php-ext-install mysqli
+RUN docker-php-ext-install pcntl
+RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install sockets
+RUN docker-php-ext-install zip
+RUN pecl install apcu
+RUN pecl install gnupg
+RUN pecl install mongodb
+RUN pecl install rdkafka
+RUN pecl install redis
+RUN pecl install simdjson
+RUN pecl install zstd
 RUN ln -s /usr/lib/x86_64-linux-gnu/libfuzzy.so /usr/lib/libfuzzy.so &&\
     ldconfig &&\
-    git clone --recursive --depth=1 https://github.com/JakubOnderka/pecl-text-ssdeep.git /tmp/pecl-text-ssdeep &&\
-    cd /tmp/pecl-text-ssdeep && phpize && ./configure && make && make install
+    git clone --recursive --depth=1 https://github.com/JakubOnderka/pecl-text-ssdeep.git &&\
+    cd pecl-text-ssdeep &&\
+    phpize &&\
+    ./configure &&\
+    make &&\
+    make install
 RUN git clone -q --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git &&\
     cd php-ext-brotli &&\
     phpize &&\
     ./configure &&\
     make install
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp &&\
-    docker-php-ext-install exif gd gettext mbstring sockets &&\
-    docker-php-ext-enable apcu brotli exif gd gettext gnupg mbstring mongodb rdkafka redis simdjson sockets ssdeep zstd
+RUN docker-php-ext-enable \
+    apcu brotli exif gd gettext gnupg mbstring mongodb rdkafka redis simdjson sockets ssdeep zstd
 
 # Build MISP
 FROM php:8.5-apache AS misp_build

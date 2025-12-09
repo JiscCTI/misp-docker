@@ -42,7 +42,6 @@ services:
       - REDIS_PW=${REDIS_PASSWORD:-misp}
     hostname: ${MODULES_HOSTNAME:-misp_modules}
     image: jisccti/misp-modules-dev:latest
-    pull_policy: always
     restart: unless-stopped
     volumes:
       - modules_cache:/mnt/cache/
@@ -75,7 +74,6 @@ services:
     ports:
       - ${HTTP_PORT:-80}:80
       - ${HTTPS_PORT:-443}:443
-    pull_policy: always
     restart: unless-stopped
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData
@@ -90,7 +88,6 @@ services:
         required: false
     hostname: ${WORKERS_HOSTNAME:-misp_workers}
     image: jisccti/misp-workers-dev:latest
-    pull_policy: always
     restart: unless-stopped
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData

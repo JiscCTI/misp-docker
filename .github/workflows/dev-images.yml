@@ -11,6 +11,8 @@ jobs:
     name: Build, Test, and Release (Dev)
     runs-on: ubuntu-latest
     steps:
+      - name: Free Up Disk Space
+        uses: jlumbroso/free-disk-space@main
       - id: pr-comment-start
         if: ${{ github.event_name == 'pull_request' }}
         name: Add Comment to PR (Start)

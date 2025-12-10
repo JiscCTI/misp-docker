@@ -10,6 +10,8 @@ jobs:
     name: Build, Test, and Release
     runs-on: ubuntu-latest
     steps:
+      - name: Free Up Disk Space
+        uses: jlumbroso/free-disk-space@main
       - id: checkout
         name: Checkout Project
         uses: actions/checkout@v6

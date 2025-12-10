@@ -10,7 +10,7 @@ jobs:
     steps:
       - id: checkout
         name: Checkout Project
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - id: modules
         name: MISP Modules
         uses: peter-evans/dockerhub-description@v5

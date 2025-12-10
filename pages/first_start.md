@@ -76,3 +76,15 @@ minor discrepancies (E.g. `int` vs `int(11)`) - these can be ignored.
 not. These fields can also be ignored but performance may not be optimal. MISP provides the MySQL
 commands to fix indexing: click the Spanner (Fix Database Index Schema) icon, and run the provided
 command manually against the MySQL database.
+
+### Workers Tab
+
+The Workers tab under Administration / Server Settings & Maintenance will show these errors, both
+can be safely ignored:
+
+* `Issues prevent jobs from being processed. Please resolve them below.` for all queues.
+* `The worker was started with a user other than the apache user. MISP cannot check whether or not the worker is alive.`
+    For all processes.
+
+This occurs as the workers are running in a different container, meaning this health check cannot
+communicate directly with the processes to check if they are alive.

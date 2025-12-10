@@ -5,14 +5,14 @@
 
 ARG MISP_VERSION=0.0.0
 FROM jisccti/misp-web:${MISP_VERSION} AS web
-FROM php:8.3-cli AS final
+FROM php:8.5-cli AS final
 ARG MISP_VERSION=0.0.0
 LABEL org.opencontainers.image.title="misp-workers" \
     org.opencontainers.image.version=${MISP_VERSION} \
     org.opencontainers.image.ref.name="misp-workers" \
     org.opencontainers.image.description="Open Source Threat Intelligence and Sharing Platform." \
     org.opencontainers.image.authors="Jisc <CTI.Analysts@jisc.ac.uk" \
-    org.opencontainers.image.base.name="hub.docker.com/_/php:8.3-cli"
+    org.opencontainers.image.base.name="hub.docker.com/_/php:8.5-cli"
 ENV CAKE="sudo -H -u www-data /var/www/MISP/app/Console/cake"
 EXPOSE 9001
 VOLUME "/var/www/MISPData" "/var/www/MISPGnuPG" "/opt/misp_custom"
@@ -27,7 +27,8 @@ RUN apt-get -qy update &&\
 
 # Copy in dependencies and MISP
 COPY --from=web --chown=root:root /opt/scripts/ /opt/scripts
-COPY --from=web --chown=root:root /usr/local/ /usr/local/
+COPY --from=web --chown=root:root /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=web --chown=root:root /usr/local/etc/php/ /usr/local/etc/php/
 COPY --from=web --chown=root:root /wait-for-it.sh /wait-for-it.sh
 COPY --from=web --chown=www-data:www-data /var/www/ /var/www
 # Copy in worker specific items

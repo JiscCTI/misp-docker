@@ -9,7 +9,6 @@ on:
   workflow_dispatch:
   pull_request:
 permissions:
-  actions: write
   contents: read
   pull-requests: write
 jobs:
@@ -109,8 +108,8 @@ jobs:
         id: build_modules
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:buildcache,mode=max
           context: ./misp-modules/
           build-args: |
             MISP_VERSION=${{ steps.misp_modules_version.outputs.tag }}
@@ -126,8 +125,8 @@ jobs:
         id: build_web
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:buildcache,mode=max
           context: ./misp-web/
           build-args: |
             MISP_VERSION=${{ steps.misp_version.outputs.tag }}
@@ -143,8 +142,8 @@ jobs:
         id: build_workers
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:buildcache,mode=max
           context: ./misp-workers/
           build-args: |
             MISP_VERSION=${{ steps.misp_version.outputs.tag }}
@@ -160,8 +159,8 @@ jobs:
         id: build_shibb
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:buildcache,mode=max
           context: ./misp-shibb-sp/
           build-args: |
             SHIBB_VERSION=${{ steps.shibb_version.outputs.version }}
@@ -200,8 +199,8 @@ jobs:
         id: push_modules
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:buildcache,mode=max
           context: ./misp-modules/
           build-args: |
             MISP_VERSION=${{ steps.misp_modules_version.outputs.tag }}
@@ -217,8 +216,8 @@ jobs:
         id: push_web
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:buildcache,mode=max
           context: ./misp-web/
           build-args: |
             MISP_VERSION=${{ steps.misp_version.outputs.tag }}
@@ -234,8 +233,8 @@ jobs:
         id: push_workers
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:buildcache,mode=max
           context: ./misp-workers/
           build-args: |
             MISP_VERSION=${{ steps.misp_version.outputs.tag }}
@@ -251,8 +250,8 @@ jobs:
         id: push_shibb
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:buildcache,mode=max
           context: ./misp-shibb-sp/
           build-args: |
             SHIBB_VERSION=${{ steps.shibb_version.outputs.version }}

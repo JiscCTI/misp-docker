@@ -12,7 +12,6 @@ on:
     - cron: 15 */6 * * *
   workflow_dispatch:
 permissions:
-  actions: write
   contents: read
 jobs:
   build:
@@ -107,8 +106,8 @@ jobs:
         if: steps.pull_modules.outcome == 'skipped' || steps.pull_modules.outcome == 'failure'
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:buildcache,mode=max
           context: ./misp-modules/
           build-args: |
             MISP_VERSION=${{ steps.misp_modules_version.outputs.tag }}
@@ -136,8 +135,8 @@ jobs:
         if: steps.pull_web.outcome == 'skipped' || steps.pull_web.outcome == 'failure'
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:buildcache,mode=max
           context: ./misp-web/
           build-args: |
             MISP_VERSION=${{ steps.misp_version.outputs.tag }}
@@ -165,8 +164,8 @@ jobs:
         if: steps.pull_workers.outcome == 'skipped' || steps.pull_workers.outcome == 'failure'
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:buildcache,mode=max
           context: ./misp-workers/
           build-args: |
             MISP_VERSION=${{ steps.misp_version.outputs.tag }}
@@ -194,8 +193,8 @@ jobs:
         if: steps.pull_shibb.outcome == 'skipped' || steps.pull_shibb.outcome == 'failure'
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:buildcache,mode=max
           context: ./misp-shibb-sp/
           build-args: |
             SHIBB_VERSION=${{ steps.shibb_version.outputs.version }}
@@ -235,8 +234,8 @@ jobs:
         if: steps.build_modules.outcome == 'success'
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:buildcache,mode=max
           context: ./misp-modules/
           build-args: |
             MISP_VERSION=${{ steps.misp_modules_version.outputs.tag }}
@@ -253,8 +252,8 @@ jobs:
         id: push_web
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:buildcache,mode=max
           context: ./misp-web/
           build-args: |
             MISP_VERSION=${{ steps.misp_version.outputs.tag }}
@@ -271,8 +270,8 @@ jobs:
         if: steps.build_workers.outcome == 'success'
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:buildcache,mode=max
           context: ./misp-workers/
           build-args: |
             MISP_VERSION=${{ steps.misp_version.outputs.tag }}
@@ -289,8 +288,8 @@ jobs:
         if: steps.build_shibb.outcome == 'success'
         uses: docker/build-push-action@v6
         with:
-          cache-from: gha
-          cache-to: gha
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:buildcache,mode=max
           context: ./misp-shibb-sp/
           build-args: |
             SHIBB_VERSION=${{ steps.shibb_version.outputs.version }}

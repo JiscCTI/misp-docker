@@ -150,7 +150,7 @@ jobs:
           build-args: |
             MISP_VERSION=${{ steps.misp_version.outputs.release_tag }}
           provenance: false
-          pull: true
+          pull: false
           load: true
           push: false
           sbom: false

@@ -12,6 +12,7 @@ on:
     - cron: 15 */6 * * *
   workflow_dispatch:
 permissions:
+  actions: write
   contents: read
 jobs:
   build:

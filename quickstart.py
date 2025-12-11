@@ -2,7 +2,7 @@
 
 """Quickly create a testing instance of MISP."""
 
-# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -11,7 +11,7 @@ from argparse import ArgumentParser
 from os import chdir
 from os.path import abspath, dirname, exists, join
 from secrets import choice
-from shutil import copy, rmtree
+from shutil import rmtree
 from socket import getfqdn
 from string import ascii_letters, digits
 from subprocess import run
@@ -20,23 +20,32 @@ try:
     from dotenv import set_key
 except ImportError as e:
     print("Failed to import dotenv. Install it using:")
-    print("python3 -m pip install --user python-dotenv")
+    print("pip install python-dotenv~=1.2.1")
+    raise e
+try:
+    from get_latest_version.github import (
+        get_latest_version_from_releases,
+        get_latest_version_from_tags,
+    )
+    from get_latest_version.rpm import get_latest_from_rpm_repo
+except ImportError as e:
+    print("Failed to import dotenv. Install it using:")
+    print("pip install get_latest_version~=2.0.0")
+    raise e
+try:
+    from semver import Version
+except ImportError as e:
+    print("Failed to import semver. Install it using:")
+    print("pip install semver~=3.0.4")
     raise e
 
-from lib.semver import (
-    get_latest_from_github_releases,
-    get_latest_from_github_tags,
-    get_latest_from_rpm_repo,
-)
-
-
 __author__ = "Joe Pitt"
-__copyright__ = "Copyright 2023-2024, Jisc Services Limited"
+__copyright__ = "Copyright 2023-2025, Jisc Services Limited"
 __email__ = "Joe.Pitt@jisc.ac.uk"
 __license__ = "GPL-3.0-only"
 __maintainer__ = "Joe Pitt"
 __status__ = "Production"
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 
 def generate_password() -> str:
@@ -53,10 +62,18 @@ def generate_password() -> str:
 argument_parser = ArgumentParser(
     "MISP Quickstart", description="Quickstart script for MISP containers"
 )
+argument_parser.add_argument(
+    "-g",
+    "--github-token",
+    required=True,
+    help="GitHub Token with public repo and packages read rights",
+)
 run_modes = argument_parser.add_mutually_exclusive_group()
 run_modes.add_argument("--ha", action="store_true", help="High availability simulation")
-run_modes.add_argument("--shibb", action="store_true", help="Shibboleth authentication mode")
-run_mode = argument_parser.parse_args()
+run_modes.add_argument(
+    "--shibb", action="store_true", help="Shibboleth authentication mode"
+)
+args = argument_parser.parse_args()
 
 home_directory = dirname(abspath(__file__))
 chdir(home_directory)
@@ -67,7 +84,6 @@ run(["/usr/bin/docker", "compose", "down", "--remove-orphans"], check=False)
 
 if not exists(dot_env_file):
     print("Creating best guess .env file...")
-    copy(join(home_directory, "example.env"), dot_env_file)
     set_key(dot_env_file, "FQDN", getfqdn())
     set_key(dot_env_file, "MISP_EMAIL_ADDRESS", f"misp@{getfqdn()}")
     set_key(dot_env_file, "GPG_PASSPHRASE", generate_password())
@@ -115,8 +131,8 @@ run(["/usr/bin/docker", "pull", "mysql/mysql-server:8.0"], check=True)
 
 print("Building MISP Modules image...")
 chdir(join(home_directory, "misp-modules"))
-MODULES_VERSION = get_latest_from_github_tags(
-    repository="MISP/misp-modules", max_major=3
+MODULES_VERSION = get_latest_version_from_tags(
+    args.github_token, "MISP", "MISP-Modules", less_than_version=Version(4)
 )
 run(
     [
@@ -136,7 +152,9 @@ run(
 
 print("Building MISP Web image...")
 chdir(join(home_directory, "misp-web"))
-WEB_VERSION = get_latest_from_github_releases(repository="MISP/MISP", max_major=2, max_minor=5)
+WEB_VERSION = get_latest_version_from_releases(
+    args.github_token, "MISP", "MISP", less_than_version=Version(2, 6)
+)
 run(
     [
         "/usr/bin/docker",
@@ -170,11 +188,12 @@ run(
     check=True,
 )
 
-if run_mode.shibb:
+if args.shibb:
     print("Building MISP Shibboleth image...")
     SHIBB_VERSION = get_latest_from_rpm_repo(
         mirror_list_url="https://shibboleth.net/cgi-bin/mirrorlist.cgi/rockylinux9",
         package_name="shibboleth",
+        less_than_version=Version(4),
     )
     chdir(join(home_directory, "misp-shibb-sp"))
     run(
@@ -194,12 +213,12 @@ if run_mode.shibb:
 
 print("Starting MISP...")
 chdir(home_directory)
-if run_mode.ha:
+if args.ha:
     run(
         ["/usr/bin/docker", "compose", "-f", "docker-compose-ha.yml", "up", "-d"],
         check=True,
     )
-elif run_mode.shibb:
+elif args.shibb:
     run(
         ["/usr/bin/docker", "compose", "-f", "docker-compose-shibb.yml", "up", "-d"],
         check=True,

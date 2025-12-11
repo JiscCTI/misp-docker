@@ -8,6 +8,10 @@ SPDX-License-Identifier: GPL-3.0-only
 
 This page tracks significant changes to the images.
 
+## December 2025 - MISP >=2.5.28
+
+* Included Software Bill of Materials (SBOM) and Image Provenance attestations with images
+
 ## December 2025 - MISP >=2.5.27
 
 * Updated images to use PHP 8.5

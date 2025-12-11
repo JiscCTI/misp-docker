@@ -3,27 +3,39 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 ---
-env:
-  COMPOSE_PROJECT_NAME: misp_test
+name: Production Images
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: 15 */6 * * *
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  run:
+  build:
     name: Build, Test, and Release
     runs-on: ubuntu-latest
     steps:
       - name: Free Up Disk Space
         uses: jlumbroso/free-disk-space@main
+
       - id: checkout
         name: Checkout Project
         uses: actions/checkout@v6
+
       - id: docker-login
         name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           username: ${{ vars.DOCKERHUB_USERNAME }}
+
       - id: setup-buildx
         name: Setup Docker buildx Environment
         uses: docker/setup-buildx-action@v3
+
       - id: test-env-setup
         name: Configure Environment
         run: |
@@ -40,100 +52,170 @@ jobs:
           cat <<EOF > persistent/$COMPOSE_PROJECT_NAME/tls/misp.key
           ${{ secrets.TEST_TLS_KEY }}
           EOF
-          python3 -m venv venv
-          ./venv/bin/pip install --upgrade defusedxml requests
-      - id: misp_version
-        name: Get current MISP version number
-        run: echo "MISP_VERSION=$(./venv/bin/python3 ./misp-web/latest.py)" >> $GITHUB_ENV
-      - id: modules_version
-        name: Get current MISP modules version number
-        run: echo "MODULES_VERSION=$(./venv/bin/python3 ./misp-modules/latest.py)" >> $GITHUB_ENV
-      - id: shibb_version
-        name: Get current Shibboleth SP version number
-        run: echo "SHIBB_VERSION=$(./venv/bin/python3 ./misp-shibb-sp/latest.py)" >> $GITHUB_ENV
-      - continue-on-error: true
-        id: modules_image_exists
-        name: Check If misp-modules Image Exists
+
+      - name: Get Latest MISP Version
+        id: misp_version
+        uses: joepitt91/action-version-from-github-release@v2
+        with:
+          token: ${{ secrets.VERSION_CHECK_PAT }}
+          owner: MISP
+          repository: MISP
+          greater_equal_version: 2.5.0
+          less_than_version: 2.6.0
+
+      - name: Get Latest MISP Modules Version
+        id: misp_modules_version
+        uses: joepitt91/action-version-from-github-tag@v2
+        with:
+          token: ${{ secrets.VERSION_CHECK_PAT }}
+          owner: MISP
+          repository: MISP-Modules
+          greater_equal_version: 3.0.0
+          less_than_version: 4.0.0
+
+      - name: Get Latest Shibboleth Version
+        id: shibb_version
+        uses: JoePJisc/action-version-from-rpm@v1
+        with:
+          mirror_list_url: https://shibboleth.net/cgi-bin/mirrorlist.cgi/rockylinux9
+          package_name: shibboleth
+          greater_equal_version: 3.0.0
+          less_than_version: 4.0.0
+
+      - name: Image Tag and Upstream Versions
+        run: |
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest using upstream version ${{ steps.misp_modules_version.outputs.release }}"
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:latest using upstream version ${{ steps.shibb_version.outputs.version }}"
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest using upstream version ${{ steps.misp_version.outputs.version }}"
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest using upstream version ${{ steps.misp_version.outputs.version }}"
+
+      # Build or Pull Images
+      - name: Pull Misp-Modules If Image Exists
+        id: pull_modules
+        if: github.event_name == 'schedule'
+        continue-on-error: true
         uses: cloudposse/github-action-docker-image-exists@main
         with:
           organization: ${{ vars.DOCKERHUB_ORGANISATION }}
           registry: registry.hub.docker.com
           repository: misp-modules
-          tag: ${{ env.MODULES_VERSION }}
-      - continue-on-error: true
-        id: web_image_exists
-        name: Check If misp-web Image Exists
+          tag: ${{ steps.misp_modules_version.outputs.tag }}
+
+      - name: Build MISP-Modules Image
+        id: build_modules
+        if: steps.pull_modules.outcome == 'skipped' || steps.pull_modules.outcome == 'failure'
+        uses: docker/build-push-action@v6
+        with:
+          cache-from: gha
+          cache-to: gha
+          context: ./misp-modules/
+          build-args: |
+            MISP_VERSION=${{ steps.misp_modules_version.outputs.tag }}
+          provenance: false
+          pull: true
+          push: false
+          sbom: false
+          tags: |
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ steps.misp_modules_version.outputs.tag }}
+
+      - name: Pull MISP-Web If Image Exists
+        id: pull_web
+        if: github.event_name == 'schedule'
+        continue-on-error: true
         uses: cloudposse/github-action-docker-image-exists@main
         with:
           organization: ${{ vars.DOCKERHUB_ORGANISATION }}
           registry: registry.hub.docker.com
           repository: misp-web
-          tag: ${{ env.MISP_VERSION }}
-      - continue-on-error: true
-        id: workers_image_exists
-        name: Check If misp-workers Image Exists
+          tag: ${{ steps.misp_version.outputs.tag }}
+
+      - name: Build MISP-Web Image
+        id: build_web
+        if: steps.pull_web.outcome == 'skipped' || steps.pull_web.outcome == 'failure'
+        uses: docker/build-push-action@v6
+        with:
+          cache-from: gha
+          cache-to: gha
+          context: ./misp-web/
+          build-args: |
+            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+          provenance: false
+          pull: true
+          push: false
+          sbom: false
+          tags: |
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ steps.misp_version.outputs.tag }}
+
+      - name: Pull MISP-Workers If Image Exists
+        id: pull_workers
+        continue-on-error: true
+        if: github.event_name == 'schedule' && steps.build_web.outcome == 'skipped'
         uses: cloudposse/github-action-docker-image-exists@main
         with:
           organization: ${{ vars.DOCKERHUB_ORGANISATION }}
           registry: registry.hub.docker.com
           repository: misp-workers
-          tag: ${{ env.MISP_VERSION }}
-      - continue-on-error: true
-        id: shibb_image_exists
-        name: Check If misp-shibb-sp Image Exists
+          tag: ${{ steps.misp_version.outputs.tag }}
+
+      - name: Build MISP-Workers Image
+        id: build_workers
+        if: steps.pull_workers.outcome == 'skipped' || steps.pull_workers.outcome == 'failure'
+        uses: docker/build-push-action@v6
+        with:
+          cache-from: gha
+          cache-to: gha
+          context: ./misp-workers/
+          build-args: |
+            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+          provenance: false
+          pull: true
+          push: false
+          sbom: false
+          tags: |
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ steps.misp_version.outputs.tag }}
+
+      - name: Pull MISP-Shibb-SP If Image Exists
+        id: pull_shibb
+        if: github.event_name == 'schedule'
+        continue-on-error: true
         uses: cloudposse/github-action-docker-image-exists@main
         with:
           organization: ${{ vars.DOCKERHUB_ORGANISATION }}
           registry: registry.hub.docker.com
           repository: misp-shibb-sp
-          tag: ${{ env.SHIBB_VERSION }}
-      - id: build_modules
-        if: ${{ steps.modules_image_exists.outcome == 'failure' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-        name: Build misp-modules
-        run: |
-          cd misp-modules
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.MODULES_VERSION }} --build-arg MISP_VERSION="${{ env.MODULES_VERSION }}" .
-          cd ..
-      - id: pull_modules
-        if: ${{ steps.modules_image_exists.outcome != 'failure' && github.event_name != 'push' && github.event_name != 'workflow_dispatch' }}
-        name: Pull misp-modules
-        run: docker pull ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest
-      - id: build_web
-        if: ${{ steps.web_image_exists.outcome == 'failure' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-        name: Build misp-web
-        run: |
-          cd misp-web
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.MISP_VERSION }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
-          cd ..
-      - id: pull_web
-        if: ${{ steps.web_image_exists.outcome != 'failure' && github.event_name != 'push' && github.event_name != 'workflow_dispatch' }}
-        name: Pull misp-web
-        run: docker pull ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest
-      - id: build_workers
-        if: ${{ steps.workers_image_exists.outcome == 'failure' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-        name: Build misp-workers
-        run: |
-          cd misp-workers
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.MISP_VERSION }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
-          cd ..
-      - id: pull_workers
-        if: ${{ steps.workers_image_exists.outcome != 'failure' && github.event_name != 'push' && github.event_name != 'workflow_dispatch' }}
-        name: Pull misp-workers
-        run: docker pull ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest
-      - id: build_shibb
-        if: ${{ steps.shibb_image_exists.outcome == 'failure' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-        name: Build misp-shibb-sp
-        run: |
-          cd misp-shibb-sp
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.SHIBB_VERSION }} --build-arg SHIBB_VERSION="${{ env.SHIBB_VERSION }}" .
-          cd ..
+          tag: ${{ steps.shibb_version.outputs.version }}
+
+      - name: Build MISP-Shibb-SP Image
+        id: build_shibb
+        if: steps.pull_shibb.outcome == 'skipped' || steps.pull_shibb.outcome == 'failure'
+        uses: docker/build-push-action@v6
+        with:
+          cache-from: gha
+          cache-to: gha
+          context: ./misp-shibb-sp/
+          build-args: |
+            SHIBB_VERSION=${{ steps.shibb_version.outputs.version }}
+          provenance: false
+          pull: true
+          push: false
+          sbom: false
+          tags: |
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:latest
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ steps.shibb_version.outputs.version }}
+
+      # Verify images are functional
       - id: start_test_env
         name: Deploy Test Instance
         run: docker compose up -d
+
       - continue-on-error: true
         id: initial_setup
         name: Wait for Initial Setup
         run: timeout 30m /bin/bash -c 'while [[ $(docker container ls --format {{.Status}} | grep -P "(unhealthy)|(starting)" | wc -l) -gt 0 ]] ; do sleep 30; done'
+
       - id: dump_logs
         if: steps.initial_setup.outcome == 'failure'
         name: Dump Container Log
@@ -141,40 +223,80 @@ jobs:
           docker compose logs
           docker compose down
           exit 1
+
       - id: stop_test_env
         name: Stop MISP
         run: docker compose down
-      - id: push-modules
+
+      # Attest and Push Dev Images
+      - name: Attest and Push MISP-Modules Image
+        id: push_modules
         if: steps.build_modules.outcome == 'success'
-        name: Push misp-modules
-        run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ env.MODULES_VERSION }}
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest
-      - id: push-web
+        uses: docker/build-push-action@v6
+        with:
+          cache-from: gha
+          cache-to: gha
+          context: ./misp-modules/
+          build-args: |
+            MISP_VERSION=${{ steps.misp_modules_version.outputs.tag }}
+          provenance: true
+          pull: false
+          push: true
+          sbom: true
+          tags: |
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:latest
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules:${{ steps.misp_modules_version.outputs.tag }}
+
+      - name: Attest and Push MISP-Web Image
         if: steps.build_web.outcome == 'success'
-        name: Push misp-web
-        run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ env.MISP_VERSION }}
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest
-      - id: push-workers
+        id: push_web
+        uses: docker/build-push-action@v6
+        with:
+          cache-from: gha
+          cache-to: gha
+          context: ./misp-web/
+          build-args: |
+            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+          provenance: true
+          pull: false
+          push: true
+          sbom: true
+          tags: |
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ steps.misp_version.outputs.tag }}
+
+      - name: Attest and Push MISP-Workers Image
+        id: push_workers
         if: steps.build_workers.outcome == 'success'
-        name: Push misp-workers
-        run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ env.MISP_VERSION }}
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest
-      - id: push-shibb
+        uses: docker/build-push-action@v6
+        with:
+          cache-from: gha
+          cache-to: gha
+          context: ./misp-workers/
+          build-args: |
+            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+          provenance: true
+          pull: false
+          push: true
+          sbom: true
+          tags: |
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ steps.misp_version.outputs.tag }}
+
+      - name: Attest and Push MISP-Shibb-SP Image
+        id: push_shibb
         if: steps.build_shibb.outcome == 'success'
-        name: Push misp-shibb-sp
-        run: |
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ env.SHIBB_VERSION }}
-          docker image push ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:latest
-name: Production Images
-on:
-  push:
-    branches:
-      - main
-  schedule:
-    - cron: 15 */6 * * *
-  workflow_dispatch:
-permissions:
-  contents: read
+        uses: docker/build-push-action@v6
+        with:
+          cache-from: gha
+          cache-to: gha
+          context: ./misp-shibb-sp/
+          build-args: |
+            SHIBB_VERSION=${{ steps.shibb_version.outputs.version }}
+          provenance: true
+          pull: false
+          push: true
+          sbom: true
+          tags: |
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:latest
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp:${{ steps.shibb_version.outputs.version }}

@@ -43,9 +43,9 @@ It will:
 Quick Start requires:
 
 * A Python >= 3.9 virtual environment, with the following modules installed:
-    * Dotenv (`python3 -m pip install python-dotenv`),
-    * Defused XML (`python3 -m pip install defusedxml`), and
-    * Requests (`python3 -m pip install requests`).
+    * Dotenv (`pip install python-dotenv~=1.2.1`),
+    * get_latest_version (`pip install get_latest_version~=2.0.0`), and
+    * SemVer (`pip install semver~=3.0.4`).
 
 For customisation options see the
 [documentation site](https://jisccti.github.io/misp-docker/configuration/general/).

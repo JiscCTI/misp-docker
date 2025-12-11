@@ -3,6 +3,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 ---
+name: Update DockerHub
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   run:
     name: Update DockerHub Pages
@@ -11,6 +19,7 @@ jobs:
       - id: checkout
         name: Checkout Project
         uses: actions/checkout@v6
+
       - id: modules
         name: MISP Modules
         uses: peter-evans/dockerhub-description@v5
@@ -20,6 +29,7 @@ jobs:
           repository: ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules
           short-description: MISP Modules for use with ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web.
           username: ${{ vars.DOCKERHUB_USERNAME }}
+
       - id: web
         name: MISP Web
         uses: peter-evans/dockerhub-description@v5
@@ -29,6 +39,7 @@ jobs:
           repository: ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web
           short-description: MISP with self-configuration into a usable state from first start.
           username: ${{ vars.DOCKERHUB_USERNAME }}
+
       - id: workers
         name: MISP Workers
         uses: peter-evans/dockerhub-description@v5
@@ -38,6 +49,7 @@ jobs:
           repository: ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers
           short-description: MISP Simple Background Job Workers for use with ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web.
           username: ${{ vars.DOCKERHUB_USERNAME }}
+
       - id: shibb
         name: MISP Shibboleth SP
         uses: peter-evans/dockerhub-description@v5
@@ -47,11 +59,3 @@ jobs:
           repository: ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp
           short-description: Shibboleth Service Provider for use with ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web.
           username: ${{ vars.DOCKERHUB_USERNAME }}
-name: Update DockerHub
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-permissions:
-  contents: read

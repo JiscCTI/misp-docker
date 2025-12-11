@@ -129,7 +129,7 @@ jobs:
           organization: ${{ vars.DOCKERHUB_ORGANISATION }}
           registry: registry.hub.docker.com
           repository: misp-web
-          tag: ${{ steps.misp_version.outputs.tag }}
+          tag: ${{ steps.misp_version.outputs.release_tag }}
 
       - name: Build MISP-Web Image
         id: build_web
@@ -140,7 +140,7 @@ jobs:
           cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:buildcache,mode=max
           context: ./misp-web/
           build-args: |
-            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+            MISP_VERSION=${{ steps.misp_version.outputs.release_tag }}
           provenance: false
           pull: true
           load: true
@@ -148,7 +148,7 @@ jobs:
           sbom: false
           tags: |
             ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest
-            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ steps.misp_version.outputs.tag }}
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ steps.misp_version.outputs.release_tag }}
 
       - name: Pull MISP-Workers If Image Exists
         id: pull_workers
@@ -159,7 +159,7 @@ jobs:
           organization: ${{ vars.DOCKERHUB_ORGANISATION }}
           registry: registry.hub.docker.com
           repository: misp-workers
-          tag: ${{ steps.misp_version.outputs.tag }}
+          tag: ${{ steps.misp_version.outputs.release_tag }}
 
       - name: Build MISP-Workers Image
         id: build_workers
@@ -170,7 +170,7 @@ jobs:
           cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:buildcache,mode=max
           context: ./misp-workers/
           build-args: |
-            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+            MISP_VERSION=${{ steps.misp_version.outputs.release_tag }}
           provenance: false
           pull: true
           load: true
@@ -178,7 +178,7 @@ jobs:
           sbom: false
           tags: |
             ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest
-            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ steps.misp_version.outputs.tag }}
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ steps.misp_version.outputs.release_tag }}
 
       - name: Pull MISP-Shibb-SP If Image Exists
         id: pull_shibb
@@ -260,14 +260,14 @@ jobs:
           cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:buildcache,mode=max
           context: ./misp-web/
           build-args: |
-            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+            MISP_VERSION=${{ steps.misp_version.outputs.release_tag }}
           provenance: true
           pull: false
           push: true
           sbom: true
           tags: |
             ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:latest
-            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ steps.misp_version.outputs.tag }}
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web:${{ steps.misp_version.outputs.release_tag }}
 
       - name: Attest and Push MISP-Workers Image
         id: push_workers
@@ -278,14 +278,14 @@ jobs:
           cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:buildcache,mode=max
           context: ./misp-workers/
           build-args: |
-            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+            MISP_VERSION=${{ steps.misp_version.outputs.release_tag }}
           provenance: true
           pull: false
           push: true
           sbom: true
           tags: |
             ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:latest
-            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ steps.misp_version.outputs.tag }}
+            ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers:${{ steps.misp_version.outputs.release_tag }}
 
       - name: Attest and Push MISP-Shibb-SP Image
         id: push_shibb

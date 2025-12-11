@@ -130,7 +130,7 @@ jobs:
           cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:buildcache,mode=max
           context: ./misp-web/
           build-args: |
-            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+            MISP_VERSION=${{ steps.misp_version.outputs.release_tag }}
           provenance: false
           pull: true
           load: true
@@ -148,7 +148,7 @@ jobs:
           cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:buildcache,mode=max
           context: ./misp-workers/
           build-args: |
-            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+            MISP_VERSION=${{ steps.misp_version.outputs.release_tag }}
           provenance: false
           pull: true
           load: true
@@ -224,7 +224,7 @@ jobs:
           cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:buildcache,mode=max
           context: ./misp-web/
           build-args: |
-            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+            MISP_VERSION=${{ steps.misp_version.outputs.release_tag }}
           provenance: true
           pull: false
           push: true
@@ -241,7 +241,7 @@ jobs:
           cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:buildcache,mode=max
           context: ./misp-workers/
           build-args: |
-            MISP_VERSION=${{ steps.misp_version.outputs.tag }}
+            MISP_VERSION=${{ steps.misp_version.outputs.release_tag }}
           provenance: true
           pull: false
           push: true

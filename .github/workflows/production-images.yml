@@ -113,6 +113,7 @@ jobs:
             MISP_VERSION=${{ steps.misp_modules_version.outputs.tag }}
           provenance: false
           pull: true
+          load: true
           push: false
           sbom: false
           tags: |
@@ -142,6 +143,7 @@ jobs:
             MISP_VERSION=${{ steps.misp_version.outputs.tag }}
           provenance: false
           pull: true
+          load: true
           push: false
           sbom: false
           tags: |
@@ -171,6 +173,7 @@ jobs:
             MISP_VERSION=${{ steps.misp_version.outputs.tag }}
           provenance: false
           pull: true
+          load: true
           push: false
           sbom: false
           tags: |
@@ -200,6 +203,7 @@ jobs:
             SHIBB_VERSION=${{ steps.shibb_version.outputs.version }}
           provenance: false
           pull: true
+          load: true
           push: false
           sbom: false
           tags: |

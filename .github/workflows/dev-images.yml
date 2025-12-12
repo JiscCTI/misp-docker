@@ -140,6 +140,16 @@ jobs:
             ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:latest
             ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ github.event_name }}_${{ github.sha }}
 
+      # Ensure the workers image is build with the latest base image
+      - name: Pull the latest php:8.5-cli image
+        id: pull_workers_base
+        uses: cloudposse/github-action-docker-image-exists@main
+        with:
+          organization: ${{ vars.DOCKERHUB_ORGANISATION }}
+          registry: registry.hub.docker.com
+          repository: php
+          tag: 8.5-cli
+
       - name: Build MISP-Workers Image
         id: build_workers
         uses: docker/build-push-action@v6

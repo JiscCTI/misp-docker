@@ -161,6 +161,17 @@ jobs:
           repository: misp-workers
           tag: ${{ steps.misp_version.outputs.release_tag }}
 
+      # Ensure the workers image is build with the latest base image
+      - name: Pull the latest php:8.5-cli image
+        id: pull_workers_base
+        if: steps.pull_workers.outcome == 'skipped' || steps.pull_workers.outcome == 'failure'
+        uses: cloudposse/github-action-docker-image-exists@main
+        with:
+          organization: ${{ vars.DOCKERHUB_ORGANISATION }}
+          registry: registry.hub.docker.com
+          repository: php
+          tag: 8.5-cli
+
       - name: Build MISP-Workers Image
         id: build_workers
         if: steps.pull_workers.outcome == 'skipped' || steps.pull_workers.outcome == 'failure'

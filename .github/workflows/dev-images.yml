@@ -104,19 +104,26 @@ jobs:
           echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ github.event_name }}_${{ github.sha }} using upstream version ${{ steps.misp_version.outputs.version }}"
 
       # Build Images
+      # Comments on Build MISP-Modules Image apply to all steps in this section
       - name: Build MISP-Modules Image
         id: build_modules
         uses: docker/build-push-action@v6
         with:
+          # Fetch and store the build cache in a dedicated :buildcache tag on DockerHub
           cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:buildcache
           cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:buildcache,mode=max
           context: ./misp-modules/
           build-args: |
             MISP_VERSION=${{ steps.misp_modules_version.outputs.tag }}
+          # Provenance must be generated and pushed in one step, so this is added later
           provenance: false
+          # Ensure we pull the latest base image, which will invalidate the cache if it has changed
           pull: true
+          # "Load" the built image into the Action Runner's docker image library
           load: true
+          # Do not push the image to DockerHub yet
           push: false
+          # SBOM must be generated and pushed in one step, so this is added later
           sbom: false
           tags: |
             ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:latest
@@ -160,6 +167,7 @@ jobs:
           build-args: |
             MISP_VERSION=${{ steps.misp_version.outputs.release_tag }}
           provenance: false
+          # The workers image copies data from the newly built Web image, therefore we pull the base image directly above and don't pull misp-web
           pull: false
           load: true
           push: false
@@ -194,6 +202,7 @@ jobs:
       - continue-on-error: true
         id: initial_setup
         name: Wait for Initial Setup
+        # Wait for up to 30 minutes for docker to report all containers are healthy (i.e. not (starting or unhealthy))
         run: timeout 30m /bin/bash -c 'while [[ $(docker container ls --format {{.Status}} | grep -P "(unhealthy)|(starting)" | wc -l) -gt 0 ]] ; do sleep 30; done'
 
       - id: dump_logs
@@ -209,18 +218,25 @@ jobs:
         run: docker compose -f docker-compose-dev.yml down
 
       # Attest and Push Dev Images
+      # Images have now passed testing, so provenance and SBOM attestations can be added and the images pushed to DockerHub
+      # Comments on Attest and Push MISP-Modules Image apply to all steps in this section
       - name: Attest and Push MISP-Modules Image
         id: push_modules
         uses: docker/build-push-action@v6
         with:
+          # The build cache will provide the image built above, so it is not built a second time
           cache-from: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:buildcache
           cache-to: type=registry,ref=${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:buildcache,mode=max
           context: ./misp-modules/
           build-args: |
             MISP_VERSION=${{ steps.misp_modules_version.outputs.tag }}
+          # Add Image build provenance attestation to image
           provenance: true
+          # Don't pull base image to avoid changing what has been tested
           pull: false
+          # Push the image to DockerHub once built
           push: true
+          # Add Software Bill of Materials (SBOM) attestation to image
           sbom: true
           tags: |
             ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:latest

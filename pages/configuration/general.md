@@ -120,12 +120,13 @@ not cover obtaining a certificate as this varies between Certification Authoriti
 
 Once your certificate has been issued, you will need two files:
 
-1. Public Certificate - save as `./tls/misp.crt` in the `misp_custom` volume:
+1. Public Certificate - save as `/opt/misp/persistent/misp/tls/misp.crt`:
     * Some CAs will provide you with a "certificate with chain" file, if so, download this.
     * If the "certificate with chain" file is not available from your CA, concatenate each of the
         `.crt` files that form the chain of trust, into one file putting your certificate first,
         then each intermediate certificate in order up to but excluding the CA's root certificate.
-1. **Unencrypted** private key - save as `./tls/misp.key` in the `misp_custom` volume.
+    * Depending on the type and features of the certificate, DH and EC parameters can also be included
+1. **Unencrypted** private key - save as `/opt/misp/persistent/misp/tls/misp.key`.
 
 `./tls/misp.crt` should resemble:
 
@@ -140,8 +141,16 @@ intermediate 1 certificate - signed by intermediate 2
 Intermediate 2 certificate - signed by trusted root
 -----END CERTIFICATE-----
 ```
+Optionally it may also contain:
+```
+-----BEGIN DH PARAMETERS-----
+-----END DH PARAMETERS-----
 
-Once the two files are in place (re)start MISP using `docker compose up -d --force-recreate`.
+-----BEGIN EC PARAMETERS-----
+-----END EC PARAMETERS-----
+```
+
+Once the two files are in place restart MISP using `docker compose restart web` or start with the usual `docker compose up -d`
 
 For renewals, repeat the above process.
 

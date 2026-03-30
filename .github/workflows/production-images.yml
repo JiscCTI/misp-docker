@@ -21,7 +21,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
       - id: setup-buildx
         name: Setup Docker buildx Environment
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - id: test-env-setup
         name: Configure Environment
         run: |

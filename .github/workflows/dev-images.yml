@@ -1,9 +1,16 @@
-# SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2026 Jisc Services Limited
 # SPDX-FileContributor: James Ellor
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
 ---
+name: Development Images
+on:
+  workflow_dispatch:
+  pull_request:
+permissions:
+  contents: read
+  pull-requests: write
 env:
   COMPOSE_PROJECT_NAME: misp_dev
 jobs:
@@ -58,45 +65,60 @@ jobs:
           ./venv/bin/pip install --upgrade defusedxml requests
       - id: misp_version
         name: Get current MISP version number
-        run: echo "MISP_VERSION=$(./venv/bin/python3 ./misp-web/latest.py)" >> $GITHUB_ENV
+        uses: joepitt91/action-version-from-github-release@v2
+        with:
+          token: ${{ secrets.VERSION_CHECK_PAT }}
+          owner: MISP
+          repository: MISP
+          greater_equal_version: 2.5.0
+          less_than_version: 2.6.0
       - id: modules_version
         name: Get current MISP modules version number
-        run: echo "MODULES_VERSION=$(./venv/bin/python3 ./misp-modules/latest.py)" >> $GITHUB_ENV
+        uses: joepitt91/action-version-from-github-tag@v2
+        with:
+          token: ${{ secrets.VERSION_CHECK_PAT }}
+          owner: MISP
+          repository: misp-modules
+          greater_equal_version: 3.0.0
+          less_than_version: 4.0.0
       - id: shibb_version
         name: Get current Shibboleth SP version number
-        run: echo "SHIBB_VERSION=$(./venv/bin/python3 ./misp-shibb-sp/latest.py)" >> $GITHUB_ENV
+        uses: JoePJisc/action-version-from-rpm@v1
+        with:
+          mirror_list_url: https://shibboleth.net/cgi-bin/mirrorlist.cgi/rockylinux9
+          package_name: shibboleth
       - id: print_versions
         name: Image Tag and Upstream Versions
         run: |
-          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:${{ github.event_name }}_${{ github.sha }} using upstream version ${{ env.MODULES_VERSION }}"
-          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ github.event_name }}_${{ github.sha }} using upstream version v${{ env.SHIBB_VERSION }}"
-          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ github.event_name }}_${{ github.sha }} using upstream version ${{ env.MISP_VERSION }}"
-          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ github.event_name }}_${{ github.sha }} using upstream version ${{ env.MISP_VERSION }}"
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:${{ github.event_name }}_${{ github.sha }} using upstream version ${{ steps.modules_version.outputs.tag }}"
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ github.event_name }}_${{ github.sha }} using upstream version v${{ steps.shibb_version.outputs.version }}"
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ github.event_name }}_${{ github.sha }} using upstream version ${{ steps.misp_version.outputs.release_tag }}"
+          echo "- ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ github.event_name }}_${{ github.sha }} using upstream version ${{ steps.misp_version.outputs.release_tag }}"
     
       # Build / Pull Images
       - id: build_modules
         name: Build misp-modules
         run: |
           cd misp-modules
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ env.MODULES_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ steps.modules_version.outputs.tag }}" .
           cd ..
       - id: build_web
         name: Build misp-web
         run: |
           cd misp-web
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ steps.misp_version.outputs.release_tag }}" .
           cd ..
       - id: build_workers
         name: Build misp-workers
         run: |
           cd misp-workers
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ env.MISP_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ github.event_name }}_${{ github.sha }} --build-arg MISP_VERSION="${{ steps.misp_version.outputs.release_tag }}" .
           cd ..
       - id: build_shibb
         name: Build misp-shibb-sp
         run: |
           cd misp-shibb-sp
-          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ github.event_name }}_${{ github.sha }} --build-arg SHIBB_VERSION="${{ env.SHIBB_VERSION }}" .
+          docker build -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:latest -t ${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ github.event_name }}_${{ github.sha }} --build-arg SHIBB_VERSION="${{ steps.shibb_version.outputs.version }}" .
           cd ..
       - id: start_test_env
         name: Deploy Test Instance
@@ -152,10 +174,3 @@ jobs:
               repo: context.repo.repo,
               body: 'New test images for this PR have been published: `${{ vars.DOCKERHUB_ORGANISATION }}/misp-modules-dev:${{ github.event_name }}_${{ github.sha }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-web-dev:${{ github.event_name }}_${{ github.sha }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-workers-dev:${{ github.event_name }}_${{ github.sha }}` `${{ vars.DOCKERHUB_ORGANISATION }}/misp-shibb-sp-dev:${{ github.event_name }}_${{ github.sha }}`'
             })
-name: Development Images
-on:
-  workflow_dispatch:
-  pull_request:
-permissions:
-  contents: read
-  pull-requests: write

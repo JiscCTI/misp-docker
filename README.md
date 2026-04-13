@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2023-2025 Jisc Services Limited
+SPDX-FileCopyrightText: 2023-2026 Jisc Services Limited
 SPDX-FileContributor: Joe Pitt
 
 SPDX-License-Identifier: GPL-3.0-only
@@ -42,10 +42,10 @@ It will:
 
 Quick Start requires:
 
+* A Linux host, and
 * A Python >= 3.9 virtual environment, with the following modules installed:
-    * Dotenv (`python3 -m pip install python-dotenv`),
-    * Defused XML (`python3 -m pip install defusedxml`), and
-    * Requests (`python3 -m pip install requests`).
+    * get-latest-version
+    * python-dotenv
 
 For customisation options see the
 [documentation site](https://jisccti.github.io/misp-docker/configuration/general/).
@@ -60,6 +60,7 @@ container generates the TLS keypair needed for a successful startup.
 
 ### SAML2/Shibboleth Testing
 
-To test with SAML2/Shibboleth Single Sign On, ensure the appropriate options have been set in `.env`
+To test with SAML2/Shibboleth Single Sign On, ensure the appropriate options have been set in
+`shibb.env` 
 (see the [SAML2 Documentation](https://jisccti.github.io/misp-docker/configuration/shibb/)), then
 run Quick Start with the `--shibb` option.

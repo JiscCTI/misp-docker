@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2026 Jisc Services Limited
 SPDX-FileContributor: Joe Pitt
 SPDX-FileContributor: James Ellor
 
@@ -89,5 +89,6 @@ The image uses the following volumes:
 | Mount Point | Purpose |
 |-------------|---------|
 | /etc/ssl/private/ | Holds the TLS certificate (and chain) (`misp.crt`) and the private key (`misp.key`) used to serve MISP over HTTPS. |
+| /tmp | Holds Apache and PHP temporary files. |
 | /var/www/MISPData | Holds the instance specific data which needs to be persisted between updates and container recreations. |
 | /var/www/MISPGnuPG | Holds the GPG/PGP key chain used by MISP for email signing and encryption. |

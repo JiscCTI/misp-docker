@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2025 Jisc Services Limited
+SPDX-FileCopyrightText: 2025-2026 Jisc Services Limited
 SPDX-FileContributor: Joe Pitt
 
 SPDX-License-Identifier: GPL-3.0-only
@@ -7,6 +7,11 @@ SPDX-License-Identifier: GPL-3.0-only
 # Change Log
 
 This page tracks significant changes to the images.
+
+## May 2026 - MISP >=2.5.37
+
+* Made MISP-Web `/tmp` directory a volume and added task to delete stale temporary files - requires
+    updating `docker-compose.yml` and `misp_maintenance_jobs.ini` to activate
 
 ## December 2025 - MISP >=2.5.27
 

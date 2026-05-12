@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Jisc Services Limited
+# SPDX-FileCopyrightText: 2023-2026 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -76,6 +76,7 @@ services:
       - ${HTTPS_PORT:-443}:443
     restart: unless-stopped
     volumes:
+      - web_temp:/tmp
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData
       - ./persistent/${COMPOSE_PROJECT_NAME}/gpg/:/var/www/MISPGnuPG
       - ./persistent/${COMPOSE_PROJECT_NAME}/tls/:/etc/ssl/private
@@ -90,7 +91,9 @@ services:
     image: jisccti/misp-workers-dev:latest
     restart: unless-stopped
     volumes:
+      - web_temp:/tmp/misp-web
       - ./persistent/${COMPOSE_PROJECT_NAME}/data/:/var/www/MISPData
       - ./persistent/${COMPOSE_PROJECT_NAME}/gpg/:/var/www/MISPGnuPG
 volumes:
   modules_cache:
+  web_temp:

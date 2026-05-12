@@ -10,7 +10,8 @@ This page tracks significant changes to the images.
 
 ## May 2026 - MISP >=2.5.37
 
-* Made MISP-Web `/tmp` directory a volume and added task to delete stale temporary files
+* Made MISP-Web `/tmp` directory a volume and added task to delete stale temporary files - requires
+    updating `docker-compose.yml` and `misp_maintenance_jobs.ini` to activate
 
 ## December 2025 - MISP >=2.5.27
 

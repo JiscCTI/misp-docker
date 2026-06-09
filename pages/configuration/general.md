@@ -129,7 +129,7 @@ Once your certificate has been issued, you will need two files:
 
 `./tls/misp.crt` should resemble:
 
-```
+```pem
 -----BEGIN CERTIFICATE-----
 MISP server certificate - signed by intermediate 1
 -----END CERTIFICATE-----

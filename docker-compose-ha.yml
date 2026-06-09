@@ -24,7 +24,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-misp}
     hostname: ${MYSQL_HOSTNAME:-misp_db}
-    image: mysql/mysql-server:8.0
+    image: mysql:9.7
     restart: unless-stopped
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/db:/var/lib/mysql

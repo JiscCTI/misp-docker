@@ -8,7 +8,7 @@ SPDX-License-Identifier: GPL-3.0-only
 
 This page tracks significant changes to the images.
 
-## June 2026 - MISP >=2.5.39
+## June 2026 - MISP >=2.5.40
 
 * Upgrade MySQL to 9.7 (see [MySQL 9.7 Upgrade Procedure](upgrade/mysql_9_7.md))
 

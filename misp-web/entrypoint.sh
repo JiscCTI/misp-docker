@@ -616,7 +616,7 @@ setup_db() {
         echo "Database schema not present"
         echo "Creating database schema..."
         # Workaround syntax incompatibility between MySQL versions
-        sed -i 's/SET DEFAULT UNIX_TIMESTAMP\(\)/SET DEFAULT (UNIX_TIMESTAMP())/g' /var/www/MISP/INSTALL/MYSQL.sql
+        sed -i 's/SET DEFAULT UNIX_TIMESTAMP()/SET DEFAULT (UNIX_TIMESTAMP())/g' /var/www/MISP/INSTALL/MYSQL.sql
         mysql --skip-ssl-verify-server-cert -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" </var/www/MISP/INSTALL/MYSQL.sql
     fi
 }

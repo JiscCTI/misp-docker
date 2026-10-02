@@ -15,7 +15,7 @@ services:
     volumes:
       - ./persistent/${COMPOSE_PROJECT_NAME}/clamav_db/:/var/lib/clamav
   db:
-    command: [mysqld, --default-authentication-plugin=mysql_native_password, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb_monitor_enable=all]
+    command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb_monitor_enable=all]
     environment:
       - FQDN=${FQDN:-misp.local}
       - HTTPS_PORT=${HTTPS_PORT:-443}
@@ -23,6 +23,8 @@ services:
       - MYSQL_USER=${MYSQL_USERNAME:-misp}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-misp}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD", "--silent"]
     hostname: ${MYSQL_HOSTNAME:-misp_db}
     image: mysql:9.7
     restart: unless-stopped

@@ -44,6 +44,7 @@ hexadecimal password.
 | MODULES_HOSTNAME | The internal hostname of the MISP Modules container. | `misp_modules` |
 | MODULES_REDIS | The redis hostname used by modules, must be prefixed with `tls://` for Redis over TLS. | `$REDIS_HOST` |
 | MYSQL_DBNAME | The database to use for MISP. | `misp` |
+| MYSQL_ENCODING | The encoding to use for the database connection. | `utf8mb4 COLLATE utf8mb4_unicode_ci` |
 | MYSQL_HOSTNAME | The hostname of the MySQL service. | `misp_db` |
 | **MYSQL_PASSWORD** | The password MISP will use to connect to MySQL. Must have all privileges on `MYSQL_DBNAME` for a third-party DB. | `misp` |
 | **MYSQL_ROOT_PASSWORD** | The root password that will be set in the MySQL container. Not used for a third-party DB. | `misp` |

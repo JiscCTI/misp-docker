@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2026 Jisc Services Limited
 SPDX-FileContributor: James Ellor
 SPDX-FileContributor: Joe Pitt
 
@@ -47,9 +47,9 @@ The created Docker images contain only the MISP components and depend on several
 
 - ClamAV TCP Endpoint. Tested against Docker image: `clamav/clamav:1.0_base`. The ClamAV module is
     used to scan attachments that are imported to MISP, such as malware samples.
-- MySQL/MariaDB server (5.7 or 8.0). Tested against Docker image: `mysql/mysql-server:8.0`. This is
+- MySQL/MariaDB server (8.4 or 9.7). Tested against Docker image: `mysql:9.7`. This is
     used for the database storage of the MISP instance.
-- Redis server (6, 7 or 8). Tested against Docker image: `redis:8`. Redis is used for the in-memory
+- Redis server (7 or 8). Tested against Docker image: `redis:8`. Redis is used for the in-memory
     caching of the MISP instance.
     - Redis over TLS is supported.
     - Redis over Mutual TLS (mTLS) is **NOT** supported.

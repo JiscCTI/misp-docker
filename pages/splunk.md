@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2026 Jisc Services Limited
 SPDX-FileContributor: Clive Bream
 SPDX-FileContributor: Joe Pitt
 
@@ -28,7 +28,7 @@ Configure Docker to forward logs to the HTTP Event Collector, by either:
 
 Add the following into /etc/docker/daemon.json.
 
-```json
+```json title="/etc/docker/daemon.json"
 {
     "log-driver": "splunk",
     "log-opts": {
@@ -50,7 +50,7 @@ Restart the Docker Engine with `systemctl restart docker`.
 
 for each service in `docker-compose.yml` add these lines:
 
-```yaml
+```yaml title="docker-compose.yml"
     logging:
       driver: splunk
       options:
@@ -81,7 +81,7 @@ all of these settings.
 
 At the bottom of `docker-compose.yml`, add:
 
-```yaml
+```yaml title="docker-compose.yml"
   splunk-forwarder:
     depends_on:
       web:

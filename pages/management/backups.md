@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2026 Jisc Services Limited
 SPDX-FileContributor: James Ellor
 SPDX-FileContributor: Joe Pitt
 
@@ -25,7 +25,7 @@ simple .tar.gz archive in a backup folder.
 
 ```sh
 mkdir -p backups
-tar cfz backups/20241203-MISPBackup.tar.gz persistent/misp/
+tar czf backups/20241203-MISPBackup.tar.gz persistent/misp/
 ```
 
 ## Restart MISP

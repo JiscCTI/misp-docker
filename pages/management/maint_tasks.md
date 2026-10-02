@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2026 Jisc Services Limited
 SPDX-FileContributor: James Ellor
 SPDX-FileContributor: Joe Pitt
 
@@ -13,6 +13,7 @@ be seen in the table below:
 
 | Task | Frequency |
 | ---- | --------- |
+| Cleanup Temporary Files | Hourly |
 | Feed and server synchronisation | Hourly |
 | Update Decay Models, Galaxies, Notice Lists, Objects, Taxonomies, Warning Lists, and Workflow Blueprints | Daily |
 

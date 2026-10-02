@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2026 Jisc Services Limited
 SPDX-FileContributor: Clive Bream
 SPDX-FileContributor: Joe Pitt
 
@@ -96,7 +96,7 @@ With some additional configuration the Shibboleth container can be run in a high
 For example, an instance running in AWS's eu-west-2 region across three availability zones and using
 EFS for persistent storage could be configured like this:
 
-| Container | Region | AZ | `/etc/shibboleth` | `/run/shibboleth` | `/var/log/shibboleth` |
+| Container | Region | AZ | /etc/shibboleth | /run/shibboleth | /var/log/shibboleth |
 |-----------|--------|----|-------------------|-------------------|-----------------------|
 | `misp-shibb-sp` | eu-west-2 | az1 | `EFS://shibb/etc` | `EFS://shibb/run/euw2-az1` | `EFS://shibb/log/euw2-az1` |
 | `misp-web` | eu-west-2 | az1 | `EFS://shibb/etc` | `EFS://shibb/run/euw2-az1` | N/A |

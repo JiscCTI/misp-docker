@@ -65,7 +65,7 @@ Native authentication is not supported by MySQL 9.7. Therefore, you must re-enco
 2. Open an interactive shell inside the container using: `docker compose exec -it db bash`
 3. Load the `root` password into the `MYSQL_PWD` variable using:
   `export MYSQL_PWD=$MYSQL_ROOT_PASSWORD`
-4. Re-encode the `root` account password using: 
+4. Re-encode the `root` account password using:
   `echo "ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY '$MYSQL_ROOT_PASSWORD';" | mysql`
 5. Re-encode the `misp` account password using:
   `echo "ALTER USER 'misp'@'%' IDENTIFIED WITH caching_sha2_password BY '$MYSQL_PASSWORD';" | mysql`

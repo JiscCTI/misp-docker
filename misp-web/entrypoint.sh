@@ -605,7 +605,7 @@ setup_db() {
             'password' => '$MYSQL_PASSWORD',
             'database' => '$MYSQL_DBNAME',
             'prefix' => '',
-            'encoding' => '$MYSQL_ENCODING' 
+            'encoding' => '$MYSQL_ENCODING'
         );
     }" >config/database.php
     chmod 600 config/database.php

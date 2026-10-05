@@ -22,19 +22,19 @@ recommended to use the generic OpenID Connect (OIDC) authentication plugin, as d
 You may wish to copy this table into a document to capture the required values as you go:
 
 | Entra ID Name | Environment Variable | Value |
-|---------------|----------------------|-------|
+| ------------- | -------------------- | ----- |
 | n/a | `AUTH_METHOD` | `oidc` |
 | n/a | `OIDC_AUTH_METHOD` | `client_secret_basic` |
 | n/a | `OIDC_CODE_CHALLENGE_METHOD` | `-` |
-| Admin Group's Object Id | `OIDC_ADMIN_ROLE` |  |
-| Org Admin Group's Object Id | `OIDC_ORG_ADMIN_ROLE` |  |
-| Publisher Group's Object Id | `OIDC_PUBLISHER_ROLE` |  |
-| Read-Only Group's Object Id | `OIDC_READONLY_ROLE` |  |
-| Sync User Group's Object Id | `OIDC_SYNC_ROLE` |  |
-| User Role Group's Object Id | `OIDC_USER_ROLE` |  |
-| Application (client) ID | `OIDC_CLIENT_ID` |  |
-| OpenID Connect metadata document | `OIDC_PROVIDER` |  |
-| Client Secret "Value" | `OIDC_CLIENT_SECRET` |  |
+| Admin Group's Object Id | `OIDC_ADMIN_ROLE` | |
+| Org Admin Group's Object Id | `OIDC_ORG_ADMIN_ROLE` | |
+| Publisher Group's Object Id | `OIDC_PUBLISHER_ROLE` | |
+| Read-Only Group's Object Id | `OIDC_READONLY_ROLE` | |
+| Sync User Group's Object Id | `OIDC_SYNC_ROLE` | |
+| User Role Group's Object Id | `OIDC_USER_ROLE` | |
+| Application (client) ID | `OIDC_CLIENT_ID` | |
+| OpenID Connect metadata document | `OIDC_PROVIDER` | |
+| Client Secret "Value" | `OIDC_CLIENT_SECRET` | |
 
 ## 1 - Create Security Groups
 
@@ -51,7 +51,7 @@ be denied access - this includes disabling existing accounts.
     * Sync User
     * User
 3. Click **Refresh** to show the newly created groups.
-3. Note the **Object Id** of each group.
+4. Note the **Object Id** of each group.
 
 ## 2 - Assign Users
 
@@ -85,7 +85,7 @@ MISP needs to be registered in Entra ID as an Enterprise Application.
 6. Click **Register**.
 7. Note the **Application (client) ID**.
 8. Click **Endpoints**.
-7. Note the URL under **OpenID Connect metadata document**.
+9. Note the URL under **OpenID Connect metadata document**.
 
 ## 4 - Generate A Client Secret
 

@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 Jisc Services Limited
+SPDX-FileCopyrightText: 2024-2026 Jisc Services Limited
 SPDX-FileContributor: Clive Bream
 SPDX-FileContributor: Joe Pitt
 
@@ -28,7 +28,7 @@ Configure Docker to forward logs to the HTTP Event Collector, by either:
 
 Add the following into /etc/docker/daemon.json.
 
-```json
+```json title="/etc/docker/daemon.json"
 {
     "log-driver": "splunk",
     "log-opts": {
@@ -50,7 +50,7 @@ Restart the Docker Engine with `systemctl restart docker`.
 
 for each service in `docker-compose.yml` add these lines:
 
-```yaml
+```yaml title="docker-compose.yml"
     logging:
       driver: splunk
       options:
@@ -70,7 +70,7 @@ Add the required environment variables to your `.env` file. It is strongly recom
 all of these settings.
 
 | Option Name | Description | Default Value |
-|-------------|-------------|---------------|
+| ----------- | ----------- | ------------- |
 | SPLUNK_HEC_KEY | The HTTP Event Collector key to use. | `00000000-1111-2222-3333-444444444444` |
 | SPLUNK_HEC_URI | The HTTP Event Collector URI to use. | `https://splunk.example.com:8088` |
 | SPLUNK_HEC_VERIFY | Case-sensitive `true` or `false` for whether the HTTPS certificate should be verified for the HTTP Event Collector. | `false` |
@@ -81,7 +81,7 @@ all of these settings.
 
 At the bottom of `docker-compose.yml`, add:
 
-```yaml
+```yaml title="docker-compose.yml"
   splunk-forwarder:
     depends_on:
       web:

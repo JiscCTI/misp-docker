@@ -53,7 +53,7 @@ password `admin`.
     up the accounts Time-base One Time Password (TOTP) token.
 1. It is recommended that once the password has been changed, you also change the email of the
     default admin account to a valid address, such as a shared inbox for the team responsible for
-    your MISP instance, e.g. mispteam@knowhere.ac.uk.
+    your MISP instance, e.g. `mispteam@knowhere.ac.uk`.
     1. Go to Administration / List Users,
     1. Find the `admin@admin.test` user (at this point there should only be one user),
     1. Click use the Edit button on the right side of the screen,

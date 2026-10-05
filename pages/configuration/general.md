@@ -44,6 +44,7 @@ hexadecimal password.
 | MODULES_HOSTNAME | The internal hostname of the MISP Modules container. | `misp_modules` |
 | MODULES_REDIS | The redis hostname used by modules, must be prefixed with `tls://` for Redis over TLS. | `$REDIS_HOST` |
 | MYSQL_DBNAME | The database to use for MISP. | `misp` |
+| MYSQL_ENCODING | The encoding to use for the database connection. | `utf8mb4 COLLATE utf8mb4_unicode_ci` |
 | MYSQL_HOSTNAME | The hostname of the MySQL service. | `misp_db` |
 | **MYSQL_PASSWORD** | The password MISP will use to connect to MySQL. Must have all privileges on `MYSQL_DBNAME` for a third-party DB. | `misp` |
 | **MYSQL_ROOT_PASSWORD** | The root password that will be set in the MySQL container. Not used for a third-party DB. | `misp` |
@@ -129,7 +130,7 @@ Once your certificate has been issued, you will need two files:
 
 `./tls/misp.crt` should resemble:
 
-```
+```pem
 -----BEGIN CERTIFICATE-----
 MISP server certificate - signed by intermediate 1
 -----END CERTIFICATE-----
@@ -165,10 +166,10 @@ on each start of `misp-web` protected by `GPG_PASSPHRASE`.
 
 Details about configuring Single Sign On (SSO) can be found on the pages below:
 
-- [OpenID Connect (OIDC)](./oidc.md), including:
-    - [Microsoft Entra ID](./entra-id.md) (formerly Azure Active Directory).
-    - [Keycloak](./keycloak.md)
-- [Shibboleth / SAML 2.0](./shibb.md).
+* [OpenID Connect (OIDC)](./oidc.md), including:
+    * [Microsoft Entra ID](./entra-id.md) (formerly Azure Active Directory).
+    * [Keycloak](./keycloak.md)
+* [Shibboleth / SAML 2.0](./shibb.md).
 
 ## Log Forwarding to Splunk
 

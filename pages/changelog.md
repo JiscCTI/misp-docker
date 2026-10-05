@@ -8,6 +8,10 @@ SPDX-License-Identifier: GPL-3.0-only
 
 This page tracks significant changes to the images.
 
+## October 2026 - MISP >=2.5.48
+
+* Upgrade MySQL to 9.7 (see [MySQL 9.7 Upgrade Procedure](upgrade/mysql_9_7.md))
+
 ## May 2026 - MISP >=2.5.37
 
 * Made MISP-Web `/tmp` directory a volume and added task to delete stale temporary files - requires
@@ -21,17 +25,17 @@ This page tracks significant changes to the images.
 ## October 2025 - MISP >=2.5.23
 
 * Made Start-Up locks in HA environments atomic, removing race conditions during startup
-* Made PHP's `memory_limit` configurable 
-    (see `PHP_ADDITIONAL_MEMORY_LIMIT` on 
+* Made PHP's `memory_limit` configurable
+    (see `PHP_ADDITIONAL_MEMORY_LIMIT` on
     [Configuring MISP](configuration/general.md#environment-variables))
-* Made Contact and Reply-To email addresses configurable (see `MISP_EMAIL_CONTACT_ADDRESS` and 
-    `MISP_EMAIL_REPLY_ADDRESS` on 
+* Made Contact and Reply-To email addresses configurable (see `MISP_EMAIL_CONTACT_ADDRESS` and
+    `MISP_EMAIL_REPLY_ADDRESS` on
     [Configuring MISP](configuration/general.md#environment-variables))
 
 ## October 2025 - MISP>=2.5.22
 
 * **BREAKING CHANGE** for OIDC-authenticated environments: To disable Proof Key for Code Exchange
-    (PKCE), `OIDC_CODE_CHALLENGE_METHOD` must now be set to `-` rather than an empty string. (see 
+    (PKCE), `OIDC_CODE_CHALLENGE_METHOD` must now be set to `-` rather than an empty string. (see
     [OpenID Connect (OIDC) Authentication](configuration/oidc.md#set-environment-variables))
 
 ## June 2025 - MISP>=2.5.13
@@ -39,7 +43,7 @@ This page tracks significant changes to the images.
 * Enabled OIDC Support (see [OpenID Connect (OIDC) Authentication](configuration/oidc.md),
     [Microsoft Entra ID](configuration/entra-id.md) and [Keycloak](configuration/keycloak.md))
 * Split SSO settings into their own `.env` files (see
-    [OpenID Connect (OIDC) Authentication](configuration/oidc.md#set-environment-variables) and 
+    [OpenID Connect (OIDC) Authentication](configuration/oidc.md#set-environment-variables) and
     [Shibboleth 2 Service Provider for MISP](configuration/shibb.md#environment-variables))
 * Updated Docker Compose project to use Redis 8
 

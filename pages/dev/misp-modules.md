@@ -34,5 +34,5 @@ The image exposes 6666/tcp - the modules web interface.
 The image uses the following volume:
 
 | Mount Point | Purpose |
-|-------------|---------|
+| ----------- | ------- |
 | /mnt/cache/ | Cache directories for `Fontconfig` and `matplotlib`. |

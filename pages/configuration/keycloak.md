@@ -20,21 +20,21 @@ This guide provides the values needed for [OpenID Connect (OIDC) Authentication]
 You may wish to copy this table into a document to capture the required values as you go:
 
 | Keycloak Name | Environment Variable | Value |
-|---------------|----------------------|-------|
-| Client ID | `OIDC_CLIENT_ID` |  |
-| Client Secret | `OIDC_CLIENT_SECRET` |  |
-| OpenID Endpoint Configuration (URL) | `OIDC_PROVIDER` |  |
+| ------------- | -------------------- | ----- |
+| Client ID | `OIDC_CLIENT_ID` | |
+| Client Secret | `OIDC_CLIENT_SECRET` | |
+| OpenID Endpoint Configuration (URL) | `OIDC_PROVIDER` | |
 
 Depending on your configuration, you may also need to set:
 
 | Keycloak Name | Environment Variable | Value |
-|---------------|----------------------|-------|
-| Admin Role Name | `OIDC_ADMIN_ROLE` |  |
-| Org Admin Role Name | `OIDC_ORG_ADMIN_ROLE` |  |
-| Publisher Role Name | `OIDC_PUBLISHER_ROLE` |  |
-| Read-Only Role Name | `OIDC_READONLY_ROLE` |  |
-| Sync User Role Name | `OIDC_SYNC_ROLE` |  |
-| User Role Name | `OIDC_USER_ROLE` |  |
+| ------------- | -------------------- | ----- |
+| Admin Role Name | `OIDC_ADMIN_ROLE` | |
+| Org Admin Role Name | `OIDC_ORG_ADMIN_ROLE` | |
+| Publisher Role Name | `OIDC_PUBLISHER_ROLE` | |
+| Read-Only Role Name | `OIDC_READONLY_ROLE` | |
+| Sync User Role Name | `OIDC_SYNC_ROLE` | |
+| User Role Name | `OIDC_USER_ROLE` | |
 
 ## 1 - Switch Realms
 
@@ -109,7 +109,7 @@ Some additional configuration is required for MISP to successful authenticate us
     7. Click **Client details** (top of window).
 7. On the **Advanced** tab:
     1. In the **Fine grain OpenID Connect configuration** section:
-        1. Optionally, set **Logo URL** to **https://avatars.githubusercontent.com/u/4134875?s=128&v=4**.
+        1. Optionally, set **Logo URL** to `https://avatars.githubusercontent.com/u/4134875?s=128&v=4`.
         2. Set **Request object signature algorithm**  to **HS256**.
         3. Click this section's **Save** button.
     2. In the **Advanced settings** section:

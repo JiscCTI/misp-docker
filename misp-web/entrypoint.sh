@@ -426,6 +426,7 @@ load_env_vars() {
     fi
     export MODULES_HOSTNAME=${MODULES_HOSTNAME:-misp_modules}
     export MYSQL_DBNAME=${MYSQL_DBNAME:-misp}
+    export MYSQL_ENCODING=${MYSQL_ENCODING:-utf8mb4 COLLATE utf8mb4_unicode_ci}
     export MYSQL_HOSTNAME=${MYSQL_HOSTNAME:-misp_db}
     export MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
     if [ "$MYSQL_PASSWORD" == "misp" ]; then
@@ -604,15 +605,18 @@ setup_db() {
             'password' => '$MYSQL_PASSWORD',
             'database' => '$MYSQL_DBNAME',
             'prefix' => '',
-            'encoding' => 'utf8',
+            'encoding' => '$MYSQL_ENCODING'
         );
     }" >config/database.php
+    chmod 600 config/database.php
 
     if mysql --skip-ssl-verify-server-cert -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" <<<"SELECT id FROM users LIMIT 1" >/dev/null 2>&1; then
         echo "Database schema appears to already be created"
     else
         echo "Database schema not present"
         echo "Creating database schema..."
+        # Workaround syntax incompatibility between MySQL versions
+        sed -i 's/SET DEFAULT UNIX_TIMESTAMP()/SET DEFAULT (UNIX_TIMESTAMP())/g' /var/www/MISP/INSTALL/MYSQL.sql
         mysql --skip-ssl-verify-server-cert -h "$MYSQL_HOSTNAME" -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" "$MYSQL_DBNAME" </var/www/MISP/INSTALL/MYSQL.sql
     fi
 }

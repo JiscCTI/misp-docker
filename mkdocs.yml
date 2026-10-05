@@ -1,9 +1,9 @@
-# SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
+# SPDX-FileCopyrightText: 2024-2026 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-site_name: Jisc CTI - MISP
+site_name: Jisc CTI - MISP Docker Images
 site_url: https://jisccti.github.io/misp-docker/
 repo_url: https://github.com/jisccti/misp-docker/
 repo_name: GitHub
@@ -11,7 +11,7 @@ edit_uri: blob/main/pages/
 docs_dir: pages
 site_description: Documentation for running MISP with the Docker images produced by Jisc's Cyber Threat Intelligence team.
 site_author: Jisc's Cyber Threat Intelligence Team
-copyright: 2024-2025 Jisc Services Limited
+copyright: 2024-2026 Jisc Services Limited
 nav:
   - Introduction: index.md
   - Change Log: changelog.md
@@ -34,6 +34,8 @@ nav:
     - Logging: management/logging.md
     - Maintenance Tasks: management/maint_tasks.md
     - Upgrading MISP: management/updates.md
+    - Manual Upgrades:
+      - MySQL 9.7 Upgrade: upgrade/mysql_9_7.md
   - Development:
     - Principles: dev/principles.md
     - Images:
@@ -44,3 +46,39 @@ nav:
     - GitHub Actions: dev/gh-actions.md
 theme:
   name: material
+  favicon: img/jisc-white.png
+  logo: img/jisc-black.png
+  palette:
+    - media: "(prefers-color-scheme)"
+      primary: orange
+      accent: orange
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    - media: "(prefers-color-scheme: light)"
+      primary: orange
+      accent: orange
+      scheme: default 
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      primary: orange
+      accent: orange
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to system preference light/dark mode
+
+  features:
+    - content.code.copy
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences

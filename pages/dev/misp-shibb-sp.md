@@ -33,7 +33,7 @@ This image does not expose any ports.
 The image uses the following volumes:
 
 | Mount Point | Purpose |
-|-------------|---------|
+| ----------- | ------- |
 | /etc/shibboleth | Contains the shibboleth-sp configuration. |
 | /run/shibboleth | Contains the shibboleth-sp unix socket. |
 | /var/log/shibboleth | Contains log files from the shibboleth-sp. |

@@ -61,6 +61,6 @@ container generates the TLS keypair needed for a successful startup.
 ### SAML2/Shibboleth Testing
 
 To test with SAML2/Shibboleth Single Sign On, ensure the appropriate options have been set in
-`shibb.env` 
+`shibb.env`
 (see the [SAML2 Documentation](https://jisccti.github.io/misp-docker/configuration/shibb/)), then
 run Quick Start with the `--shibb` option.

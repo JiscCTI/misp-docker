@@ -41,7 +41,7 @@ __email__ = "Joe.Pitt@jisc.ac.uk"
 __license__ = "GPL-3.0-only"
 __maintainer__ = "Joe Pitt"
 __status__ = "Production"
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 PROJECT_DIRECTORY = dirname(abspath(__file__))
 ENV_FILE = join(PROJECT_DIRECTORY, ".env")
@@ -212,7 +212,7 @@ def pull_images():
     print("Pulling external images...")
     run(["/usr/bin/docker", "pull", "clamav/clamav:1.0_base"], check=True)
     run(["/usr/bin/docker", "pull", "redis:8"], check=True)
-    run(["/usr/bin/docker", "pull", "mysql/mysql-server:8.0"], check=True)
+    run(["/usr/bin/docker", "pull", "mysql:9.7"], check=True)
 
 
 if __name__ == "__main__":

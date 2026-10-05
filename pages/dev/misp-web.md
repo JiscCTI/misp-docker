@@ -87,7 +87,7 @@ The image exposes:
 The image uses the following volumes:
 
 | Mount Point | Purpose |
-|-------------|---------|
+| ----------- | ------- |
 | /etc/ssl/private/ | Holds the TLS certificate (and chain) (`misp.crt`) and the private key (`misp.key`) used to serve MISP over HTTPS. |
 | /tmp | Holds Apache and PHP temporary files. |
 | /var/www/MISPData | Holds the instance specific data which needs to be persisted between updates and container recreations. |

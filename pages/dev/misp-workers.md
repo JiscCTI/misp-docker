@@ -43,7 +43,7 @@ The image exposes 9001/tcp - the supervisor status page, read by the misp-web co
 The image uses the following volumes:
 
 | Mount Point | Purpose |
-|-------------|---------|
+| ----------- | ------- |
 | /tmp/misp-web | Holds Apache and PHP temporary files from misp-web. |
 | /var/www/MISPData | Holds the instance specific data which needs to be persisted between updates and container recreations. |
 | /var/www/MISPGnuPG | Holds the GPG/PGP key chain used by MISP for email signing and encryption. |

@@ -7,7 +7,7 @@ SPDX-License-Identifier: GPL-3.0-only
 # MySQL 9.7 Upgrade Procedure
 
 MySQL 8.0 has reached End of Life. Therefore, MISP instances deployed using the Jisc CTI images
-before June 2026 need their database engine upgrading to MySQL 9.7, which will be supported by
+before October 2026 need their database engine upgrading to MySQL 9.7, which will be supported by
 Oracle until April 2034.
 
 The steps in this procedure **must be followed in order** to avoid irrecoverable loss of access to
@@ -80,24 +80,24 @@ first.
 1. Edit the `command` and `image` options and add the `healthcheck` option to the `db` service in
   your `docker-compose.yml` file as below:
 
-```yaml title="docker-compose.yml" hl_lines="2 10 11 13"
-  db:
-    command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb_monitor_enable=all]
-    environment:
-      - FQDN=${FQDN:-misp.local}
-      - HTTPS_PORT=${HTTPS_PORT:-443}
-      - MYSQL_DATABASE=${MYSQL_DBNAME:-misp}
-      - MYSQL_USER=${MYSQL_USERNAME:-misp}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-misp}
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-    hostname: ${MYSQL_HOSTNAME:-misp_db}
-    image: mysql:8.4
-    restart: unless-stopped
-    volumes:
-      - ./persistent/${COMPOSE_PROJECT_NAME}/db:/var/lib/mysql
-```
+    ```yaml title="docker-compose.yml" hl_lines="2 10 11 13"
+      db:
+        command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb_monitor_enable=all]
+        environment:
+          - FQDN=${FQDN:-misp.local}
+          - HTTPS_PORT=${HTTPS_PORT:-443}
+          - MYSQL_DATABASE=${MYSQL_DBNAME:-misp}
+          - MYSQL_USER=${MYSQL_USERNAME:-misp}
+          - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
+          - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-misp}
+        healthcheck:
+          test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+        hostname: ${MYSQL_HOSTNAME:-misp_db}
+        image: mysql:8.4
+        restart: unless-stopped
+        volumes:
+          - ./persistent/${COMPOSE_PROJECT_NAME}/db:/var/lib/mysql
+    ```
 
 2. Start the database server and monitor the startup using: `docker compose up db`
 3. Wait for `ready for connections. Version: '8.4.9' ...` to be logged
@@ -109,38 +109,28 @@ Now the database files are in 8.4 format, they can be upgraded to 9.7 format.
 
 1. Update the `image` option of the `db` service in your `docker-compose.yml` file as below:
 
-```yaml title="docker-compose.yml" hl_lines="13"
-  db:
-    command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb_monitor_enable=all]
-    environment:
-      - FQDN=${FQDN:-misp.local}
-      - HTTPS_PORT=${HTTPS_PORT:-443}
-      - MYSQL_DATABASE=${MYSQL_DBNAME:-misp}
-      - MYSQL_USER=${MYSQL_USERNAME:-misp}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-misp}
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-    hostname: ${MYSQL_HOSTNAME:-misp_db}
-    image: mysql:9.7
-    restart: unless-stopped
-    volumes:
-      - ./persistent/${COMPOSE_PROJECT_NAME}/db:/var/lib/mysql
-```
+    ```yaml title="docker-compose.yml" hl_lines="13"
+      db:
+        command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb_monitor_enable=all]
+        environment:
+          - FQDN=${FQDN:-misp.local}
+          - HTTPS_PORT=${HTTPS_PORT:-443}
+          - MYSQL_DATABASE=${MYSQL_DBNAME:-misp}
+          - MYSQL_USER=${MYSQL_USERNAME:-misp}
+          - MYSQL_PASSWORD=${MYSQL_PASSWORD:-misp}
+          - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-misp}
+        healthcheck:
+          test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+        hostname: ${MYSQL_HOSTNAME:-misp_db}
+        image: mysql:9.7
+        restart: unless-stopped
+        volumes:
+          - ./persistent/${COMPOSE_PROJECT_NAME}/db:/var/lib/mysql
+    ```
 
 2. Start the database server and monitor the startup using: `docker compose up db`
 3. Wait for `ready for connections. Version: '9.7.0' ...` to be logged
 4. Shutdown the database container by pressing <kbd>CTRL</kbd>+<kbd>C</kbd>
-
-## Update Connection Encoding
-
-Finally, the encoding used for MySQL connections by MISP needs to be changed in MISP's database
-configuration file.
-
-1. Open `persistent/misp/data/config/database.php` for editing
-2. Replace the line `'encoding' => 'utf8'` with
-  `'encoding' => 'utf8mb4 COLLATE utf8mb4_unicode_ci'`
-3. Save and exit the file
 
 ## Start MISP
 
@@ -148,3 +138,8 @@ The database migration is now complete. MISP can now be safely started.
 
 1. Start MISP using: `docker compose up -d`
 2. Monitor the web containers startup to ensure no errors occur using: `docker compose logs -f web`
+
+## Cleanup Old Images
+
+Finally, you can clean up unneeded Docker objects, including the MySQL 8.0 and 8.4 images using:
+`docker system prune -a -f`.

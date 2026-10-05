@@ -51,7 +51,7 @@ be denied access - this includes disabling existing accounts.
     * Sync User
     * User
 3. Click **Refresh** to show the newly created groups.
-3. Note the **Object Id** of each group.
+4. Note the **Object Id** of each group.
 
 ## 2 - Assign Users
 
@@ -85,7 +85,7 @@ MISP needs to be registered in Entra ID as an Enterprise Application.
 6. Click **Register**.
 7. Note the **Application (client) ID**.
 8. Click **Endpoints**.
-7. Note the URL under **OpenID Connect metadata document**.
+9. Note the URL under **OpenID Connect metadata document**.
 
 ## 4 - Generate A Client Secret
 

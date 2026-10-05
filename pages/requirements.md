@@ -26,9 +26,9 @@ As a starting point, we would suggest:
 
 When testing our images, the lowest spec system able to run the project had:
 
-- 2 vCPUs
-- 8GB RAM
-- 50GB Storage
+* 2 vCPUs
+* 8GB RAM
+* 50GB Storage
 
 We are aware of instances of MISP running with at least:
 
@@ -45,13 +45,13 @@ straight away, it is also not recommended to convert the dev instance into a pro
 
 The created Docker images contain only the MISP components and depend on several services being present:
 
-- ClamAV TCP Endpoint. Tested against Docker image: `clamav/clamav:1.0_base`. The ClamAV module is
+* ClamAV TCP Endpoint. Tested against Docker image: `clamav/clamav:1.0_base`. The ClamAV module is
     used to scan attachments that are imported to MISP, such as malware samples.
-- MySQL/MariaDB server (8.4 or 9.7). Tested against Docker image: `mysql:9.7`. This is
+* MySQL/MariaDB server (8.4 or 9.7). Tested against Docker image: `mysql:9.7`. This is
     used for the database storage of the MISP instance.
-- Redis server (7 or 8). Tested against Docker image: `redis:8`. Redis is used for the in-memory
+* Redis server (7 or 8). Tested against Docker image: `redis:8`. Redis is used for the in-memory
     caching of the MISP instance.
-    - Redis over TLS is supported.
-    - Redis over Mutual TLS (mTLS) is **NOT** supported.
-- An SMTP service. We have tested against Postfix.
-    - Only **authenticated** mail relays are supported.
+    * Redis over TLS is supported.
+    * Redis over Mutual TLS (mTLS) is **NOT** supported.
+* An SMTP service. We have tested against Postfix.
+    * Only **authenticated** mail relays are supported.

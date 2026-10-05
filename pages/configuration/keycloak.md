@@ -109,7 +109,7 @@ Some additional configuration is required for MISP to successful authenticate us
     7. Click **Client details** (top of window).
 7. On the **Advanced** tab:
     1. In the **Fine grain OpenID Connect configuration** section:
-        1. Optionally, set **Logo URL** to **https://avatars.githubusercontent.com/u/4134875?s=128&v=4**.
+        1. Optionally, set **Logo URL** to `https://avatars.githubusercontent.com/u/4134875?s=128&v=4`.
         2. Set **Request object signature algorithm**  to **HS256**.
         3. Click this section's **Save** button.
     2. In the **Advanced settings** section:

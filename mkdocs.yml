@@ -46,7 +46,32 @@ nav:
     - GitHub Actions: dev/gh-actions.md
 theme:
   name: material
-  logo: img/jisc.png
+  favicon: img/jisc-white.png
+  logo: img/jisc-black.png
+  palette:
+    - media: "(prefers-color-scheme)"
+      primary: orange
+      accent: orange
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    - media: "(prefers-color-scheme: light)"
+      primary: orange
+      accent: orange
+      scheme: default 
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      primary: orange
+      accent: orange
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to system preference light/dark mode
+
   features:
     - content.code.copy
 markdown_extensions:

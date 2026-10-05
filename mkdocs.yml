@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-site_name: Jisc CTI - MISP
+site_name: Jisc CTI - MISP Docker Images
 site_url: https://jisccti.github.io/misp-docker/
 repo_url: https://github.com/jisccti/misp-docker/
 repo_name: GitHub
@@ -46,6 +46,7 @@ nav:
     - GitHub Actions: dev/gh-actions.md
 theme:
   name: material
+  logo: img/jisc.png
   features:
     - content.code.copy
 markdown_extensions:

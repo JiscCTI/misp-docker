@@ -26,15 +26,15 @@ You may wish to copy this table into a document to capture the required values a
 | n/a | `AUTH_METHOD` | `oidc` |
 | n/a | `OIDC_AUTH_METHOD` | `client_secret_basic` |
 | n/a | `OIDC_CODE_CHALLENGE_METHOD` | `-` |
-| Admin Group's Object Id | `OIDC_ADMIN_ROLE` |  |
-| Org Admin Group's Object Id | `OIDC_ORG_ADMIN_ROLE` |  |
-| Publisher Group's Object Id | `OIDC_PUBLISHER_ROLE` |  |
-| Read-Only Group's Object Id | `OIDC_READONLY_ROLE` |  |
-| Sync User Group's Object Id | `OIDC_SYNC_ROLE` |  |
-| User Role Group's Object Id | `OIDC_USER_ROLE` |  |
-| Application (client) ID | `OIDC_CLIENT_ID` |  |
-| OpenID Connect metadata document | `OIDC_PROVIDER` |  |
-| Client Secret "Value" | `OIDC_CLIENT_SECRET` |  |
+| Admin Group's Object Id | `OIDC_ADMIN_ROLE` | |
+| Org Admin Group's Object Id | `OIDC_ORG_ADMIN_ROLE` | |
+| Publisher Group's Object Id | `OIDC_PUBLISHER_ROLE` | |
+| Read-Only Group's Object Id | `OIDC_READONLY_ROLE` | |
+| Sync User Group's Object Id | `OIDC_SYNC_ROLE` | |
+| User Role Group's Object Id | `OIDC_USER_ROLE` | |
+| Application (client) ID | `OIDC_CLIENT_ID` | |
+| OpenID Connect metadata document | `OIDC_PROVIDER` | |
+| Client Secret "Value" | `OIDC_CLIENT_SECRET` | |
 
 ## 1 - Create Security Groups
 

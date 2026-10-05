@@ -21,20 +21,20 @@ You may wish to copy this table into a document to capture the required values a
 
 | Keycloak Name | Environment Variable | Value |
 | ------------- | -------------------- | ----- |
-| Client ID | `OIDC_CLIENT_ID` |  |
-| Client Secret | `OIDC_CLIENT_SECRET` |  |
-| OpenID Endpoint Configuration (URL) | `OIDC_PROVIDER` |  |
+| Client ID | `OIDC_CLIENT_ID` | |
+| Client Secret | `OIDC_CLIENT_SECRET` | |
+| OpenID Endpoint Configuration (URL) | `OIDC_PROVIDER` | |
 
 Depending on your configuration, you may also need to set:
 
 | Keycloak Name | Environment Variable | Value |
 | ------------- | -------------------- | ----- |
-| Admin Role Name | `OIDC_ADMIN_ROLE` |  |
-| Org Admin Role Name | `OIDC_ORG_ADMIN_ROLE` |  |
-| Publisher Role Name | `OIDC_PUBLISHER_ROLE` |  |
-| Read-Only Role Name | `OIDC_READONLY_ROLE` |  |
-| Sync User Role Name | `OIDC_SYNC_ROLE` |  |
-| User Role Name | `OIDC_USER_ROLE` |  |
+| Admin Role Name | `OIDC_ADMIN_ROLE` | |
+| Org Admin Role Name | `OIDC_ORG_ADMIN_ROLE` | |
+| Publisher Role Name | `OIDC_PUBLISHER_ROLE` | |
+| Read-Only Role Name | `OIDC_READONLY_ROLE` | |
+| Sync User Role Name | `OIDC_SYNC_ROLE` | |
+| User Role Name | `OIDC_USER_ROLE` | |
 
 ## 1 - Switch Realms
 

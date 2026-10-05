@@ -70,7 +70,7 @@ Add the required environment variables to your `.env` file. It is strongly recom
 all of these settings.
 
 | Option Name | Description | Default Value |
-|-------------|-------------|---------------|
+| ----------- | ----------- | ------------- |
 | SPLUNK_HEC_KEY | The HTTP Event Collector key to use. | `00000000-1111-2222-3333-444444444444` |
 | SPLUNK_HEC_URI | The HTTP Event Collector URI to use. | `https://splunk.example.com:8088` |
 | SPLUNK_HEC_VERIFY | Case-sensitive `true` or `false` for whether the HTTPS certificate should be verified for the HTTP Event Collector. | `false` |

@@ -20,7 +20,7 @@ This guide provides the values needed for [OpenID Connect (OIDC) Authentication]
 You may wish to copy this table into a document to capture the required values as you go:
 
 | Keycloak Name | Environment Variable | Value |
-|---------------|----------------------|-------|
+| ------------- | -------------------- | ----- |
 | Client ID | `OIDC_CLIENT_ID` |  |
 | Client Secret | `OIDC_CLIENT_SECRET` |  |
 | OpenID Endpoint Configuration (URL) | `OIDC_PROVIDER` |  |
@@ -28,7 +28,7 @@ You may wish to copy this table into a document to capture the required values a
 Depending on your configuration, you may also need to set:
 
 | Keycloak Name | Environment Variable | Value |
-|---------------|----------------------|-------|
+| ------------- | -------------------- | ----- |
 | Admin Role Name | `OIDC_ADMIN_ROLE` |  |
 | Org Admin Role Name | `OIDC_ORG_ADMIN_ROLE` |  |
 | Publisher Role Name | `OIDC_PUBLISHER_ROLE` |  |

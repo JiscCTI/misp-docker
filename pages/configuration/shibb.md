@@ -29,7 +29,7 @@ container:
     * The items in **bold** are highly recommended.
 
 | Option Name | Description | Default Value |
-|-------------|-------------|---------------|
+| ----------- | ----------- | ------------- |
 | SHIBB_ADMIN_ROLE | The shibboleth group / role to be granted the MISP admin role. | `misp-admin` |
 | SHIBB_BLOCK_ORG_CHANGE | If shibboleth should be prevented from changing a user's organisation. | `false` |
 | SHIBB_BLOCK_ROLE_CHANGE | If shibboleth should be prevented from changing a user's role. | `false` |
@@ -97,7 +97,7 @@ For example, an instance running in AWS's eu-west-2 region across three availabi
 EFS for persistent storage could be configured like this:
 
 | Container | Region | AZ | /etc/shibboleth | /run/shibboleth | /var/log/shibboleth |
-|-----------|--------|----|-------------------|-------------------|-----------------------|
+| --------- | ------ | -- | ----------------- | ----------------- | --------------------- |
 | `misp-shibb-sp` | eu-west-2 | az1 | `EFS://shibb/etc` | `EFS://shibb/run/euw2-az1` | `EFS://shibb/log/euw2-az1` |
 | `misp-web` | eu-west-2 | az1 | `EFS://shibb/etc` | `EFS://shibb/run/euw2-az1` | N/A |
 | `misp-shibb-sp` | eu-west-2 | az2 | `EFS://shibb/etc` | `EFS://shibb/run/euw2-az2` | `EFS://shibb/log/euw2-az2` |

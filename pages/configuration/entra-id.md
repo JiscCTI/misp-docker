@@ -22,7 +22,7 @@ recommended to use the generic OpenID Connect (OIDC) authentication plugin, as d
 You may wish to copy this table into a document to capture the required values as you go:
 
 | Entra ID Name | Environment Variable | Value |
-|---------------|----------------------|-------|
+| ------------- | -------------------- | ----- |
 | n/a | `AUTH_METHOD` | `oidc` |
 | n/a | `OIDC_AUTH_METHOD` | `client_secret_basic` |
 | n/a | `OIDC_CODE_CHALLENGE_METHOD` | `-` |

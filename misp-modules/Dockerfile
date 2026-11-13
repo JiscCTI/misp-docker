@@ -5,7 +5,13 @@
 
 FROM python:3.15-slim AS build
 ARG MISP_VERSION=0.0.0 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical
-RUN apt-get update -yq && apt-get install -yq g++ git libzbar0 libpoppler-cpp-dev tesseract-ocr
+RUN apt-get update -yq && apt-get install -yq \
+    g++ \
+    git \
+    libfuzzy-dev \
+    libpoppler-cpp-dev \
+    libzbar0 \
+    tesseract-ocr
 RUN python3 -m venv /misp_modules
 RUN . /misp_modules/bin/activate &&\
     python3 -m pip install --upgrade  --no-cache-dir --quiet misp-modules[all]==${MISP_VERSION}
@@ -23,7 +29,14 @@ ENV HOME=/mnt/cache/ MPLCONFIGDIR=/mnt/cache/matplotlib REDIS_BACKEND=misp_redis
 EXPOSE 6666
 
 RUN apt-get update &&\
-    apt-get install -y curl libglib2.0-0 libpoppler-cpp2 libzbar0 libgl1 tesseract-ocr &&\
+    apt-get install -y \
+        curl \
+        libfuzzy2 \
+        libgl1 \
+        libglib2.0-0 \
+        libpoppler-cpp2 \
+        libzbar0 \
+        tesseract-ocr &&\
     rm -rf /var/lib/apt/lists/* &&\
     python3 -m pip install --upgrade pip setuptools --no-cache-dir &&\
     mkdir -p /mnt/cache/matplotlib &&\

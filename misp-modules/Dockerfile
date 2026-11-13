@@ -23,7 +23,7 @@ ENV HOME=/mnt/cache/ MPLCONFIGDIR=/mnt/cache/matplotlib REDIS_BACKEND=misp_redis
 EXPOSE 6666
 
 RUN apt-get update &&\
-    apt-get install -y curl libglib2.0-0 libpoppler-cpp0v5 libzbar0 libgl1 tesseract-ocr &&\
+    apt-get install -y curl libglib2.0-0 libpoppler-cpp2 libzbar0 libgl1 tesseract-ocr &&\
     rm -rf /var/lib/apt/lists/* &&\
     python3 -m pip install --upgrade pip setuptools --no-cache-dir &&\
     mkdir -p /mnt/cache/matplotlib &&\

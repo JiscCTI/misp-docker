@@ -8,6 +8,10 @@ SPDX-License-Identifier: GPL-3.0-only
 
 This page tracks significant changes to the images.
 
+## November 2026 - MISP >=2.5.51
+
+* Upgrade Python from 3.12 to 3.15 for MISP-Modules
+
 ## October 2026 - MISP >=2.5.48
 
 * Upgrade MySQL to 9.7 (see [MySQL 9.7 Upgrade Procedure](upgrade/mysql_9_7.md))

@@ -45,7 +45,7 @@ nav:
       - misp-workers: dev/misp-workers.md
     - GitHub Actions: dev/gh-actions.md
 theme:
-  name: material
+  variant: classic
   favicon: img/jisc-white.png
   logo: img/jisc-black.png
   palette:
@@ -59,7 +59,7 @@ theme:
     - media: "(prefers-color-scheme: light)"
       primary: orange
       accent: orange
-      scheme: default 
+      scheme: default
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode

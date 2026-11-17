@@ -1,46 +1,46 @@
-# SPDX-FileCopyrightText: 2024-2025 Jisc Services Limited
+# SPDX-FileCopyrightText: 2024-2026 Jisc Services Limited
 # SPDX-FileContributor: Joe Pitt
 #
 # SPDX-License-Identifier: GPL-3.0-only
 ---
+name: Update GitHub Pages
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Project
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - name: Setup Python 3.11
-        uses: actions/setup-python@v7
-        with:
-          python-version: '3.11'
-      - name: Install mkdocs
-        run: python -m pip install --upgrade pip setuptools && pip install mkdocs mkdocs-material
-      - name: Configure git
-        run: git config user.name 'github-actions[bot]' && git config user.email 'github-actions[bot]@users.noreply.github.com'
-      - name: Build docs site
-        run: mkdocs build
-      - name: Upload site bundle
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: site
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Checkout Project
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: 3.15
+
+      - name: Install Zensical
+        run: pip install zensical
+
+      - name: Build docs site
+        run: zensical build --clean 
+
+      - name: Upload site bundle
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
       - id: deployment
         name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v5
-name: Update GitHub Pages
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-permissions:
-  contents: read
-  id-token: write
-  pages: write

@@ -12,7 +12,7 @@ be replicated to support high availability.
 
 ## Build
 
-The image starts from the `python:3.12-slim-bookworm` and installs the `misp-modules` package and
+The image starts from the `python:3.15-slim` and installs the `misp-modules` package and
 its dependencies in one stage, patches a python2 to 3 migration issue before copying the compiled
 modules into the final image.
 

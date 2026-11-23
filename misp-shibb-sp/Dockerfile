@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-FROM rockylinux:9.3
+FROM rockylinux:10.3
 ARG SHIBB_VERSION=0.0.0
 LABEL org.opencontainers.image.title="misp-shibb-sp" \
     org.opencontainers.image.version="${SHIBB_VERSION}" \
